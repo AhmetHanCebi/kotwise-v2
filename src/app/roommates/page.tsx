@@ -49,7 +49,7 @@ function calculateAge(birthDate: string | null | undefined): number | null {
 }
 
 function matchPercentage(myInterests: string[], theirInterests: string[]): number {
-  if (!myInterests?.length || !theirInterests?.length) return Math.floor(Math.random() * 30 + 60);
+  if (!myInterests?.length || !theirInterests?.length) return 0;
   const common = myInterests.filter((i) => theirInterests.includes(i));
   return Math.min(99, Math.floor((common.length / Math.max(myInterests.length, theirInterests.length)) * 100) + 50);
 }
@@ -245,9 +245,9 @@ function RoommatesPage() {
                 {/* Match badge */}
                 <div
                   className="absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-bold"
-                  style={{ background: 'var(--color-success)', color: '#fff' }}
+                  style={{ background: match > 0 ? 'var(--color-success)' : 'var(--color-text-muted)', color: '#fff' }}
                 >
-                  %{match} Uyum
+                  {match > 0 ? `%${match} Uyum` : 'Uyum bilgisi yok'}
                 </div>
 
                 {/* Swipe indicators */}
@@ -289,7 +289,7 @@ function RoommatesPage() {
                         key={interest}
                         className="px-2.5 py-1 rounded-full text-xs font-medium"
                         style={{
-                          background: 'var(--color-primary)' + '14',
+                          background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)',
                           color: 'var(--color-primary)',
                         }}
                       >

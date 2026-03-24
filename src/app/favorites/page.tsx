@@ -12,6 +12,14 @@ import BottomNav from '@/components/BottomNav';
 import type { ListingWithImages, Favorite } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
 
+const CURRENCY_LABELS: Record<string, string> = {
+  TRY: 'TL',
+  EUR: 'EUR',
+  USD: 'USD',
+  GBP: 'GBP',
+};
+const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
+
 type FavoriteWithListing = Favorite & {
   listing: ListingWithImages;
 };
@@ -208,7 +216,7 @@ function FavoritesContent() {
 
                     <div className="flex items-center justify-between mt-3">
                       <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                        {listing.price_per_month.toLocaleString('tr-TR')} {listing.currency}
+                        {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                         <span className="text-[11px] font-normal ml-0.5" style={{ color: 'var(--color-text-muted)' }}>
                           /ay
                         </span>

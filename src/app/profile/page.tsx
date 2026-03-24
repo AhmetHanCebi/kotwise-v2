@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
@@ -7,6 +8,7 @@ import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useBooking } from '@/hooks/useBooking';
+import { useListings } from '@/hooks/useListings';
 import {
   Edit3,
   CalendarCheck,
@@ -20,7 +22,6 @@ import {
   Star,
   Heart,
   Calendar,
-  Award,
   BadgeCheck,
   GraduationCap,
   Loader2,
@@ -49,6 +50,22 @@ function ProfileContent() {
   const { profile, loading, signOut, user } = useAuth();
   const { favorites } = useFavorites(user?.id);
   const { bookings } = useBooking(user?.id);
+  const { listings, search: searchListings } = useListings();
+
+  // Fetch host listings count and compute average rating
+  useEffect(() => {
+    if (user?.id) {
+      searchListings({ host_id: user.id, limit: 100 });
+    }
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const listingCount = listings.length;
+  const avgRating = useMemo(() => {
+    const rated = listings.filter((l) => (l.rating ?? 0) > 0);
+    if (rated.length === 0) return null;
+    const sum = rated.reduce((acc, l) => acc + (l.rating ?? 0), 0);
+    return (sum / rated.length).toFixed(1);
+  }, [listings]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -160,10 +177,10 @@ function ProfileContent() {
         }}
       >
         {[
-          { label: 'İlanlar', value: '0', icon: Home },
+          { label: 'İlanlar', value: String(listingCount), icon: Home },
           { label: 'Favoriler', value: String(favorites?.length ?? 0), icon: Heart },
           { label: 'Rezervasyonlar', value: String(bookings?.length ?? 0), icon: Calendar },
-          { label: 'Puan', value: '-', icon: Star },
+          { label: 'Puan', value: avgRating ?? '-', icon: Star },
         ].map((stat) => (
           <div key={stat.label} className="flex flex-col items-center gap-0.5">
             <stat.icon size={16} style={{ color: 'var(--color-primary)' }} />

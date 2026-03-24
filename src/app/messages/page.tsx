@@ -12,8 +12,6 @@ import {
   Plus,
   Users,
   MessageCircle,
-  Mail,
-  MailOpen,
   Home,
   Loader2,
 } from 'lucide-react';
@@ -73,10 +71,8 @@ function MessagesContent() {
     let list = conversations;
 
     if (filter === 'unread') {
-      list = list.filter((c) => {
-        // Check if last message is unread (simplified: check last_message_at)
-        return c.last_message_text != null;
-      });
+      // TODO: Implement real read/unread tracking via messages.read_at
+      list = list; // Show all — no reliable unread detection yet
     } else if (filter === 'listing') {
       list = list.filter((c) => c.listing_id != null);
     } else if (filter === 'group') {
@@ -245,14 +241,6 @@ function MessagesContent() {
                         {displayName.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    {/* Online dot */}
-                    <span
-                      className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
-                      style={{
-                        background: 'var(--color-success)',
-                        borderColor: 'var(--color-bg-card)',
-                      }}
-                    />
                   </div>
 
                   {/* Content */}

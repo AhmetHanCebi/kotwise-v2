@@ -7,18 +7,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
 import {
   ArrowLeft,
-  Phone,
-  Video,
   Send,
   Paperclip,
   Camera,
   Smile,
-  Mic,
-  Languages,
   Check,
   CheckCheck,
   MapPin,
-  Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
 import { useStorage } from '@/hooks/useStorage';
@@ -87,7 +82,6 @@ function ChatContent({ conversationId }: { conversationId: string }) {
 
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
-  const [showTranslation, setShowTranslation] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { toast } = useToast();
   const { upload } = useStorage();
@@ -210,41 +204,11 @@ function ChatContent({ conversationId }: { conversationId: string }) {
           >
             {displayName}
           </p>
-          <p className="text-[11px]" style={{ color: 'var(--color-success)' }}>
-            Çevrimiçi
+          <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+            Son görülme bilinmiyor
           </p>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowTranslation(!showTranslation)}
-            className="p-2 rounded-full active:opacity-70"
-            style={{
-              color: showTranslation
-                ? 'var(--color-primary)'
-                : 'var(--color-text-muted)',
-            }}
-            aria-label="Çeviri"
-          >
-            <Languages size={20} />
-          </button>
-          <button
-            onClick={() => toast('Sesli arama yakında aktif olacak', 'info')}
-            className="p-2 rounded-full active:opacity-70"
-            style={{ color: 'var(--color-text-muted)' }}
-            aria-label="Sesli arama"
-          >
-            <Phone size={20} />
-          </button>
-          <button
-            onClick={() => toast('Görüntülü arama yakında aktif olacak', 'info')}
-            className="p-2 rounded-full active:opacity-70"
-            style={{ color: 'var(--color-text-muted)' }}
-            aria-label="Görüntülü arama"
-          >
-            <Video size={20} />
-          </button>
-        </div>
       </div>
 
       {/* Messages Area */}
@@ -311,22 +275,17 @@ function ChatContent({ conversationId }: { conversationId: string }) {
                       {/* Message content by type */}
                       {msg.type === 'image' ? (
                         <div className="flex flex-col gap-1.5">
-                          <div
-                            className="w-48 h-32 rounded-lg flex items-center justify-center"
-                            style={{ background: 'rgba(0,0,0,0.1)' }}
-                          >
-                            <ImageIcon
-                              size={24}
-                              style={{
-                                color: isMine
-                                  ? 'rgba(255,255,255,0.7)'
-                                  : 'var(--color-text-muted)',
-                              }}
-                            />
-                          </div>
-                          {msg.content && (
-                            <p className="text-sm">{msg.content}</p>
-                          )}
+                          <img
+                            src={msg.content}
+                            alt="Gönderilen görsel"
+                            className="w-48 max-h-64 rounded-lg object-cover cursor-pointer"
+                            loading="lazy"
+                            onClick={() => window.open(msg.content, '_blank')}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
+                          />
                         </div>
                       ) : msg.type === 'location' ? (
                         <div className="flex items-center gap-2">
@@ -465,7 +424,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
             </div>
           </div>
 
-          {text.trim() ? (
+          {text.trim() && (
             <button
               onClick={handleSend}
               disabled={sending}
@@ -482,18 +441,6 @@ function ChatContent({ conversationId }: { conversationId: string }) {
               ) : (
                 <Send size={18} style={{ color: 'var(--color-text-inverse)' }} />
               )}
-            </button>
-          ) : (
-            <button
-              onClick={() => toast('Sesli mesaj yakında aktif olacak', 'info')}
-              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 active:scale-95"
-              style={{
-                background: 'var(--color-border)',
-                color: 'var(--color-text-muted)',
-              }}
-              aria-label="Sesli mesaj"
-            >
-              <Mic size={18} />
             </button>
           )}
         </div>

@@ -52,39 +52,43 @@ export function useFavorites(userId?: string) {
   const toggle = useCallback(async (listingId: string) => {
     if (!userId) return { error: 'Not authenticated' };
 
-    if (favoriteIds.has(listingId)) {
-      // Remove
-      const { error: err } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', userId)
-        .eq('listing_id', listingId);
+    try {
+      if (favoriteIds.has(listingId)) {
+        // Remove
+        const { error: err } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('listing_id', listingId);
 
-      if (err) return { error: err.message };
+        if (err) return { error: err.message };
 
-      setFavorites(prev => prev.filter(f => f.listing_id !== listingId));
-      setFavoriteIds(prev => {
-        const next = new Set(prev);
-        next.delete(listingId);
-        return next;
-      });
-    } else {
-      // Add
-      const { data, error: err } = await supabase
-        .from('favorites')
-        .insert({ user_id: userId, listing_id: listingId })
-        .select()
-        .single();
+        setFavorites(prev => prev.filter(f => f.listing_id !== listingId));
+        setFavoriteIds(prev => {
+          const next = new Set(prev);
+          next.delete(listingId);
+          return next;
+        });
+      } else {
+        // Add
+        const { data, error: err } = await supabase
+          .from('favorites')
+          .insert({ user_id: userId, listing_id: listingId })
+          .select()
+          .single();
 
-      if (err) return { error: err.message };
+        if (err) return { error: err.message };
 
-      setFavoriteIds(prev => new Set(prev).add(listingId));
-      // Refetch to get listing data
-      fetchFavorites();
-      return { data };
+        setFavoriteIds(prev => new Set(prev).add(listingId));
+        // Refetch to get listing data
+        fetchFavorites();
+        return { data };
+      }
+
+      return {};
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : 'Favori işlemi başarısız' };
     }
-
-    return {};
   }, [userId, favoriteIds, fetchFavorites]);
 
   return {

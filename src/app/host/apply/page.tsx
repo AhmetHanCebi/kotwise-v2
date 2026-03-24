@@ -16,7 +16,6 @@ import {
   ChevronLeft,
   Loader2,
   CheckCircle,
-  Camera,
   MapPin,
 } from 'lucide-react';
 
@@ -53,9 +52,19 @@ function HostApplyContent() {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+    setFileSizeError(null);
+
+    if (file.size > 5 * 1024 * 1024) {
+      setFileSizeError('Dosya boyutu 5MB\'dan büyük olamaz');
+      e.target.value = '';
+      return;
+    }
+
     const result = await upload(file, 'documents', user.id);
     if (result.data) {
       setIdDocUrl(result.data.url);
@@ -193,6 +202,11 @@ function HostApplyContent() {
                 </>
               )}
             </button>
+            {fileSizeError && (
+              <p className="text-xs font-medium" style={{ color: 'var(--color-error)' }}>
+                {fileSizeError}
+              </p>
+            )}
             <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={handleFileUpload} className="hidden" />
           </div>
         )}

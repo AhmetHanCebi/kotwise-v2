@@ -16,6 +16,14 @@ import ListingMap from '@/components/ListingMap';
 import type { ListingWithDetails, ReviewInsert } from '@/lib/database.types';
 import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, getCoverImage, getRoomPlaceholder } from '@/lib/image-utils';
 
+const CURRENCY_LABELS: Record<string, string> = {
+  TRY: 'TL',
+  EUR: 'EUR',
+  USD: 'USD',
+  GBP: 'GBP',
+};
+const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
+
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
   wifi: <Wifi size={18} />,
   klima: <Wind size={18} />,
@@ -63,9 +71,11 @@ export default function ListingDetailPage({
   useEffect(() => {
     if (id) {
       getById(id).then((data) => {
-        if (data) setListing(data);
+        if (data) {
+          setListing(data);
+          search({ city_id: data.city_id, limit: 7 }); // similar listings in same city
+        }
       });
-      search({ limit: 6 }); // for similar listings
     }
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -312,7 +322,7 @@ export default function ListingDetailPage({
           style={{ background: 'rgba(242,101,34,0.08)' }}
         >
           <span className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
-            {listing.price_per_month.toLocaleString('tr-TR')} {listing.currency}
+            {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
           </span>
           <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             /ay
@@ -621,7 +631,7 @@ export default function ListingDetailPage({
                         {sl.title}
                       </p>
                       <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                        {sl.price_per_month.toLocaleString('tr-TR')} TL/ay
+                        {sl.price_per_month.toLocaleString('tr-TR')} {displayCurrency(sl.currency ?? 'TRY')}/ay
                       </p>
                     </div>
                   </Link>
@@ -646,7 +656,7 @@ export default function ListingDetailPage({
       >
         <div>
           <span className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            {listing.price_per_month.toLocaleString('tr-TR')} {listing.currency}
+            {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
           </span>
           <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>
             /ay

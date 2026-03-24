@@ -9,7 +9,6 @@ import {
   ArrowLeft,
   TrendingUp,
   DollarSign,
-  Calendar,
   Loader2,
   BarChart3,
   Minus,
@@ -114,12 +113,12 @@ function EarningsContent() {
                 </div>
               </div>
               <p className="text-3xl font-bold mb-1" style={{ color: 'white' }}>
-                {period === 'monthly' ? (stats?.monthlyEarnings ?? 0) : totalNet} EUR
+                {(period === 'monthly' ? (stats?.monthlyEarnings ?? 0) : totalNet).toLocaleString('tr-TR')} ₺
               </p>
               <div className="flex items-center gap-1">
                 <TrendingUp size={14} style={{ color: '#4ADE80' }} />
                 <span className="text-xs" style={{ color: '#4ADE80' }}>
-                  Toplam: {totalNet} EUR
+                  Toplam: {totalNet.toLocaleString('tr-TR')} ₺
                 </span>
               </div>
             </div>
@@ -173,10 +172,10 @@ function EarningsContent() {
                 Detaylar
               </p>
               <div className="flex flex-col gap-2.5">
-                <DetailRow label="Brüt Kazanç" value={`${totalGross} EUR`} icon={<DollarSign size={14} />} />
-                <DetailRow label="Komisyon" value={`-${totalCommission} EUR`} icon={<Minus size={14} />} negative />
+                <DetailRow label="Brüt Kazanç" value={`${totalGross.toLocaleString('tr-TR')} ₺`} icon={<DollarSign size={14} />} />
+                <DetailRow label="Komisyon" value={`-${totalCommission.toLocaleString('tr-TR')} ₺`} icon={<Minus size={14} />} negative />
                 <div className="h-px" style={{ background: 'var(--color-border)' }} />
-                <DetailRow label="Net Kazanç" value={`${totalNet} EUR`} icon={<TrendingUp size={14} />} bold />
+                <DetailRow label="Net Kazanç" value={`${totalNet.toLocaleString('tr-TR')} ₺`} icon={<TrendingUp size={14} />} bold />
               </div>
             </div>
 
@@ -205,7 +204,7 @@ function EarningsContent() {
                         </p>
                       </div>
                       <span className="text-sm font-bold" style={{ color: 'var(--color-success)' }}>
-                        +{e.net_amount} EUR
+                        +{Number(e.net_amount).toLocaleString('tr-TR')} ₺
                       </span>
                     </div>
                   ))}

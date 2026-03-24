@@ -15,7 +15,6 @@ import {
   Sun,
   Sparkles,
   Cigarette,
-  Dog,
   Users,
   Loader2,
   ArrowRight,
@@ -29,7 +28,7 @@ const INTEREST_EMOJIS: Record<string, string> = {
 };
 
 function matchPercentage(a: string[], b: string[]): number {
-  if (!a?.length || !b?.length) return Math.floor(Math.random() * 30 + 60);
+  if (!a?.length || !b?.length) return 0;
   const common = a.filter((i) => b.includes(i));
   return Math.min(99, Math.floor((common.length / Math.max(a.length, b.length)) * 100) + 50);
 }
@@ -140,9 +139,9 @@ export default function RoommateProfilePage({
         {/* Match badge */}
         <div
           className="absolute bottom-6 right-4 px-4 py-2 rounded-2xl"
-          style={{ background: 'var(--color-success)', boxShadow: 'var(--shadow-md)' }}
+          style={{ background: match > 0 ? 'var(--color-success)' : 'var(--color-text-muted)', boxShadow: 'var(--shadow-md)' }}
         >
-          <span className="text-sm font-bold text-white">%{match} Uyum</span>
+          <span className="text-sm font-bold text-white">{match > 0 ? `%${match} Uyum` : 'Uyum bilgisi yok'}</span>
         </div>
       </div>
 
@@ -168,7 +167,7 @@ export default function RoommateProfilePage({
 
           {/* Exchange info */}
           {p.exchange_city && (
-            <div className="flex items-center gap-2 mt-2 p-3 rounded-xl" style={{ background: 'var(--color-primary)' + '10' }}>
+            <div className="flex items-center gap-2 mt-2 p-3 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-primary) 6%, transparent)' }}>
               <MapPin size={16} style={{ color: 'var(--color-primary)' }} />
               <span className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                 {p.user?.home_city ?? ''}
@@ -208,12 +207,12 @@ export default function RoommateProfilePage({
                   className="px-3 py-1.5 rounded-full text-xs font-medium"
                   style={{
                     background: (myProfile?.interests ?? []).includes(interest)
-                      ? 'var(--color-success)' + '20'
+                      ? 'color-mix(in srgb, var(--color-success) 12%, transparent)'
                       : 'var(--color-bg)',
                     color: (myProfile?.interests ?? []).includes(interest)
                       ? 'var(--color-success)'
                       : 'var(--color-text-secondary)',
-                    border: `1px solid ${(myProfile?.interests ?? []).includes(interest) ? 'var(--color-success)' + '40' : 'var(--color-border)'}`,
+                    border: `1px solid ${(myProfile?.interests ?? []).includes(interest) ? 'color-mix(in srgb, var(--color-success) 25%, transparent)' : 'var(--color-border)'}`,
                   }}
                 >
                   {INTEREST_EMOJIS[interest] ?? ''} {interest}

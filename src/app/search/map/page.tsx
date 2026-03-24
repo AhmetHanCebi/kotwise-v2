@@ -129,7 +129,7 @@ export default function MapSearchPage() {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                    {selectedListing.price_per_month.toLocaleString('tr-TR')} TL
+                    {selectedListing.price_per_month.toLocaleString('tr-TR')} {selectedListing.currency ?? 'TL'}
                     <span className="text-[10px] font-normal" style={{ color: 'var(--color-text-muted)' }}>
                       {' '}/ay
                     </span>

@@ -291,7 +291,13 @@ export default function RegisterPage() {
                 <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
               </div>
               <button
-                onClick={() => signInWithGoogle()}
+                onClick={async () => {
+                  try {
+                    await signInWithGoogle();
+                  } catch {
+                    toast('Google ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
+                  }
+                }}
                 className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
                 style={{
                   background: 'var(--color-bg-card)',
@@ -308,7 +314,13 @@ export default function RegisterPage() {
                 Google ile devam et
               </button>
               <button
-                onClick={() => signInWithApple()}
+                onClick={async () => {
+                  try {
+                    await signInWithApple();
+                  } catch {
+                    toast('Apple ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
+                  }
+                }}
                 className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
                 style={{
                   background: 'var(--color-bg-card)',

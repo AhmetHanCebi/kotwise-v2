@@ -19,8 +19,6 @@ import {
   Clock,
   ChevronRight,
   Loader2,
-  BarChart3,
-  ShieldAlert,
 } from 'lucide-react';
 
 export default function HostDashboardPage() {

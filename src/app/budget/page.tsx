@@ -169,7 +169,7 @@ export default function BudgetPage() {
                     </span>
                   </div>
                   <span className="text-sm font-bold" style={{ color: cat.color }}>
-                    {amounts[cat.key]} EUR
+                    {amounts[cat.key]} {selectedCity?.currency ?? 'TL'}
                   </span>
                 </div>
                 <input
@@ -194,13 +194,13 @@ export default function BudgetPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Aylık Toplam</span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} EUR</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {selectedCity?.currency ?? 'TL'}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {duration} Aylık Toplam
             </span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} EUR</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {selectedCity?.currency ?? 'TL'}</span>
           </div>
         </div>
 
@@ -218,7 +218,7 @@ export default function BudgetPage() {
                 Şehir Ort. Kira
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {cityAvgRent} EUR
+                {cityAvgRent} {selectedCity?.currency ?? 'TL'}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -226,7 +226,7 @@ export default function BudgetPage() {
                 Sizin Bütçeniz
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                {amounts.rent} EUR
+                {amounts.rent} {selectedCity?.currency ?? 'TL'}
               </span>
             </div>
             {comparison !== null && (
@@ -235,14 +235,14 @@ export default function BudgetPage() {
                   <>
                     <TrendingUp size={14} style={{ color: 'var(--color-error)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-error)' }}>
-                      Ortalamadan {comparison} EUR yüksek
+                      Ortalamadan {comparison} {selectedCity?.currency ?? 'TL'} yüksek
                     </span>
                   </>
                 ) : comparison < 0 ? (
                   <>
                     <TrendingDown size={14} style={{ color: 'var(--color-success)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                      Ortalamadan {Math.abs(comparison)} EUR düşük
+                      Ortalamadan {Math.abs(comparison)} {selectedCity?.currency ?? 'TL'} düşük
                     </span>
                   </>
                 ) : (
@@ -335,7 +335,7 @@ export default function BudgetPage() {
                     </div>
                     {city.avg_rent && (
                       <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                        Ort. {city.avg_rent} EUR
+                        Ort. {city.avg_rent} {city.currency ?? 'TL'}
                       </span>
                     )}
                   </button>

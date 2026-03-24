@@ -15,6 +15,7 @@ import {
   CornerDownRight,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import { supabase } from '@/lib/supabase';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 function timeAgo(dateStr: string): string {
@@ -125,7 +126,11 @@ export default function PostDetailPage({
         <button onClick={handleShare} className="p-1" aria-label="Paylaş">
           <Share2 size={20} style={{ color: 'var(--color-text-muted)' }} />
         </button>
-        <button onClick={() => toast('Bildirildi, incelemeye alınacak', 'success')} className="p-1" aria-label="Bildir">
+        <button onClick={async () => {
+          if (!user) { router.push('/login'); return; }
+          await supabase.from('reports').insert({ reporter_id: user.id, content_id: id, content_type: 'post' });
+          toast('Bildirildi, incelemeye alınacak', 'success');
+        }} className="p-1" aria-label="Bildir">
           <Flag size={20} style={{ color: 'var(--color-text-muted)' }} />
         </button>
       </header>

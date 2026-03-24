@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, User, Phone,
-  MessageCircle, Home, Loader2, PartyPopper,
+  MessageCircle, Home, Loader2,
 } from 'lucide-react';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
@@ -190,7 +190,7 @@ function BookingSuccess() {
                   Toplam
                 </span>
                 <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {booking.total_price.toLocaleString('tr-TR')} TL
+                  {booking.total_price.toLocaleString('tr-TR')} {booking.listing?.currency ?? 'TL'}
                 </span>
               </div>
             </div>

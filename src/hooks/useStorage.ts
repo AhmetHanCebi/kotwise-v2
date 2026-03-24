@@ -112,12 +112,17 @@ export function useStorage() {
   }, [upload]);
 
   const remove = useCallback(async (bucket: BucketName, path: string) => {
-    const { error: err } = await supabase.storage
-      .from(bucket)
-      .remove([path]);
+    try {
+      const { error: err } = await supabase.storage
+        .from(bucket)
+        .remove([path]);
 
-    if (err) return { error: err.message };
-    return {};
+      if (err) return { error: err.message };
+      return {};
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Delete failed';
+      return { error: message };
+    }
   }, []);
 
   return {

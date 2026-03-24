@@ -32,6 +32,7 @@ function HostBookingsContent() {
   const [hostBookings, setHostBookings] = useState<BookingWithDetails[]>([]);
   const [fetching, setFetching] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'confirmed' | 'cancelled' | 'all'>('pending');
 
   useEffect(() => {
     if (!user?.id) return;
@@ -48,6 +49,13 @@ function HostBookingsContent() {
     () => hostBookings.filter((b) => b.status === 'pending'),
     [hostBookings]
   );
+
+  const filteredBookings = useMemo(() => {
+    if (statusFilter === 'all') {
+      return hostBookings.filter((b) => b.status === 'completed' || new Date(b.check_out) < new Date());
+    }
+    return hostBookings.filter((b) => b.status === statusFilter);
+  }, [hostBookings, statusFilter]);
 
   const handleAction = async (id: string, action: 'confirmed' | 'cancelled') => {
     setActionLoading(id);
@@ -86,13 +94,39 @@ function HostBookingsContent() {
         )}
       </div>
 
+      {/* Status Tabs */}
+      <div className="flex gap-2 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide">
+        {([
+          { key: 'pending', label: 'Bekleyen' },
+          { key: 'confirmed', label: 'Onaylanan' },
+          { key: 'cancelled', label: 'Reddedilen' },
+          { key: 'all', label: 'Geçmiş' },
+        ] as const).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setStatusFilter(tab.key)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
+            style={{
+              background: statusFilter === tab.key ? 'var(--color-primary)' : 'var(--color-bg-card)',
+              color: statusFilter === tab.key ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+              border: statusFilter === tab.key ? 'none' : '1px solid var(--color-border)',
+            }}
+          >
+            {tab.label}
+            {tab.key === 'pending' && pendingBookings.length > 0 && (
+              <span className="ml-1 text-[10px] font-bold">{pendingBookings.length}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* List */}
       <div className="flex-1 px-4 py-3">
         {fetching ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={28} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
           </div>
-        ) : pendingBookings.length === 0 ? (
+        ) : filteredBookings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -101,15 +135,15 @@ function HostBookingsContent() {
               <Clock size={28} style={{ color: 'var(--color-text-muted)' }} />
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              Bekleyen talep yok
+              {statusFilter === 'pending' ? 'Bekleyen talep yok' : 'Kayıt bulunamadı'}
             </p>
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Yeni rezervasyon talepleri burada görünecektir
+              {statusFilter === 'pending' ? 'Yeni rezervasyon talepleri burada görünecektir' : ''}
             </p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {pendingBookings.map((booking) => (
+            {filteredBookings.map((booking) => (
               <div
                 key={booking.id}
                 className="rounded-xl overflow-hidden"
@@ -164,34 +198,49 @@ function HostBookingsContent() {
                   </span>
                 </div>
 
-                {/* Actions */}
-                <div
-                  className="flex items-center gap-2 px-4 py-3"
-                  style={{ borderTop: '1px solid var(--color-border)' }}
-                >
-                  <button
-                    onClick={() => handleAction(booking.id, 'confirmed')}
-                    disabled={actionLoading === booking.id}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
-                    style={{ background: 'var(--color-success)', color: 'white' }}
+                {/* Actions — only show for pending bookings */}
+                {booking.status === 'pending' && (
+                  <div
+                    className="flex items-center gap-2 px-4 py-3"
+                    style={{ borderTop: '1px solid var(--color-border)' }}
                   >
-                    {actionLoading === booking.id ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Check size={16} />
-                    )}
-                    Onayla
-                  </button>
-                  <button
-                    onClick={() => handleAction(booking.id, 'cancelled')}
-                    disabled={actionLoading === booking.id}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
-                    style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--color-error)' }}
+                    <button
+                      onClick={() => handleAction(booking.id, 'confirmed')}
+                      disabled={actionLoading === booking.id}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
+                      style={{ background: 'var(--color-success)', color: 'white' }}
+                    >
+                      {actionLoading === booking.id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Check size={16} />
+                      )}
+                      Onayla
+                    </button>
+                    <button
+                      onClick={() => handleAction(booking.id, 'cancelled')}
+                      disabled={actionLoading === booking.id}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
+                      style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--color-error)' }}
+                    >
+                      <X size={16} />
+                      Reddet
+                    </button>
+                  </div>
+                )}
+
+                {/* Status badge for non-pending */}
+                {booking.status !== 'pending' && (
+                  <div
+                    className="px-4 py-2.5 text-xs font-semibold"
+                    style={{
+                      borderTop: '1px solid var(--color-border)',
+                      color: booking.status === 'confirmed' ? 'var(--color-success)' : booking.status === 'cancelled' ? 'var(--color-error)' : 'var(--color-text-muted)',
+                    }}
                   >
-                    <X size={16} />
-                    Reddet
-                  </button>
-                </div>
+                    {booking.status === 'confirmed' ? 'Onaylandı' : booking.status === 'cancelled' ? 'Reddedildi' : 'Tamamlandı'}
+                  </div>
+                )}
               </div>
             ))}
           </div>

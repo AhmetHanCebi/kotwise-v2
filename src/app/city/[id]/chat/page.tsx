@@ -46,7 +46,7 @@ function CityChatContent({ cityId }: { cityId: string }) {
 
   // Find or create city group conversation
   useEffect(() => {
-    if (!user || !cityId) return;
+    if (!user || !cityId || !city?.name) return;
 
     const initChat = async () => {
       try {
@@ -181,6 +181,11 @@ function CityChatContent({ cityId }: { cityId: string }) {
                       boxShadow: 'var(--shadow-sm)',
                     }}
                   >
+                    {!isOwn && (
+                      <p className="text-[10px] font-semibold mb-0.5" style={{ color: 'var(--color-primary)' }}>
+                        Kullanıcı
+                      </p>
+                    )}
                     <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                     <p
                       className="text-[10px] mt-1 text-right"

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, Star, MapPin, Wifi, Sofa, Home,
+  ArrowLeft, Star, MapPin,
   Trophy, ChevronRight, Heart,
 } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -17,11 +17,19 @@ type FavoriteWithListing = Favorite & {
   listing: ListingWithImages;
 };
 
+const CURRENCY_LABELS: Record<string, string> = {
+  TRY: 'TL',
+  EUR: 'EUR',
+  USD: 'USD',
+  GBP: 'GBP',
+};
+const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
+
 interface CompareRow {
   label: string;
   key: string;
   getValue: (l: Listing) => string | number;
-  format?: (v: string | number) => string;
+  format?: (v: string | number, l: Listing) => string;
   higherIsBetter?: boolean;
   lowerIsBetter?: boolean;
 }
@@ -31,7 +39,7 @@ const COMPARE_ROWS: CompareRow[] = [
     label: 'Fiyat',
     key: 'price',
     getValue: (l) => l.price_per_month,
-    format: (v) => `${Number(v).toLocaleString('tr-TR')} TL/ay`,
+    format: (v, l) => `${Number(v).toLocaleString('tr-TR')} ${displayCurrency(l.currency ?? 'TRY')}/ay`,
     lowerIsBetter: true,
   },
   {
@@ -229,7 +237,7 @@ function CompareContent() {
                     {listing.title}
                   </p>
                   <p className="text-[11px] font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                    {listing.price_per_month.toLocaleString('tr-TR')} TL
+                    {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency ?? 'TRY')}
                   </p>
                 </div>
               </Link>
@@ -271,7 +279,7 @@ function CompareContent() {
                 <div className="flex">
                   {compareListings.map((listing, colIdx) => {
                     const rawValue = row.getValue(listing);
-                    const displayValue = row.format ? row.format(rawValue) : String(rawValue);
+                    const displayValue = row.format ? row.format(rawValue, listing) : String(rawValue);
                     const isWinner = winner === colIdx;
 
                     return (
@@ -327,7 +335,7 @@ function CompareContent() {
                   {listing.title}
                 </p>
                 <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                  {listing.price_per_month.toLocaleString('tr-TR')} TL/ay
+                  {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency ?? 'TRY')}/ay
                 </p>
               </div>
               <div

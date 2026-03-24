@@ -27,6 +27,17 @@ import {
 } from 'lucide-react';
 import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, IMAGE_FALLBACK_SMALL } from '@/lib/image-utils';
 
+const CURRENCY_LABELS: Record<string, string> = {
+  TRY: '₺',
+  EUR: '₺',
+  USD: '$',
+  GBP: '£',
+};
+const displayCurrency = (code: string | null | undefined) => {
+  if (!code) return '₺';
+  return CURRENCY_LABELS[code] ?? code;
+};
+
 type TabKey = 'info' | 'neighborhoods' | 'listings' | 'transport' | 'cost' | 'faq';
 
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
@@ -153,7 +164,7 @@ export default function CityDetailPage({
       <div className="grid grid-cols-4 gap-2 px-4 -mt-4 relative z-10">
         {[
           { icon: Users, label: 'Nüfus', value: city.population ? `${(city.population / 1000000).toFixed(1)}M` : '-' },
-          { icon: Home, label: 'Ort. Kira', value: city.avg_rent ? `${Number(city.avg_rent).toLocaleString('tr-TR')} ${city.currency ?? ''}` : '-' },
+          { icon: Home, label: 'Ort. Kira', value: city.avg_rent ? `${Number(city.avg_rent).toLocaleString('tr-TR')} ${displayCurrency(city.currency)}` : '-' },
           { icon: Compass, label: 'Öğrenci', value: city.student_count ? `${Math.round(city.student_count / 1000)}K` : '-' },
           { icon: Shield, label: 'Güvenlik', value: city.safety_score ? `${city.safety_score}/10` : '-' },
         ].map((stat) => {
@@ -222,7 +233,7 @@ export default function CityDetailPage({
                     <li key={i} className="flex items-start gap-2">
                       <span
                         className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold mt-0.5"
-                        style={{ background: 'var(--color-primary)' + '14', color: 'var(--color-primary)' }}
+                        style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)', color: 'var(--color-primary)' }}
                       >
                         {i + 1}
                       </span>
@@ -261,12 +272,12 @@ export default function CityDetailPage({
         {/* NEIGHBORHOODS tab */}
         {activeTab === 'neighborhoods' && (
           <div className="flex flex-col gap-3 animate-fade-in-up">
-            {city.neighborhoods.length === 0 && (
+            {!city.neighborhoods?.length && (
               <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
                 Mahalle bilgisi henüz eklenmedi.
               </p>
             )}
-            {city.neighborhoods.map((n) => (
+            {city.neighborhoods?.map((n) => (
               <div
                 key={n.id}
                 className="rounded-2xl overflow-hidden"
@@ -298,7 +309,7 @@ export default function CityDetailPage({
                     <div className="flex items-center gap-1 mt-2">
                       <DollarSign size={12} style={{ color: 'var(--color-success)' }} />
                       <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                        Ort. {Number(n.avg_rent).toLocaleString('tr-TR')} {city.currency ?? ''}/ay
+                        Ort. {Number(n.avg_rent).toLocaleString('tr-TR')} {displayCurrency(city.currency)}/ay
                       </span>
                     </div>
                   )}
@@ -351,7 +362,7 @@ export default function CityDetailPage({
                       )}
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                          {Number(listing.price_per_month).toLocaleString('tr-TR')} {listing.currency}/ay
+                          {Number(listing.price_per_month).toLocaleString('tr-TR')} {displayCurrency(listing.currency)}/ay
                         </span>
                         {listing.rating > 0 && (
                           <span className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
@@ -384,7 +395,7 @@ export default function CityDetailPage({
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'var(--color-info)' + '14' }}
+                    style={{ background: 'color-mix(in srgb, var(--color-info) 8%, transparent)' }}
                   >
                     {key.toLowerCase().includes('metro') || key.toLowerCase().includes('tren') ? (
                       <Train size={20} style={{ color: 'var(--color-info)' }} />
@@ -447,7 +458,7 @@ export default function CityDetailPage({
                           {key.replace(/_/g, ' ')}
                         </span>
                         <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                          {val.toLocaleString('tr-TR')} {city.currency ?? ''}
+                          {val.toLocaleString('tr-TR')} {displayCurrency(city.currency)}
                         </span>
                       </div>
                     ))}
@@ -461,7 +472,7 @@ export default function CityDetailPage({
                 >
                   <span className="text-sm font-medium text-white/90">Toplam Tahmini</span>
                   <span className="text-xl font-bold text-white">
-                    {costTotal.toLocaleString('tr-TR')} {city.currency ?? ''}/ay
+                    {costTotal.toLocaleString('tr-TR')} {displayCurrency(city.currency)}/ay
                   </span>
                 </div>
               </>
@@ -472,12 +483,12 @@ export default function CityDetailPage({
         {/* FAQ tab */}
         {activeTab === 'faq' && (
           <div className="flex flex-col gap-2 animate-fade-in-up">
-            {city.faqs.length === 0 && (
+            {!city.faqs?.length && (
               <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
                 SSS henüz eklenmedi.
               </p>
             )}
-            {city.faqs.map((faq) => (
+            {city.faqs?.map((faq) => (
               <div
                 key={faq.id}
                 className="rounded-xl overflow-hidden"

@@ -79,6 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, s) => {
         if (!mounted) return;
+        // Skip INITIAL_SESSION — already handled by initialize() above.
+        // Processing it here causes a race where user=null, loading=false
+        // triggers AuthGuard redirect before getSession resolves.
+        if (_event === 'INITIAL_SESSION') return;
 
         if (s?.user) {
           const p = await fetchProfile(s.user.id);

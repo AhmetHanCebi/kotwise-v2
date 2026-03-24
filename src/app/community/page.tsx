@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useCities } from '@/hooks/useCities';
@@ -37,8 +37,18 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 7)}h`;
 }
 
-export default function CommunityPage() {
+export default function CommunityPageWrapper() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-dvh"><Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-primary)' }} /></div>}>
+      <CommunityPage />
+    </Suspense>
+  );
+}
+
+function CommunityPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const hashtagParam = searchParams.get('hashtag');
   const { user } = useAuth();
   const { posts, loading, fetchFeed, toggleLike } = usePosts(user?.id);
   const { cities, selectedCityId, fetchCities } = useCities();
@@ -61,15 +71,15 @@ export default function CommunityPage() {
   useEffect(() => {
     if (activeCityId) {
       setPage(1);
-      fetchFeed(activeCityId, 1);
+      fetchFeed(activeCityId, 1, 20, undefined, hashtagParam ?? undefined);
     }
-  }, [activeCityId, fetchFeed]);
+  }, [activeCityId, fetchFeed, hashtagParam]);
 
   const loadMore = useCallback(() => {
     if (activeCityId && !loading) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchFeed(activeCityId, nextPage);
+      fetchFeed(activeCityId, nextPage, 20, undefined, hashtagParam ?? undefined);
     }
   }, [activeCityId, page, loading, fetchFeed]);
 
@@ -143,7 +153,7 @@ export default function CommunityPage() {
             onClick={() => router.push(`/community?hashtag=${encodeURIComponent(tag.replace('#', ''))}`)}
             className="flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium cursor-pointer"
             style={{
-              background: 'var(--color-primary)' + '14',
+              background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)',
               color: 'var(--color-primary)',
             }}
           >

@@ -122,7 +122,25 @@ function EditProfileContent() {
     }));
   };
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const handleSave = async () => {
+    setValidationError(null);
+
+    // Validation
+    if (!form.full_name.trim()) {
+      setValidationError('Ad Soyad zorunludur');
+      return;
+    }
+    if (form.phone && !/^\+?[0-9\s\-()]{7,20}$/.test(form.phone)) {
+      setValidationError('Geçerli bir telefon numarası girin');
+      return;
+    }
+    if (form.bio.length > 500) {
+      setValidationError('Hakkında alanı en fazla 500 karakter olabilir');
+      return;
+    }
+
     setSaving(true);
     await updateProfile({
       full_name: form.full_name || null,
@@ -178,6 +196,18 @@ function EditProfileContent() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-5">
+        {validationError && (
+          <div
+            className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4 text-sm font-medium"
+            style={{
+              background: '#FEF2F2',
+              color: 'var(--color-error)',
+              border: '1px solid #FECACA',
+            }}
+          >
+            {validationError}
+          </div>
+        )}
         {/* Avatar */}
         <div className="flex justify-center mb-6">
           <div className="relative">

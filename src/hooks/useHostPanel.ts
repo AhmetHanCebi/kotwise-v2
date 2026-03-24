@@ -82,7 +82,7 @@ export function useHostPanel(hostId?: string) {
       const totalReviews = listings.reduce((sum, l) => sum + (l.review_count ?? 0), 0);
       const ratedListings = listings.filter(l => (l.rating ?? 0) > 0);
       const avgRating = ratedListings.length > 0
-        ? listings.reduce((sum, l) => sum + (l.rating ?? 0), 0) / ratedListings.length
+        ? ratedListings.reduce((sum, l) => sum + (l.rating ?? 0), 0) / ratedListings.length
         : 0;
 
       setStats({
@@ -109,37 +109,48 @@ export function useHostPanel(hostId?: string) {
   const fetchApplication = useCallback(async () => {
     if (!hostId) return;
 
-    const { data } = await supabase
-      .from('host_applications')
-      .select('*')
-      .eq('user_id', hostId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    try {
+      const { data } = await supabase
+        .from('host_applications')
+        .select('*')
+        .eq('user_id', hostId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
-    setApplication(data as HostApplication | null);
-    return data;
+      setApplication(data as HostApplication | null);
+      return data;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Başvuru yüklenemedi');
+    }
   }, [hostId]);
 
   const submitApplication = useCallback(async (input: HostApplicationInsert) => {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('host_applications')
-      .insert(input)
-      .select()
-      .single();
+    try {
+      const { data, error: err } = await supabase
+        .from('host_applications')
+        .insert(input)
+        .select()
+        .single();
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return { error: err.message };
+      }
+
+      setApplication(data as HostApplication);
       setLoading(false);
-      return { error: err.message };
+      return { data };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Başvuru gönderilemedi';
+      setError(message);
+      setLoading(false);
+      return { error: message };
     }
-
-    setApplication(data as HostApplication);
-    setLoading(false);
-    return { data };
   }, []);
 
   // Earnings
@@ -179,38 +190,43 @@ export function useHostPanel(hostId?: string) {
     if (!hostId) return;
     setLoading(true);
 
-    let query = supabase
-      .from('bookings')
-      .select('id, check_in, check_out, status, guest_name, listing:listings!bookings_listing_id_fkey(title)')
-      .eq('host_id', hostId)
-      .in('status', ['confirmed', 'pending']);
+    try {
+      let query = supabase
+        .from('bookings')
+        .select('id, check_in, check_out, status, guest_name, listing:listings!bookings_listing_id_fkey(title)')
+        .eq('host_id', hostId)
+        .in('status', ['confirmed', 'pending']);
 
-    if (month) {
-      const [year, m] = month.split('-');
-      const startDate = `${year}-${m}-01`;
-      const endDate = new Date(Number(year), Number(m), 0).toISOString().split('T')[0];
-      query = query.gte('check_in', startDate).lte('check_in', endDate);
-    }
+      if (month) {
+        const [year, m] = month.split('-');
+        const startDate = `${year}-${m}-01`;
+        const endDate = new Date(Number(year), Number(m), 0).toISOString().split('T')[0];
+        query = query.gte('check_in', startDate).lte('check_in', endDate);
+      }
 
-    const { data, error: err } = await query.order('check_in', { ascending: true });
+      const { data, error: err } = await query.order('check_in', { ascending: true });
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return;
+      }
+
+      const items: CalendarBooking[] = (data ?? []).map((b: Record<string, unknown>) => ({
+        id: b.id as string,
+        listing_title: (b.listing as { title: string })?.title ?? '',
+        guest_name: (b.guest_name as string) ?? '',
+        check_in: b.check_in as string,
+        check_out: b.check_out as string,
+        status: b.status as string,
+      }));
+
+      setCalendarBookings(items);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Takvim yüklenemedi');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const items: CalendarBooking[] = (data ?? []).map((b: Record<string, unknown>) => ({
-      id: b.id as string,
-      listing_title: (b.listing as { title: string })?.title ?? '',
-      guest_name: (b.guest_name as string) ?? '',
-      check_in: b.check_in as string,
-      check_out: b.check_out as string,
-      status: b.status as string,
-    }));
-
-    setCalendarBookings(items);
-    setLoading(false);
   }, [hostId]);
 
   return {

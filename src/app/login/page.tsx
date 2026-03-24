@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/components/Toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
+  const { toast } = useToast();
 
   const handleLogin = useCallback(async () => {
     setError(null);
@@ -187,7 +189,13 @@ export default function LoginPage() {
 
           {/* Social buttons */}
           <button
-            onClick={() => signInWithGoogle()}
+            onClick={async () => {
+              try {
+                await signInWithGoogle();
+              } catch {
+                toast('Google ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
+              }
+            }}
             className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
             style={{
               background: 'var(--color-bg-card)',
@@ -204,7 +212,13 @@ export default function LoginPage() {
             Google ile giriş yap
           </button>
           <button
-            onClick={() => signInWithApple()}
+            onClick={async () => {
+              try {
+                await signInWithApple();
+              } catch {
+                toast('Apple ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
+              }
+            }}
             className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
             style={{
               background: 'var(--color-bg-card)',

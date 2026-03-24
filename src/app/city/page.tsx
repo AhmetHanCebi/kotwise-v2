@@ -9,7 +9,6 @@ import {
   Shield,
   Users,
   Loader2,
-  Search,
 } from 'lucide-react';
 import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';

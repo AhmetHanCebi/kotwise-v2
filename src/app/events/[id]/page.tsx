@@ -122,7 +122,7 @@ export default function EventDetailPage({
           <div>
             <span
               className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-2"
-              style={{ background: 'var(--color-primary)' + '14', color: 'var(--color-primary)' }}
+              style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)', color: 'var(--color-primary)' }}
             >
               {event.category}
             </span>
@@ -136,7 +136,7 @@ export default function EventDetailPage({
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: 'var(--color-primary)' + '14' }}
+                style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
               >
                 <CalendarDays size={20} style={{ color: 'var(--color-primary)' }} />
               </div>
@@ -154,7 +154,7 @@ export default function EventDetailPage({
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: 'var(--color-info)' + '14' }}
+                  style={{ background: 'color-mix(in srgb, var(--color-info) 8%, transparent)' }}
                 >
                   <MapPin size={20} style={{ color: 'var(--color-info)' }} />
                 </div>
@@ -205,7 +205,7 @@ export default function EventDetailPage({
             </div>
             <span
               className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-              style={{ background: 'var(--color-success)' + '20', color: 'var(--color-success)' }}
+              style={{ background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', color: 'var(--color-success)' }}
             >
               Organizatör
             </span>

@@ -7,6 +7,7 @@ import type { Listing, ListingInsert, ListingUpdate, ListingWithDetails, Listing
 export interface ListingFilters {
   city_id?: string;
   neighborhood_id?: string;
+  host_id?: string;
   min_price?: number;
   max_price?: number;
   room_type?: RoomType;
@@ -43,6 +44,7 @@ export function useListings() {
 
       if (filters.city_id) query = query.eq('city_id', filters.city_id);
       if (filters.neighborhood_id) query = query.eq('neighborhood_id', filters.neighborhood_id);
+      if (filters.host_id) query = query.eq('host_id', filters.host_id);
       if (filters.min_price) query = query.gte('price_per_month', filters.min_price);
       if (filters.max_price) query = query.lte('price_per_month', filters.max_price);
       if (filters.room_type) query = query.eq('room_type', filters.room_type);

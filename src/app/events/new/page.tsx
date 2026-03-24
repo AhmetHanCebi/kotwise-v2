@@ -77,6 +77,12 @@ function CreateEventContent() {
 
   const handleSubmit = async () => {
     if (!title.trim() || !date || !time || !cityId || !user) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    if (date < today) return;
+
+    if (maxParticipants && parseInt(maxParticipants) < 2) return;
+
     setSubmitting(true);
 
     const result = await create({
@@ -202,6 +208,7 @@ function CreateEventContent() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
               className="flex-1 text-sm outline-none bg-transparent"
               style={{ color: 'var(--color-text-primary)' }}
             />

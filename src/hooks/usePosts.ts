@@ -11,7 +11,7 @@ export function usePosts(userId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   // Feed — posts from a city, sorted by recency
-  const fetchFeed = useCallback(async (cityId: string, page = 1, limit = 20, countryCode?: string) => {
+  const fetchFeed = useCallback(async (cityId: string, page = 1, limit = 20, countryCode?: string, hashtag?: string) => {
     setLoading(true);
     setError(null);
 
@@ -37,6 +37,10 @@ export function usePosts(userId?: string) {
       } else {
         // Default: filter by city
         query = query.eq('city_id', cityId);
+      }
+
+      if (hashtag) {
+        query = query.contains('hashtags', [hashtag]);
       }
 
       const { data, error: err } = await query;

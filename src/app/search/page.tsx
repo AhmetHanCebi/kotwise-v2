@@ -15,6 +15,14 @@ import type { RoomType, Listing } from '@/lib/database.types';
 import { getCoverImage as getCoverImg, handleListingImageError } from '@/lib/image-utils';
 import BottomNav from '@/components/BottomNav';
 
+const CURRENCY_LABELS: Record<string, string> = {
+  TRY: 'TL',
+  EUR: 'EUR',
+  USD: 'USD',
+  GBP: 'GBP',
+};
+const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
+
 const ROOM_TYPES: { value: RoomType; label: string; icon: React.ReactNode }[] = [
   { value: 'studio', label: 'Stüdyo', icon: <Home size={18} /> },
   { value: 'single', label: 'Tek Kişilik', icon: <Home size={18} /> },
@@ -551,7 +559,7 @@ function ListingCard({
             className="text-base font-bold"
             style={{ color: 'var(--color-primary)' }}
           >
-            {listing.price_per_month.toLocaleString('tr-TR')} {listing.currency}
+            {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
           </span>
           <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
             /ay

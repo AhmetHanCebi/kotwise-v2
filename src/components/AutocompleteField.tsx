@@ -28,6 +28,7 @@ export default function AutocompleteField({
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listId = useRef(`autocomplete-list-${label.replace(/\s+/g, '-').toLowerCase()}`).current;
 
   const filtered = options.filter((opt) =>
     opt.toLowerCase().includes((search || value).toLowerCase())
@@ -82,6 +83,11 @@ export default function AutocompleteField({
         <input
           ref={inputRef}
           type="text"
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          aria-controls={listId}
           value={open ? search || value : value}
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => { setOpen(true); setSearch(''); }}
@@ -122,6 +128,9 @@ export default function AutocompleteField({
 
       {open && filtered.length > 0 && (
         <div
+          id={listId}
+          role="listbox"
+          aria-label={label}
           className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl py-1"
           style={{
             background: 'var(--color-bg-card, white)',
@@ -132,6 +141,8 @@ export default function AutocompleteField({
           {filtered.map((opt) => (
             <button
               key={opt}
+              role="option"
+              aria-selected={opt === value}
               onClick={() => handleSelect(opt)}
               className="w-full text-left px-3.5 py-2 text-sm hover:bg-black/5 transition-colors"
               style={{

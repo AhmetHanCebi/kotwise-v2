@@ -191,7 +191,7 @@ export default function EventsPage() {
                     {/* Date badge */}
                     <div
                       className="flex flex-col items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
-                      style={{ background: 'var(--color-primary)' + '14' }}
+                      style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
                     >
                       <span className="text-[10px] font-bold uppercase" style={{ color: 'var(--color-primary)' }}>
                         {formatDate(ev.date).split(' ')[1]}

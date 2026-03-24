@@ -17,6 +17,17 @@ import BottomNav from '@/components/BottomNav';
 import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
+const CURRENCY_LABELS: Record<string, string> = {
+  TRY: '₺',
+  EUR: '₺',
+  USD: '$',
+  GBP: '£',
+};
+const displayCurrency = (code: string | null | undefined) => {
+  if (!code) return '₺';
+  return CURRENCY_LABELS[code] ?? code;
+};
+
 const STEPS = [
   { num: 1, title: 'Tarih', icon: <Calendar size={16} /> },
   { num: 2, title: 'Bilgiler', icon: <User size={16} /> },
@@ -153,7 +164,7 @@ function MyBookings() {
                       </span>
                     </div>
                     <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                      {b.total_price?.toLocaleString('tr-TR')} TL
+                      {b.total_price?.toLocaleString('tr-TR')} {displayCurrency(b.listing?.currency)}
                     </p>
                   </div>
                 </Link>
@@ -398,7 +409,7 @@ function BookingForm() {
               </div>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {listing.price_per_month.toLocaleString('tr-TR')} TL/ay
+                  {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}/ay
                 </span>
                 {listing.rating > 0 && (
                   <div className="flex items-center gap-0.5">
@@ -459,10 +470,10 @@ function BookingForm() {
                 style={{ background: 'rgba(242,101,34,0.06)', border: '1px solid rgba(242,101,34,0.15)' }}
               >
                 <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  Tahmini: {priceCalc.months} ay x {listing.price_per_month.toLocaleString('tr-TR')} TL
+                  Tahmini: {priceCalc.months} ay x {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                 </p>
                 <p className="text-lg font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                  Toplam: {priceCalc.total.toLocaleString('tr-TR')} TL
+                  Toplam: {priceCalc.total.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                 </p>
               </div>
             )}
@@ -555,10 +566,10 @@ function BookingForm() {
               <div className="flex flex-col gap-2.5">
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-secondary)' }}>
-                    Kira ({priceCalc.months} ay x {listing.price_per_month.toLocaleString('tr-TR')} TL)
+                    Kira ({priceCalc.months} ay x {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)})
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {priceCalc.rent.toLocaleString('tr-TR')} TL
+                    {priceCalc.rent.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -566,7 +577,7 @@ function BookingForm() {
                     Hizmet bedeli (%3)
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {priceCalc.serviceFee.toLocaleString('tr-TR')} TL
+                    {priceCalc.serviceFee.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                   </span>
                 </div>
                 <div
@@ -575,7 +586,7 @@ function BookingForm() {
                 >
                   <span style={{ color: 'var(--color-text-primary)' }}>Toplam</span>
                   <span style={{ color: 'var(--color-primary)' }}>
-                    {priceCalc.total.toLocaleString('tr-TR')} TL
+                    {priceCalc.total.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                   </span>
                 </div>
               </div>
@@ -624,7 +635,7 @@ function BookingForm() {
                   Toplam Tutar
                 </span>
                 <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {priceCalc.total.toLocaleString('tr-TR')} TL
+                  {priceCalc.total.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
                 </span>
               </div>
             </div>

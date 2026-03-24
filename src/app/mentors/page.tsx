@@ -8,7 +8,6 @@ import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';
 import {
   MessageCircle,
-  Star,
   MapPin,
   Globe,
   Loader2,
@@ -178,7 +177,7 @@ export default function MentorsPage() {
                     key={tag}
                     className="px-2.5 py-1 rounded-full text-[11px] font-medium"
                     style={{
-                      background: 'var(--color-secondary)' + '10',
+                      background: 'color-mix(in srgb, var(--color-secondary) 6%, transparent)',
                       color: 'var(--color-secondary)',
                     }}
                   >
@@ -200,7 +199,7 @@ export default function MentorsPage() {
               onClick={() => handleMessage(mentor.user_id)}
               className="w-full mt-3 h-10 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-[0.98]"
               style={{
-                background: 'var(--color-primary)' + '14',
+                background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)',
                 color: 'var(--color-primary)',
               }}
             >
