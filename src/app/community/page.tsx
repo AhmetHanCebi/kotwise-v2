@@ -154,19 +154,19 @@ export default function CommunityPage() {
       {/* Posts feed */}
       <div className="flex-1 flex flex-col gap-3 px-4 pb-24">
         {posts.map((post, i) => (
-          <article
+          <Link
             key={post.id}
-            className="rounded-2xl overflow-hidden animate-fade-in-up relative"
+            href={`/community/${post.id}`}
+            className="rounded-2xl overflow-hidden animate-fade-in-up block"
             style={{
               background: 'var(--color-bg-card)',
               boxShadow: 'var(--shadow-card)',
               animationDelay: `${i * 50}ms`,
             }}
+            aria-label={`Gönderi: ${post.content?.slice(0, 50)}`}
           >
-            {/* Accessible link for navigation */}
-            <Link href={`/community/${post.id}`} className="absolute inset-0 z-0" aria-label={`Gönderi: ${post.content?.slice(0, 50)}`} />
             {/* Post header */}
-            <div className="flex items-center gap-3 p-4 pb-2 relative z-10">
+            <div className="flex items-center gap-3 p-4 pb-2">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden"
                 style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
@@ -201,7 +201,7 @@ export default function CommunityPage() {
 
             {/* Content */}
             <div
-              className="block w-full text-left px-4 pb-2 relative z-10"
+              className="block w-full text-left px-4 pb-2"
             >
               <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
                 {post.content}
@@ -216,7 +216,7 @@ export default function CommunityPage() {
             {/* Images */}
             {post.images?.length > 0 && (
               <div
-                className="w-full relative z-10"
+                className="w-full"
               >
                 <div
                   className={`grid gap-0.5 ${
@@ -255,11 +255,11 @@ export default function CommunityPage() {
 
             {/* Actions */}
             <div
-              className="flex items-center justify-between px-4 py-3 relative z-10"
+              className="flex items-center justify-between px-4 py-3"
               style={{ borderTop: '1px solid var(--color-border)' }}
             >
               <button
-                onClick={() => handleLike(post.id)}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLike(post.id); }}
                 className="flex items-center gap-1.5 transition-transform active:scale-90"
                 aria-label="Beğen"
               >
@@ -276,7 +276,7 @@ export default function CommunityPage() {
                 </span>
               </button>
               <button
-                onClick={() => router.push(`/community/${post.id}`)}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(`/community/${post.id}`); }}
                 className="flex items-center gap-1.5"
                 aria-label="Yorum yap"
               >
@@ -286,14 +286,14 @@ export default function CommunityPage() {
                 </span>
               </button>
               <button
-                onClick={() => handleShare(post.id)}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShare(post.id); }}
                 className="flex items-center gap-1.5"
                 aria-label="Paylaş"
               >
                 <Share2 size={20} style={{ color: 'var(--color-text-muted)' }} />
               </button>
             </div>
-          </article>
+          </Link>
         ))}
 
         {loading && (

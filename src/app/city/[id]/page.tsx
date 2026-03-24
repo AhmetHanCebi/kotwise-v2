@@ -81,21 +81,33 @@ export default function CityDetailPage({
     );
   }
 
-  const costBreakdown = city.cost_breakdown ?? {};
-  const transportInfo = city.transport_info ?? {};
+  // cost_breakdown is JSONB — Supabase may return it as a string or object
+  const rawCost = city.cost_breakdown;
+  const costBreakdown: Record<string, unknown> =
+    typeof rawCost === 'string' ? (() => { try { return JSON.parse(rawCost); } catch { return {}; } })()
+    : (rawCost && typeof rawCost === 'object' ? rawCost : {});
+
+  const rawTransport = city.transport_info;
+  const transportInfo: Record<string, unknown> =
+    typeof rawTransport === 'string' ? (() => { try { return JSON.parse(rawTransport); } catch { return {}; } })()
+    : (rawTransport && typeof rawTransport === 'object' ? rawTransport : {});
+
   // Cost values can be numbers or strings like "12.000-25.000 TL/ay" - extract numeric values
   const costEntries = Object.entries(costBreakdown)
     .filter(([key]) => key !== 'total_estimate')
     .map(([key, v]) => {
-      if (typeof v === 'number') return [key, v] as [string, number];
+      if (typeof v === 'number' && v > 0) return [key, v] as [string, number];
       // Try to extract first number from string like "12.000-25.000 TL/ay" or "1.200 TL/ay"
-      const str = String(v);
-      const match = str.match(/[\d.]+/);
+      const str = String(v ?? '');
+      // Match numbers with dots as thousand separators (Turkish format)
+      const match = str.match(/([\d]+(?:\.[\d]{3})*)/);
       if (match) {
-        // Handle Turkish number format (dots as thousand separators)
-        const num = Number(match[0].replace(/\./g, ''));
+        const num = Number(match[1].replace(/\./g, ''));
         if (!isNaN(num) && num > 0) return [key, num] as [string, number];
       }
+      // Also try plain number parsing
+      const plain = Number(v);
+      if (!isNaN(plain) && plain > 0) return [key, plain] as [string, number];
       return null;
     })
     .filter((entry): entry is [string, number] => entry !== null);

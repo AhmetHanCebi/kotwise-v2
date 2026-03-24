@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/Toast';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
@@ -22,11 +23,13 @@ export default function RootLayout({
   return (
     <html lang="tr" className={inter.className}>
       <body className="min-h-dvh flex flex-col items-center">
-        <ToastProvider>
-          <div className="w-full max-w-[430px] min-h-dvh flex flex-col relative">
-            {children}
-          </div>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <div className="w-full max-w-[430px] min-h-dvh flex flex-col relative">
+              {children}
+            </div>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

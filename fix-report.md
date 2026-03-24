@@ -98,29 +98,82 @@
 
 ---
 
-## Summary of Files Modified
+# Fix Report - Cycle 2
 
-| File | Changes |
-|------|---------|
-| `src/hooks/useFavorites.ts` | Fixed loading state initialization, added try/catch/finally |
-| `src/hooks/useHostPanel.ts` | Added try/catch/finally to fetchStats and fetchEarnings, fixed early returns |
-| `src/app/host/page.tsx` | Fixed redirect race condition, added authLoading guard |
-| `src/app/events/page.tsx` | Changed button to Link for event cards, increased bottom padding |
-| `src/app/community/page.tsx` | Added overlay Link for post navigation, fixed button/div wrappers |
-| `src/app/roommates/page.tsx` | Changed button to Link for profile view |
-| `src/app/profile/bookings/page.tsx` | Added onError fallback to listing image |
-| `src/app/listing/[id]/page.tsx` | Increased price bar z-index, increased content bottom padding |
-| `src/app/page.tsx` | Auto-select first city, fixed duplicate useCities hook |
-| `src/app/city/[id]/page.tsx` | Fixed cost parsing, number formatting, added info tab empty state |
+**Date:** 2026-03-24
+**Fixer:** FIXER AI
+**Based on:** Inspector Cycle 2 (4 remaining issues)
+**Build status:** PASS
 
 ---
 
-## Not Fixed (out of scope / data issues)
+## FIX 1: Community post cards not clickable (z-index issue)
 
-- **[MEDIUM] Kotwise branded placeholder images** — These are the intended fallback for missing images. A proper "no image" placeholder design is a design task.
-- **[MEDIUM] Washed-out map tiles** — Map feature is marked "coming soon"; styling is intentional.
-- **[MEDIUM] Only 1 mentor visible** — This is a seed data issue (only 1 mentor seeded).
-- **[LOW] Excessive whitespace on /forgot-password** — Minor layout polish.
-- **[LOW] No pagination on /search** — Feature enhancement, not a bug.
-- **[LOW] Generic greeting "Kullanici"** — This is the expected fallback for non-logged-in users.
-- **Character encoding "Can Ozkan"** — Data is correct in seed; rendering is system-dependent.
+**Problem:** Cycle 1's overlay `<Link>` at `z-0` was covered by content elements at `z-10`, making the cards unclickable in practice.
+
+**Solution:** Removed the overlay Link approach entirely. Wrapped the entire post card in a `<Link>` component (same pattern used by `events/page.tsx`). Removed all `relative z-10` classes from inner elements. Added `e.preventDefault()` + `e.stopPropagation()` to like/comment/share buttons so they work independently inside the Link wrapper.
+
+**File:** `src/app/community/page.tsx`
+
+---
+
+## FIX 2: AuthProvider Context (shared auth state)
+
+**Problem:** `useAuth()` was a standalone hook — every component using it (33 files) created its own independent auth state with its own `getSession()` call and `onAuthStateChange` listener. This caused duplicate API calls on every page, auth state not shared between components, and AuthGuard hanging on direct URL access.
+
+**Solution:**
+1. Created `src/contexts/AuthContext.tsx` with a single `AuthProvider` that holds all auth state and methods.
+2. Updated `src/app/layout.tsx` to wrap the entire app in `<AuthProvider>`.
+3. Updated `src/hooks/useAuth.ts` to re-export from the context — all 33 existing imports continue to work without any changes.
+
+Auth state (user, profile, session) is now fetched once at app mount and shared via React Context across all pages and components.
+
+**Files:**
+- `src/contexts/AuthContext.tsx` (new)
+- `src/hooks/useAuth.ts` (now re-exports from context)
+- `src/app/layout.tsx` (wraps children with `<AuthProvider>`)
+
+---
+
+## FIX 3: Listing price bar overlap
+
+**Problem:** The sticky bottom price bar could be obscured by other fixed elements or floating widgets.
+
+**Solution:** Increased z-index from `z-50` to `z-[60]` to sit above all other fixed elements (BottomNav at z-50, headers at z-30-40). Changed background from semi-transparent `rgba(255,255,255,0.98)` to solid `var(--color-bg, #ffffff)`. Added `isolation: isolate` to create a new stacking context.
+
+**File:** `src/app/listing/[id]/page.tsx`
+
+---
+
+## FIX 4: City Maliyet (cost) tab empty
+
+**Problem:** `cost_breakdown` is a JSONB column. Supabase can return it as a stringified JSON in some client configurations, causing `Object.entries()` to iterate over string characters instead of object keys. Additionally, the regex for Turkish number formats could miss valid patterns.
+
+**Solution:**
+- Added safe `JSON.parse` fallback for when `cost_breakdown` or `transport_info` arrive as strings.
+- Improved the number extraction regex to properly match Turkish thousand-separator format (`12.000`).
+- Added fallback plain `Number()` parsing for numeric string values.
+
+**File:** `src/app/city/[id]/page.tsx`
+
+---
+
+## Build Verification
+
+```
+npx next build → SUCCESS
+✓ Compiled successfully
+✓ TypeScript check passed
+✓ All 35 routes generated (static + dynamic)
+```
+
+## Summary of Files Modified (Cycle 2)
+
+| File | Changes |
+|------|---------|
+| `src/contexts/AuthContext.tsx` | NEW — AuthProvider context with shared auth state |
+| `src/hooks/useAuth.ts` | Re-exports from AuthContext (backward compatible) |
+| `src/app/layout.tsx` | Wraps app in AuthProvider |
+| `src/app/community/page.tsx` | Replaced overlay Link with wrapping Link |
+| `src/app/listing/[id]/page.tsx` | Price bar z-index bump, solid background |
+| `src/app/city/[id]/page.tsx` | Robust JSONB parsing for cost_breakdown |

@@ -646,13 +646,14 @@ export default function ListingDetailPage() {
 
       {/* Sticky Bottom Bar */}
       <div
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 px-4 py-3 flex items-center justify-between"
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-[60] px-4 py-3 flex items-center justify-between"
         style={{
-          background: 'rgba(255,255,255,0.98)',
+          background: 'var(--color-bg, #ffffff)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid var(--color-border)',
           paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+          isolation: 'isolate',
         }}
       >
         <div>
