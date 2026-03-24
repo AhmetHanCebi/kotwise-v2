@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/Toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,8 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { signIn, signInWithGoogle } = useAuth();
-  const { toast } = useToast();
+  const { signIn, signInWithGoogle, signInWithApple } = useAuth();
 
   const handleLogin = useCallback(async () => {
     setError(null);
@@ -24,12 +22,27 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    const result = await signIn(email, password);
-    setLoading(false);
-    if ('error' in result && result.error) {
-      setError(result.error.message);
-    } else {
-      router.push('/');
+    try {
+      const result = await signIn(email, password);
+      if ('error' in result && result.error) {
+        const msg = result.error.message;
+        // Map common Supabase auth errors to Turkish
+        if (msg === 'Invalid login credentials') {
+          setError('E-posta veya şifre hatalı');
+        } else if (msg === 'Email not confirmed') {
+          setError('E-posta adresiniz henüz doğrulanmamış');
+        } else if (msg.includes('rate limit') || msg.includes('too many')) {
+          setError('Çok fazla deneme yaptınız, lütfen biraz bekleyin');
+        } else {
+          setError(msg || 'Giriş yapılamadı');
+        }
+      } else {
+        router.push('/');
+      }
+    } catch {
+      setError('Bağlantı hatası, lütfen tekrar deneyin');
+    } finally {
+      setLoading(false);
     }
   }, [email, password, signIn, router]);
 
@@ -191,7 +204,7 @@ export default function LoginPage() {
             Google ile giriş yap
           </button>
           <button
-            onClick={() => toast('Apple ile giriş yakında aktif olacak', 'info')}
+            onClick={() => signInWithApple()}
             className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
             style={{
               background: 'var(--color-bg-card)',

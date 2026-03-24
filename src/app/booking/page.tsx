@@ -11,9 +11,11 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
+import { getRoomPlaceholder } from '@/lib/image-utils';
 import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 const STEPS = [
   { num: 1, title: 'Tarih', icon: <Calendar size={16} /> },
@@ -116,7 +118,7 @@ function MyBookings() {
               const StatusIcon = status.icon;
               const coverImg = b.listing?.images?.find((i: { is_cover?: boolean }) => i.is_cover)?.url
                 || b.listing?.images?.[0]?.url
-                || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop';
+                || getRoomPlaceholder(b.listing_id);
 
               return (
                 <Link
@@ -134,7 +136,7 @@ function MyBookings() {
                       alt=""
                       className="w-full h-full object-cover"
                       loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }}
+                      onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -246,8 +248,16 @@ function BookingForm() {
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
   const handleConfirm = async () => {
     if (!user || !listing || !priceCalc) return;
+
+    if (!paymentConfirmed) {
+      // Show payment confirmation step
+      setPaymentConfirmed(true);
+      return;
+    }
 
     const input: BookingInsert = {
       user_id: user.id,
@@ -270,6 +280,7 @@ function BookingForm() {
       router.push(`/booking/success?bookingId=${result.data.id}`);
     } else {
       setErrors({ submit: result.error || 'Bir hata oluştu' });
+      setPaymentConfirmed(false);
     }
   };
 
@@ -301,7 +312,7 @@ function BookingForm() {
 
   const coverImg = listing.images?.find((i) => i.is_cover)?.url
     || listing.images?.[0]?.url
-    || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop';
+    || getRoomPlaceholder(listing.id);
 
   return (
     <div
@@ -373,7 +384,7 @@ function BookingForm() {
             }}
           >
             <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-              <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+              <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
@@ -528,7 +539,7 @@ function BookingForm() {
               {/* Listing mini */}
               <div className="flex items-center gap-3 pb-3 mb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0">
-                  <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+                  <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>

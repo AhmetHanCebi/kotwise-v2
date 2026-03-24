@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithImages, Favorite } from '@/lib/database.types';
+import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
 
 type FavoriteWithListing = Favorite & {
   listing: ListingWithImages;
@@ -147,9 +148,7 @@ function FavoritesContent() {
             {filteredFavorites.map((fav) => {
               const listing = fav.listing;
               if (!listing) return null;
-              const coverImg = listing.listing_images?.find((i) => i.is_cover)?.url
-                || listing.listing_images?.[0]?.url
-                || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop';
+              const coverImg = getCoverImage(listing);
 
               return (
                 <div
@@ -162,7 +161,7 @@ function FavoritesContent() {
                 >
                   <Link href={`/listing/${listing.id}`}>
                     <div className="relative aspect-[16/9] overflow-hidden">
-                      <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+                      <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => handleListingImageError(e, listing.id)} />
                       {listing.match_score > 0 && (
                         <div
                           className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold"

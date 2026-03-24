@@ -30,6 +30,7 @@ import BottomNav from '@/components/BottomNav';
 import CitySelector from '@/components/CitySelector';
 import type { City, ListingWithImages, PostWithDetails } from '@/lib/database.types';
 import type { EventWithDetails } from '@/lib/database.types';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 const countryFlags: Record<string, string> = {
   ES: '🇪🇸', PT: '🇵🇹', DE: '🇩🇪', FR: '🇫🇷', IT: '🇮🇹', CZ: '🇨🇿',
@@ -106,7 +107,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
       {/* Image */}
       <div className="relative h-36 overflow-hidden" style={{ background: '#F3F4F6' }}>
         {coverImage ? (
-          <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+          <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <HomeIcon size={32} style={{ color: 'var(--color-text-muted)' }} />
@@ -300,7 +301,7 @@ function PostCard({ post }: { post: PostWithDetails }) {
             alt="Gönderi görseli"
             className="w-full h-full object-cover"
             loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }}
+            onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
           />
         </div>
       )}

@@ -15,16 +15,31 @@ import {
   Plus,
   GraduationCap,
   Users,
+  X,
+  Check,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+
+const EXPERTISE_OPTIONS = [
+  'Konaklama', 'Ulaşım', 'Vize/Belgeler', 'Üniversite',
+  'Dil', 'Kültür', 'Bütçe', 'Sosyal Hayat',
+];
 
 export default function MentorsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { mentors, loading, fetchMentors } = useMentors();
+  const { mentors, loading, fetchMentors, apply } = useMentors();
   const { toast } = useToast();
   const { cities, selectedCityId, fetchCities } = useCities();
   const [activeCityId, setActiveCityId] = useState<string | null>(null);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyForm, setApplyForm] = useState({
+    cityId: '',
+    bio: '',
+    languages: '',
+    expertise: [] as string[],
+  });
 
   useEffect(() => {
     fetchCities();
@@ -198,7 +213,10 @@ export default function MentorsPage() {
 
       {/* Mentor application FAB */}
       <button
-        onClick={() => toast('Mentor başvurusu yakında aktif olacak', 'info')}
+        onClick={() => {
+          if (!user) { router.push('/login'); return; }
+          setShowApplyModal(true);
+        }}
         className="fixed bottom-24 right-4 flex items-center gap-2 px-5 h-12 rounded-full shadow-lg z-40 transition-transform active:scale-90"
         style={{ background: 'var(--gradient-primary)' }}
       >
@@ -207,6 +225,125 @@ export default function MentorsPage() {
           Mentor Ol
         </span>
       </button>
+
+      {/* Mentor Apply Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowApplyModal(false)} />
+          <div
+            className="relative w-full max-w-[430px] rounded-t-3xl p-5 pb-8 max-h-[85dvh] overflow-y-auto animate-fade-in-up"
+            style={{ background: 'var(--color-bg-card)' }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Mentor Başvurusu</h3>
+              <button onClick={() => setShowApplyModal(false)} className="p-1.5 rounded-full" style={{ color: 'var(--color-text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* City */}
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Şehir *</label>
+                <select
+                  value={applyForm.cityId}
+                  onChange={(e) => setApplyForm(p => ({ ...p, cityId: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="">Şehir seçin</option>
+                  {cities.map(c => <option key={c.id} value={c.id}>{c.name}, {c.country}</option>)}
+                </select>
+              </div>
+
+              {/* Languages */}
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Diller</label>
+                <input
+                  type="text"
+                  placeholder="Türkçe, İngilizce, Almanca..."
+                  value={applyForm.languages}
+                  onChange={(e) => setApplyForm(p => ({ ...p, languages: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+
+              {/* Expertise */}
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Uzmanlık Alanları</label>
+                <div className="flex flex-wrap gap-2">
+                  {EXPERTISE_OPTIONS.map(tag => {
+                    const selected = applyForm.expertise.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        onClick={() => setApplyForm(p => ({
+                          ...p,
+                          expertise: selected ? p.expertise.filter(t => t !== tag) : [...p.expertise, tag],
+                        }))}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium"
+                        style={{
+                          background: selected ? 'var(--color-primary)' : 'var(--color-bg)',
+                          color: selected ? 'white' : 'var(--color-text-secondary)',
+                          border: `1px solid ${selected ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                        }}
+                      >
+                        {selected && <Check size={12} />}
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Hakkında</label>
+                <textarea
+                  value={applyForm.bio}
+                  onChange={(e) => setApplyForm(p => ({ ...p, bio: e.target.value }))}
+                  placeholder="Deneyimlerinizi ve nasıl yardımcı olabileceğinizi anlatın..."
+                  rows={3}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none resize-none"
+                  style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+
+              <button
+                onClick={async () => {
+                  if (!user || !applyForm.cityId) {
+                    toast('Lütfen şehir seçin', 'error');
+                    return;
+                  }
+                  setApplyLoading(true);
+                  const result = await apply({
+                    user_id: user.id,
+                    city_id: applyForm.cityId,
+                    languages: applyForm.languages.split(',').map(l => l.trim()).filter(Boolean),
+                    expertise: applyForm.expertise,
+                    bio: applyForm.bio || null,
+                  });
+                  setApplyLoading(false);
+                  if (result.error) {
+                    toast(result.error, 'error');
+                  } else {
+                    toast('Mentor başvurunuz alındı!', 'success');
+                    setShowApplyModal(false);
+                    fetchMentors(activeCityId ?? undefined);
+                  }
+                }}
+                disabled={applyLoading}
+                className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
+                style={{ background: 'var(--gradient-primary)', color: 'white' }}
+              >
+                {applyLoading ? <Loader2 size={16} className="animate-spin" /> : <GraduationCap size={16} />}
+                Başvuruyu Gönder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>

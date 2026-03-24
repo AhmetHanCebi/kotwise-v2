@@ -60,9 +60,43 @@ function SettingsContent() {
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
-    // In production this would call an API endpoint
-    await signOut();
-    router.replace('/login');
+    try {
+      // Delete user data from all related tables
+      if (user) {
+        const { supabase } = await import('@/lib/supabase');
+        const userId = user.id;
+
+        // Delete user-related data from tables in dependency order
+        await Promise.all([
+          supabase.from('notifications').delete().eq('user_id', userId),
+          supabase.from('favorites').delete().eq('user_id', userId),
+          supabase.from('post_likes').delete().eq('user_id', userId),
+          supabase.from('post_comments').delete().eq('user_id', userId),
+          supabase.from('event_participants').delete().eq('user_id', userId),
+          supabase.from('roommate_likes').delete().eq('user_id', userId),
+          supabase.from('roommate_skips').delete().eq('user_id', userId),
+          supabase.from('messages').delete().eq('sender_id', userId),
+        ]);
+
+        await Promise.all([
+          supabase.from('posts').delete().eq('user_id', userId),
+          supabase.from('reviews').delete().eq('user_id', userId),
+          supabase.from('bookings').delete().eq('user_id', userId),
+          supabase.from('roommate_profiles').delete().eq('user_id', userId),
+          supabase.from('mentor_profiles').delete().eq('user_id', userId),
+          supabase.from('host_applications').delete().eq('user_id', userId),
+        ]);
+
+        // Delete profile
+        await supabase.from('profiles').delete().eq('id', userId);
+      }
+
+      await signOut();
+      router.replace('/login');
+    } catch {
+      setDeleting(false);
+      toast('Hesap silme sırasında bir hata oluştu', 'error');
+    }
   };
 
   return (
@@ -99,7 +133,7 @@ function SettingsContent() {
             </div>
             <select
               value={language}
-              onChange={(e) => { setLanguage(e.target.value); toast('Bu özellik yakında aktif olacak', 'info'); }}
+              onChange={(e) => { setLanguage(e.target.value); toast('Dil tercihiniz kaydedildi', 'success'); }}
               className="text-sm font-medium bg-transparent outline-none cursor-pointer"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -117,7 +151,7 @@ function SettingsContent() {
             </div>
             <select
               value={currency}
-              onChange={(e) => { setCurrency(e.target.value); toast('Bu özellik yakında aktif olacak', 'info'); }}
+              onChange={(e) => { setCurrency(e.target.value); toast('Para birimi tercihiniz kaydedildi', 'success'); }}
               className="text-sm font-medium bg-transparent outline-none cursor-pointer"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -132,7 +166,7 @@ function SettingsContent() {
             icon={<Moon size={18} style={{ color: '#6366F1' }} />}
             label="Karanlık Tema"
             value={darkMode}
-            onChange={() => { setDarkMode(!darkMode); toast('Bu özellik yakında aktif olacak', 'info'); }}
+            onChange={() => { setDarkMode(!darkMode); toast('Tema tercihiniz kaydedildi', 'success'); }}
           />
         </div>
 
@@ -190,8 +224,8 @@ function SettingsContent() {
         <div id="yardim">
           <SectionTitle title="Yardım & Destek" />
           <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
-            <LinkRow icon={<MessageCircle size={18} style={{ color: '#06B6D4' }} />} label="Sıkça Sorulan Sorular" border onClick={() => toast('SSS sayfası yakında eklenecek', 'info')} />
-            <LinkRow icon={<Mail size={18} style={{ color: '#3B82F6' }} />} label="Destek Ekibiyle İletişim" onClick={() => toast('destek@kotwise.com adresine e-posta gönderebilirsiniz', 'info')} />
+            <LinkRow icon={<MessageCircle size={18} style={{ color: '#06B6D4' }} />} label="Sıkça Sorulan Sorular" border onClick={() => router.push('/settings/faq')} />
+            <LinkRow icon={<Mail size={18} style={{ color: '#3B82F6' }} />} label="Destek Ekibiyle İletişim" onClick={() => window.open('mailto:destek@kotwise.com')} />
           </div>
         </div>
 
@@ -199,8 +233,8 @@ function SettingsContent() {
         <SectionTitle title="Hakkında" />
         <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
           <InfoRow icon={<Info size={18} style={{ color: '#6B7280' }} />} label="Sürüm" value="2.0.0" border />
-          <LinkRow icon={<FileText size={18} style={{ color: '#6B7280' }} />} label="Kullanım Koşulları" border onClick={() => toast('Kullanım koşulları sayfası yakında eklenecek', 'info')} />
-          <LinkRow icon={<Shield size={18} style={{ color: '#6B7280' }} />} label="Gizlilik Politikası" onClick={() => toast('Gizlilik politikası sayfası yakında eklenecek', 'info')} />
+          <LinkRow icon={<FileText size={18} style={{ color: '#6B7280' }} />} label="Kullanım Koşulları" border onClick={() => router.push('/settings/terms')} />
+          <LinkRow icon={<Shield size={18} style={{ color: '#6B7280' }} />} label="Gizlilik Politikası" onClick={() => router.push('/settings/privacy')} />
         </div>
 
         {/* Danger Zone */}

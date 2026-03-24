@@ -1,15 +1,37 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Home, Users, MapPin, ArrowRight, LogIn } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-const stats = [
-  { value: '2.500+', label: 'İlan' },
-  { value: '45+', label: 'Şehir' },
-  { value: '12.000+', label: 'Kullanıcı' },
-];
+function formatCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K+`;
+  return `${n}+`;
+}
 
 export default function WelcomePage() {
+  const [stats, setStats] = useState([
+    { value: '...', label: 'İlan' },
+    { value: '...', label: 'Şehir' },
+    { value: '...', label: 'Kullanıcı' },
+  ]);
+
+  useEffect(() => {
+    async function fetchStats() {
+      const [listingsRes, citiesRes, usersRes] = await Promise.all([
+        supabase.from('listings').select('id', { count: 'exact', head: true }),
+        supabase.from('cities').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+      ]);
+      setStats([
+        { value: formatCount(listingsRes.count ?? 0), label: 'İlan' },
+        { value: formatCount(citiesRes.count ?? 0), label: 'Şehir' },
+        { value: formatCount(usersRes.count ?? 0), label: 'Kullanıcı' },
+      ]);
+    }
+    fetchStats();
+  }, []);
   return (
     <div
       className="flex-1 flex flex-col min-h-dvh relative overflow-hidden"

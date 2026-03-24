@@ -27,6 +27,7 @@ import {
   UtensilsCrossed,
   MoreHorizontal,
 } from 'lucide-react';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 const CATEGORIES: { key: EventCategory | 'all'; label: string; icon: React.ElementType }[] = [
   { key: 'all', label: 'Tümü', icon: List },
@@ -182,7 +183,7 @@ export default function EventsPage() {
                 {/* Cover */}
                 {ev.image_url && (
                   <div className="h-36 overflow-hidden">
-                    <img src={ev.image_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+                    <img src={ev.image_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
                   </div>
                 )}
                 <div className="p-4">

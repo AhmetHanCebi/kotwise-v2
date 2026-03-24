@@ -30,6 +30,10 @@ export interface Profile {
   exchange_city_id: string | null;
   languages: string[];
   interests: string[];
+  exchange_university: string | null;
+  exchange_start: string | null;
+  exchange_end: string | null;
+  budget: number | null;
   is_host: boolean;
   is_mentor: boolean;
   is_verified: boolean;

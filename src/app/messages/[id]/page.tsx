@@ -21,8 +21,11 @@ import {
   Image as ImageIcon,
   Loader2,
 } from 'lucide-react';
+import { useStorage } from '@/hooks/useStorage';
 import type { Message } from '@/lib/database.types';
 import { useToast } from '@/components/Toast';
+
+const EMOJI_LIST = ['😀','😂','❤️','👍','🎉','🔥','😊','🤔','👋','💪','🙏','✨','😍','🥳','👏','💯'];
 
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString('tr-TR', {
@@ -85,9 +88,12 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { toast } = useToast();
+  const { upload } = useStorage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchMessages(conversationId);
@@ -126,6 +132,24 @@ function ChatContent({ conversationId }: { conversationId: string }) {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setSending(true);
+    const result = await upload(file, 'messages', user.id);
+    if (result.data) {
+      await send({
+        conversation_id: conversationId,
+        content: result.data.url,
+        type: 'image',
+      });
+    } else {
+      toast('Dosya yüklenemedi', 'error');
+    }
+    setSending(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const messageGroups = useMemo(() => groupMessagesByDate(messages), [messages]);
@@ -366,15 +390,28 @@ function ChatContent({ conversationId }: { conversationId: string }) {
         <div className="flex items-end gap-2">
           <div className="flex items-center gap-0.5">
             <button
-              onClick={() => toast('Dosya ekleme yakında aktif olacak', 'info')}
+              onClick={() => fileInputRef.current?.click()}
               className="p-2 rounded-full active:opacity-70"
               style={{ color: 'var(--color-text-muted)' }}
               aria-label="Dosya ekle"
             >
               <Paperclip size={20} />
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
             <button
-              onClick={() => toast('Kamera yakında aktif olacak', 'info')}
+              onClick={() => {
+                if (fileInputRef.current) {
+                  fileInputRef.current.setAttribute('capture', 'environment');
+                  fileInputRef.current.click();
+                  fileInputRef.current.removeAttribute('capture');
+                }
+              }}
               className="p-2 rounded-full active:opacity-70"
               style={{ color: 'var(--color-text-muted)' }}
               aria-label="Fotoğraf çek"
@@ -400,14 +437,32 @@ function ChatContent({ conversationId }: { conversationId: string }) {
               className="flex-1 bg-transparent text-sm outline-none"
               style={{ color: 'var(--color-text-primary)' }}
             />
-            <button
-              onClick={() => toast('Emoji seçici yakında aktif olacak', 'info')}
-              className="p-1 active:opacity-70"
-              style={{ color: 'var(--color-text-muted)' }}
-              aria-label="Emoji ekle"
-            >
-              <Smile size={20} />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="p-1 active:opacity-70"
+                style={{ color: showEmojiPicker ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+                aria-label="Emoji ekle"
+              >
+                <Smile size={20} />
+              </button>
+              {showEmojiPicker && (
+                <div
+                  className="absolute bottom-10 right-0 p-2 rounded-xl grid grid-cols-8 gap-1 z-30 animate-fade-in-up"
+                  style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--color-border)' }}
+                >
+                  {EMOJI_LIST.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => { setText(prev => prev + emoji); setShowEmojiPicker(false); inputRef.current?.focus(); }}
+                      className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {text.trim() ? (

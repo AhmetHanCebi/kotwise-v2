@@ -77,9 +77,9 @@ function NotificationsContent() {
       case 'booking': return '/profile/bookings';
       case 'event': return `/events/${notif.related_id}`;
       case 'community': return `/community/${notif.related_id}`;
-      case 'review': return notif.related_id ? `/listings/${notif.related_id}` : null;
+      case 'review': return notif.related_id ? `/listing/${notif.related_id}` : null;
       case 'match': return `/roommates/${notif.related_id}`;
-      case 'price': return notif.related_id ? `/listings/${notif.related_id}` : null;
+      case 'price': return notif.related_id ? `/listing/${notif.related_id}` : null;
       default: return null;
     }
   };

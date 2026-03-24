@@ -12,6 +12,7 @@ import { useListings, type ListingFilters } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import type { RoomType, Listing } from '@/lib/database.types';
+import { getCoverImage as getCoverImg, handleListingImageError } from '@/lib/image-utils';
 import BottomNav from '@/components/BottomNav';
 
 const ROOM_TYPES: { value: RoomType; label: string; icon: React.ReactNode }[] = [
@@ -43,12 +44,7 @@ type ListingWithImages = Listing & {
 };
 
 function getCoverImage(listing: ListingWithImages): string {
-  const imgs = listing.listing_images;
-  if (!imgs || imgs.length === 0) {
-    return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop';
-  }
-  const cover = imgs.find((i) => i.is_cover);
-  return cover?.url || imgs[0]?.url || '';
+  return getCoverImg(listing);
 }
 
 function SearchContent() {
@@ -475,7 +471,7 @@ function ListingCard({
           alt={listing.title}
           className="w-full h-full object-cover"
           loading="lazy"
-          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }}
+          onError={(e) => handleListingImageError(e, listing.id)}
         />
         {/* Match Badge */}
         {listing.match_score > 0 && (

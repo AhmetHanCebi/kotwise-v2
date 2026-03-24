@@ -179,6 +179,32 @@ UPDATE city_faqs SET
 WHERE city_id = 'c0000001-0000-4000-a000-000000000001' AND category = 'sağlık';
 
 
+-- ============================================================
+-- FIX 8: Broken Unsplash image URLs in listing_images
+-- 5 broken URLs: typo, expired, or invalid photo IDs
+-- ============================================================
+
+-- Fix 1: photo-1502672260266-1c1ef2d93688 (broken)
+UPDATE listing_images SET url = REPLACE(url, 'photo-1502672260266-1c1ef2d93688', 'photo-1560185007-cde436f6a4d0')
+WHERE url LIKE '%photo-1502672260266-1c1ef2d93688%';
+
+-- Fix 2: photo-1554995207-c18c203602cb (broken)
+UPDATE listing_images SET url = REPLACE(url, 'photo-1554995207-c18c203602cb', 'photo-1484154218962-a197022b5858')
+WHERE url LIKE '%photo-1554995207-c18c203602cb%';
+
+-- Fix 3: photo-1560448204-61dc36dc98c8 (broken)
+UPDATE listing_images SET url = REPLACE(url, 'photo-1560448204-61dc36dc98c8', 'photo-1556020685-ae41abfc9365')
+WHERE url LIKE '%photo-1560448204-61dc36dc98c8%';
+
+-- Fix 4: photo-1598928506311-c55ez637a5 (TYPO - invalid photo ID)
+UPDATE listing_images SET url = REPLACE(url, 'photo-1598928506311-c55ez637a5', 'photo-1600585154340-be6161a56a0c')
+WHERE url LIKE '%photo-1598928506311-c55ez637a5%';
+
+-- Fix 5: photo-1560448076-28a11c8a93a7 (broken)
+UPDATE listing_images SET url = REPLACE(url, 'photo-1560448076-28a11c8a93a7', 'photo-1586023492125-27b2c045efd7')
+WHERE url LIKE '%photo-1560448076-28a11c8a93a7%';
+
+
 -- Verify results
 SELECT 'events' as table_name, id, participant_count FROM events LIMIT 5;
 SELECT 'posts' as table_name, id, like_count, comment_count FROM posts LIMIT 5;

@@ -17,6 +17,7 @@ import {
   Loader2,
   Image as ImageIcon,
 } from 'lucide-react';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 const TRENDING_HASHTAGS = [
   '#ErasmusHayatı', '#BarcelonaGünleri', '#ÖğrenciYaşam',
@@ -238,7 +239,7 @@ export default function CommunityPage() {
                         alt="Gönderi görseli"
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }}
+                        onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
                       />
                       {idx === 3 && post.images.length > 4 && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

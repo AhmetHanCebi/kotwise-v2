@@ -15,6 +15,7 @@ import {
   CornerDownRight,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -176,7 +177,7 @@ export default function PostDetailPage({
             <div className="flex flex-col gap-2 mb-3">
               {post.images.map((img, idx) => (
                 <div key={idx} className="rounded-xl overflow-hidden">
-                  <img src={img} alt="Gönderi görseli" className="w-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+                  <img src={img} alt="Gönderi görseli" className="w-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
                 </div>
               ))}
             </div>

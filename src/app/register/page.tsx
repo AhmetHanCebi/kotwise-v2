@@ -17,6 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useStorage } from '@/hooks/useStorage';
 import { useToast } from '@/components/Toast';
 
 const INTERESTS = [
@@ -30,9 +31,12 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { signUp, signInWithGoogle, updateProfile } = useAuth();
+  const { signUp, signInWithGoogle, signInWithApple, updateProfile } = useAuth();
+  const { upload } = useStorage();
   const { toast } = useToast();
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Step 1
   const [fullName, setFullName] = useState('');
@@ -84,18 +88,32 @@ export default function RegisterPage() {
         return;
       }
 
+      // Upload avatar if selected
+      let avatarUrl: string | null = null;
+      if (avatarFile && result.data && typeof result.data === 'object' && result.data !== null && 'user' in (result.data as Record<string, unknown>) && (result.data as Record<string, unknown>).user) {
+        const uploadResult = await upload(avatarFile, 'avatars', ((result.data as Record<string, unknown>).user as { id: string }).id);
+        if (uploadResult.data) {
+          avatarUrl = uploadResult.data.url;
+        }
+      }
+
       // Update profile with additional info
       await updateProfile({
         full_name: fullName,
         university,
         major: major || null,
+        exchange_university: exchangeUni || null,
+        exchange_start: startDate || null,
+        exchange_end: endDate || null,
+        budget: budget ? Number(budget) : null,
         interests: selectedInterests,
+        ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       });
 
       setLoading(false);
       router.push('/');
     }
-  }, [step, validateStep1, validateStep2, signUp, updateProfile, email, password, fullName, university, major, selectedInterests, router]);
+  }, [step, validateStep1, validateStep2, signUp, updateProfile, email, password, fullName, university, major, exchangeUni, startDate, endDate, budget, selectedInterests, router]);
 
   const handleBack = useCallback(() => {
     if (step > 1) setStep((s) => s - 1);
@@ -290,7 +308,7 @@ export default function RegisterPage() {
                 Google ile devam et
               </button>
               <button
-                onClick={() => toast('Apple ile giriş yakında aktif olacak', 'info')}
+                onClick={() => signInWithApple()}
                 className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
                 style={{
                   background: 'var(--color-bg-card)',
@@ -412,14 +430,18 @@ export default function RegisterPage() {
             <div className="flex flex-col items-center gap-3">
               <button
                 onClick={() => photoInputRef.current?.click()}
-                className="w-24 h-24 rounded-full flex items-center justify-center transition-transform active:scale-95"
+                className="w-24 h-24 rounded-full flex items-center justify-center transition-transform active:scale-95 overflow-hidden"
                 style={{
                   background: 'var(--color-bg)',
                   border: '2px dashed var(--color-border)',
                 }}
                 aria-label="Profil fotoğrafı ekle"
               >
-                <Camera size={28} style={{ color: 'var(--color-text-muted)' }} />
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera size={28} style={{ color: 'var(--color-text-muted)' }} />
+                )}
               </button>
               <input
                 ref={photoInputRef}
@@ -428,7 +450,11 @@ export default function RegisterPage() {
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) toast('Fotoğraf seçildi: ' + file.name, 'success');
+                  if (file) {
+                    setAvatarFile(file);
+                    setAvatarPreview(URL.createObjectURL(file));
+                    toast('Fotoğraf seçildi: ' + file.name, 'success');
+                  }
                 }}
               />
               <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>

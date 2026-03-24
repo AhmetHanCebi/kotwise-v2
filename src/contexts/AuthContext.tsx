@@ -18,6 +18,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: Record<string, string>) => Promise<{ data?: unknown; error?: AuthError }>;
   signIn: (email: string, password: string) => Promise<{ data?: unknown; error?: AuthError }>;
   signInWithGoogle: () => Promise<{ data?: unknown; error?: AuthError }>;
+  signInWithApple: () => Promise<{ data?: unknown; error?: AuthError }>;
   signOut: () => Promise<{ error?: AuthError }>;
   resetPassword: (email: string, redirectTo?: string) => Promise<{ error?: AuthError }>;
   updateUser: (attributes: { email?: string; password?: string }) => Promise<{ data?: unknown; error?: AuthError }>;
@@ -144,6 +145,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { data };
   }, []);
 
+  const signInWithApple = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (err) {
+      setLoading(false);
+      setError(err.message);
+      return { error: err };
+    }
+    return { data };
+  }, []);
+
   const signOut = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -207,6 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         signIn,
         signInWithGoogle,
+        signInWithApple,
         signOut,
         resetPassword,
         updateUser,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, ChevronRight, MapPin, Home, DollarSign,
@@ -8,11 +8,15 @@ import {
   Wifi, Wind, Tv, Car, UtensilsCrossed, Waves, Sofa, Shield,
   Users, GraduationCap, ImageIcon,
 } from 'lucide-react';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 import { useListings } from '@/hooks/useListings';
 import { useStorage } from '@/hooks/useStorage';
 import { useAuth } from '@/hooks/useAuth';
+import { useCities } from '@/hooks/useCities';
 import AuthGuard from '@/components/AuthGuard';
-import type { RoomType, ListingInsert } from '@/lib/database.types';
+import AutocompleteField from '@/components/AutocompleteField';
+import { UNIVERSITIES } from '@/lib/universities';
+import type { RoomType, ListingInsert, Neighborhood } from '@/lib/database.types';
 
 const STEPS = [
   { num: 1, title: 'Temel Bilgiler', icon: <MapPin size={18} /> },
@@ -79,6 +83,23 @@ function NewListingForm() {
   const { user } = useAuth();
   const { create, insertImages } = useListings();
   const { upload } = useStorage();
+  const { cities, fetchCities, getNeighborhoods } = useCities();
+  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
+
+  useEffect(() => {
+    fetchCities();
+  }, [fetchCities]);
+
+  const handleCityChange = async (cityId: string) => {
+    updateForm('city', cityId);
+    updateForm('neighborhood', '');
+    if (cityId) {
+      const result = await getNeighborhoods(cityId);
+      setNeighborhoods(result.data ?? []);
+    } else {
+      setNeighborhoods([]);
+    }
+  };
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -301,6 +322,9 @@ function NewListingForm() {
             form={form}
             errors={errors}
             updateForm={updateForm}
+            cities={cities}
+            neighborhoods={neighborhoods}
+            onCityChange={handleCityChange}
           />
         )}
         {step === 2 && (
@@ -389,10 +413,16 @@ function Step1({
   form,
   errors,
   updateForm,
+  cities,
+  neighborhoods,
+  onCityChange,
 }: {
   form: FormData;
   errors: Record<string, string>;
   updateForm: (key: keyof FormData, value: unknown) => void;
+  cities: import('@/lib/database.types').City[];
+  neighborhoods: Neighborhood[];
+  onCityChange: (cityId: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-5 animate-fade-in-up">
@@ -423,31 +453,64 @@ function Step1({
           }}
         />
       </div>
-      <InputField
-        label="Şehir *"
-        placeholder="Şehir adı"
-        value={form.city}
-        onChange={(v) => updateForm('city', v)}
-        error={errors.city}
-      />
-      <InputField
-        label="Mahalle"
-        placeholder="Mahalle adı"
-        value={form.neighborhood}
-        onChange={(v) => updateForm('neighborhood', v)}
-      />
+      <div>
+        <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+          Şehir *
+        </label>
+        <select
+          value={form.city}
+          onChange={(e) => onCityChange(e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
+          style={{
+            background: 'var(--color-bg)',
+            border: `1px solid ${errors.city ? 'var(--color-error)' : 'var(--color-border)'}`,
+            color: form.city ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+          }}
+        >
+          <option value="">Şehir seçin</option>
+          {cities.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}, {c.country}</option>
+          ))}
+        </select>
+        {errors.city && (
+          <p className="text-[11px] mt-1" style={{ color: 'var(--color-error)' }}>{errors.city}</p>
+        )}
+      </div>
+      <div>
+        <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+          Mahalle
+        </label>
+        <select
+          value={form.neighborhood}
+          onChange={(e) => updateForm('neighborhood', e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
+          style={{
+            background: 'var(--color-bg)',
+            border: '1px solid var(--color-border)',
+            color: form.neighborhood ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+          }}
+          disabled={!form.city}
+        >
+          <option value="">{form.city ? 'Mahalle seçin' : 'Önce şehir seçin'}</option>
+          {neighborhoods.map((n) => (
+            <option key={n.id} value={n.id}>{n.name}</option>
+          ))}
+        </select>
+      </div>
       <InputField
         label="Adres"
         placeholder="Tam adres"
         value={form.address}
         onChange={(v) => updateForm('address', v)}
       />
-      <InputField
+      <AutocompleteField
         label="Yakın Üniversite"
-        placeholder="Üniversite adı"
+        placeholder="Üniversite seçin veya yazın"
         value={form.universityName}
         onChange={(v) => updateForm('universityName', v)}
+        options={UNIVERSITIES}
         icon={<GraduationCap size={16} />}
+        allowCustom
       />
       <InputField
         label="Üniversiteye Uzaklık (km)"
@@ -645,7 +708,7 @@ function Step3({
             className="relative aspect-square rounded-xl overflow-hidden group cursor-grab active:cursor-grabbing"
             style={{ border: '1px solid var(--color-border)' }}
           >
-            <img src={img.preview || img.url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+            <img src={img.preview || img.url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
             {idx === 0 && (
               <span
                 className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase"
@@ -747,7 +810,7 @@ function Step4({ form, images }: { form: FormData; images: UploadedImage[] }) {
               alt="preview"
               className="w-full h-full object-cover"
               loading="lazy"
-              onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }}
+              onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
             />
           </div>
         ) : (

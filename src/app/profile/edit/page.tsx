@@ -12,7 +12,47 @@ import {
   Loader2,
   X,
   Plus,
+  GraduationCap,
+  MapPin,
+  Globe,
+  BookOpen,
 } from 'lucide-react';
+import AutocompleteField from '@/components/AutocompleteField';
+import { UNIVERSITIES } from '@/lib/universities';
+
+const CITIES = [
+  'İstanbul', 'Barcelona', 'Lizbon', 'Berlin',
+  'Ankara', 'İzmir', 'Antalya', 'Bursa',
+  'Madrid', 'Paris', 'Londra', 'Amsterdam',
+  'Roma', 'Milano', 'Viyana', 'Prag',
+  'Münih', 'Hamburg', 'Brüksel', 'Budapeşte',
+  'Varşova', 'Atina', 'Dublin', 'Kopenhag',
+  'Stockholm', 'Oslo', 'Helsinki', 'Zürih',
+];
+
+const COUNTRIES = [
+  'Türkiye', 'İspanya', 'Portekiz', 'Almanya',
+  'Fransa', 'İtalya', 'İngiltere', 'Hollanda',
+  'Belçika', 'Avusturya', 'Çekya', 'Polonya',
+  'Yunanistan', 'İrlanda', 'Danimarka', 'İsveç',
+  'Norveç', 'Finlandiya', 'İsviçre', 'Macaristan',
+  'Romanya', 'Hırvatistan', 'ABD', 'Kanada',
+  'Brezilya', 'Arjantin', 'Meksika', 'Japonya',
+  'Güney Kore', 'Çin', 'Hindistan', 'Rusya',
+];
+
+const MAJORS = [
+  'Bilgisayar Mühendisliği', 'Yazılım Mühendisliği', 'Elektrik-Elektronik Mühendisliği',
+  'Makine Mühendisliği', 'Endüstri Mühendisliği', 'İnşaat Mühendisliği',
+  'Mimarlık', 'Tıp', 'Hukuk', 'İşletme', 'Ekonomi', 'Psikoloji',
+  'Sosyoloji', 'Uluslararası İlişkiler', 'Siyaset Bilimi',
+  'İletişim', 'Gazetecilik', 'Grafik Tasarım', 'Endüstriyel Tasarım',
+  'Güzel Sanatlar', 'Müzik', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji',
+  'Çevre Mühendisliği', 'Gıda Mühendisliği', 'Tarih', 'Felsefe',
+  'Türk Dili ve Edebiyatı', 'İngiliz Dili ve Edebiyatı', 'Eğitim Bilimleri',
+  'Yönetim Bilimleri', 'Finans', 'Pazarlama', 'Hemşirelik', 'Eczacılık',
+  'Diş Hekimliği', 'Veterinerlik', 'Moleküler Biyoloji',
+];
 
 const interestOptions = [
   'Müzik', 'Spor', 'Seyahat', 'Yemek', 'Teknoloji', 'Sanat',
@@ -189,10 +229,42 @@ function EditProfileContent() {
         {/* Form Fields */}
         <div className="flex flex-col gap-4">
           <Field label="Ad Soyad" value={form.full_name} onChange={(v) => setForm((p) => ({ ...p, full_name: v }))} />
-          <Field label="Üniversite" value={form.university} onChange={(v) => setForm((p) => ({ ...p, university: v }))} />
-          <Field label="Bölüm" value={form.major} onChange={(v) => setForm((p) => ({ ...p, major: v }))} />
-          <Field label="Şehir" value={form.home_city} onChange={(v) => setForm((p) => ({ ...p, home_city: v }))} />
-          <Field label="Ülke" value={form.home_country} onChange={(v) => setForm((p) => ({ ...p, home_country: v }))} />
+          <AutocompleteField
+            label="Üniversite"
+            placeholder="Üniversite seçin veya yazın"
+            value={form.university}
+            onChange={(v) => setForm((p) => ({ ...p, university: v }))}
+            options={UNIVERSITIES}
+            icon={<GraduationCap size={16} />}
+            allowCustom
+          />
+          <AutocompleteField
+            label="Bölüm"
+            placeholder="Bölüm seçin veya yazın"
+            value={form.major}
+            onChange={(v) => setForm((p) => ({ ...p, major: v }))}
+            options={MAJORS}
+            icon={<BookOpen size={16} />}
+            allowCustom
+          />
+          <AutocompleteField
+            label="Şehir"
+            placeholder="Şehir seçin veya yazın"
+            value={form.home_city}
+            onChange={(v) => setForm((p) => ({ ...p, home_city: v }))}
+            options={CITIES}
+            icon={<MapPin size={16} />}
+            allowCustom
+          />
+          <AutocompleteField
+            label="Ülke"
+            placeholder="Ülke seçin veya yazın"
+            value={form.home_country}
+            onChange={(v) => setForm((p) => ({ ...p, home_country: v }))}
+            options={COUNTRIES}
+            icon={<Globe size={16} />}
+            allowCustom
+          />
           <Field label="Telefon" value={form.phone} onChange={(v) => setForm((p) => ({ ...p, phone: v }))} type="tel" />
 
           {/* Bio */}

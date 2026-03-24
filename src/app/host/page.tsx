@@ -107,7 +107,7 @@ function HostDashboardContent() {
           <StatCard
             icon={<MessageCircle size={18} />}
             label="Yanıtlama"
-            value="95%"
+            value={`${stats?.responseRate ?? 0}%`}
             color="#8B5CF6"
           />
         </div>

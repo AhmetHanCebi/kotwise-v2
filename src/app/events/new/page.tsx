@@ -21,6 +21,7 @@ import {
   AlignLeft,
   ChevronDown,
 } from 'lucide-react';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 const CATEGORIES: { key: EventCategory; label: string }[] = [
   { key: 'coffee', label: 'Kahve Buluşması' },
@@ -120,7 +121,7 @@ function CreateEventContent() {
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverPick} />
         {coverPreview ? (
           <div className="relative h-40 rounded-2xl overflow-hidden">
-            <img src={coverPreview} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+            <img src={coverPreview} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
             <button
               onClick={() => { setCoverPreview(null); setCoverUrl(null); }}
               className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"

@@ -20,6 +20,7 @@ interface DashboardStats {
   monthlyEarnings: number;
   averageRating: number;
   totalReviews: number;
+  responseRate: number;
 }
 
 interface CalendarBooking {
@@ -49,10 +50,11 @@ export function useHostPanel(hostId?: string) {
     setError(null);
 
     try {
-      const [listingsRes, bookingsRes, earningsRes] = await Promise.all([
+      const [listingsRes, bookingsRes, earningsRes, conversationsRes] = await Promise.all([
         supabase.from('listings').select('id, is_active, rating, review_count').eq('host_id', hostId),
         supabase.from('bookings').select('id, status, total_price').eq('host_id', hostId),
         supabase.from('earnings').select('amount, net_amount, period').eq('host_id', hostId),
+        supabase.from('conversations').select('id, participant_ids').contains('participant_ids', [hostId]),
       ]);
 
       const listings = (listingsRes.data ?? []) as Pick<Listing, 'id' | 'is_active' | 'rating' | 'review_count'>[];
@@ -61,6 +63,21 @@ export function useHostPanel(hostId?: string) {
 
       const now = new Date();
       const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      const conversations = (conversationsRes.data ?? []) as { id: string; participant_ids: string[] }[];
+
+      // Calculate response rate: check how many conversations the host has replied to
+      let responseRate = 100;
+      if (conversations.length > 0) {
+        const convIds = conversations.map(c => c.id);
+        const { data: hostMessages } = await supabase
+          .from('messages')
+          .select('conversation_id')
+          .eq('sender_id', hostId)
+          .in('conversation_id', convIds.slice(0, 50));
+        const repliedConvs = new Set((hostMessages ?? []).map(m => (m as { conversation_id: string }).conversation_id));
+        responseRate = Math.round((repliedConvs.size / Math.min(conversations.length, 50)) * 100);
+      }
 
       const totalReviews = listings.reduce((sum, l) => sum + (l.review_count ?? 0), 0);
       const ratedListings = listings.filter(l => (l.rating ?? 0) > 0);
@@ -79,6 +96,7 @@ export function useHostPanel(hostId?: string) {
           .reduce((sum, e) => sum + Number(e.net_amount), 0),
         averageRating: isNaN(avgRating) ? 0 : Number(avgRating.toFixed(2)),
         totalReviews,
+        responseRate,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'İstatistikler yüklenemedi');

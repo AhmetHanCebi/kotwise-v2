@@ -16,6 +16,7 @@ import {
   Loader2,
   CalendarCheck,
 } from 'lucide-react';
+import { IMAGE_FALLBACK_SMALL } from '@/lib/image-utils';
 
 type FilterTab = 'active' | 'past' | 'cancelled';
 
@@ -160,7 +161,7 @@ function BookingsContent() {
                         alt={booking.listing?.title ?? ''}
                         className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                         loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/200x200/F26522/white?text=Kotwise'; }}
+                        onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK_SMALL; }}
                       />
                     ) : (
                       <div

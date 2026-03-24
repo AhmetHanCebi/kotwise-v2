@@ -21,7 +21,10 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import { getAvatarPlaceholder, handleAvatarError } from '@/lib/image-utils';
 
 const INTEREST_EMOJIS: Record<string, string> = {
   music: '🎵', sports: '⚽', travel: '✈️', cooking: '🍳',
@@ -65,6 +68,7 @@ function RoommatesPage() {
   const { profiles, loading, fetchProfiles, like, skip } = useRoommates(user?.id);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expandBio, setExpandBio] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const [swipeDir, setSwipeDir] = useState<'left' | 'right' | null>(null);
   const [matchNotif, setMatchNotif] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -98,6 +102,7 @@ function RoommatesPage() {
       setSwipeDir(null);
       setDragX(0);
       setExpandBio(false);
+      setPhotoIndex(0);
       setCurrentIndex((prev) => prev + 1);
     }, 300);
   }, [currentProfile, like, skip]);
@@ -190,21 +195,51 @@ function RoommatesPage() {
             >
               {/* Photo */}
               <div className="relative h-80 overflow-hidden" style={{ background: 'var(--gradient-dark)' }}>
-                {currentProfile.user?.avatar_url ? (
-                  <img
-                    src={currentProfile.user.avatar_url}
-                    alt={currentProfile.user?.full_name ?? 'Kullanıcı'}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      {currentProfile.user?.full_name?.[0] ?? '?'}
-                    </span>
-                  </div>
-                )}
+                {(() => {
+                  const photos: string[] = [];
+                  if (currentProfile.user?.avatar_url) photos.push(currentProfile.user.avatar_url);
+                  if ((currentProfile as unknown as Record<string, unknown>).photos) {
+                    photos.push(...((currentProfile as unknown as Record<string, unknown>).photos as string[]));
+                  }
+                  if (photos.length === 0) photos.push(getAvatarPlaceholder(currentProfile.user_id));
+                  const idx = photoIndex % photos.length;
+                  return (
+                    <>
+                      <img
+                        src={photos[idx]}
+                        alt={currentProfile.user?.full_name ?? 'Kullanıcı'}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => handleAvatarError(e, currentProfile.user_id, currentProfile.user?.full_name ?? undefined)}
+                      />
+                      {photos.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setPhotoIndex((i) => (i - 1 + photos.length) % photos.length); }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center z-10"
+                            style={{ background: 'rgba(0,0,0,0.4)' }}
+                            aria-label="Önceki fotoğraf"
+                          >
+                            <ChevronLeft size={16} color="white" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setPhotoIndex((i) => (i + 1) % photos.length); }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center z-10"
+                            style={{ background: 'rgba(0,0,0,0.4)' }}
+                            aria-label="Sonraki fotoğraf"
+                          >
+                            <ChevronRight size={16} color="white" />
+                          </button>
+                          <div className="absolute top-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                            {photos.map((_, i) => (
+                              <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: i === idx ? 'white' : 'rgba(255,255,255,0.4)' }} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
                 {/* Match badge */}

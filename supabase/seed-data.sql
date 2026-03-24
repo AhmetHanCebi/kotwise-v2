@@ -638,7 +638,7 @@ INSERT INTO listing_images (listing_id, url, "order", is_cover) VALUES
 -- Istanbul listings images
 ('d0000001-0000-4000-a000-000000000001', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000001', 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800', 1, false),
-('d0000001-0000-4000-a000-000000000001', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 2, false),
+('d0000001-0000-4000-a000-000000000001', 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800', 2, false),
 
 ('d0000001-0000-4000-a000-000000000002', 'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000002', 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800', 1, false),
@@ -663,16 +663,16 @@ INSERT INTO listing_images (listing_id, url, "order", is_cover) VALUES
 ('d0000001-0000-4000-a000-000000000006', 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800', 2, false),
 ('d0000001-0000-4000-a000-000000000006', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800', 3, false),
 
-('d0000001-0000-4000-a000-000000000007', 'https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800', 0, true),
+('d0000001-0000-4000-a000-000000000007', 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000007', 'https://images.unsplash.com/photo-1560185008-b033106af5c8?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000007', 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800', 2, false),
 
 -- Barcelona listings images
-('d0000001-0000-4000-a000-000000000008', 'https://images.unsplash.com/photo-1598928506311-c55ez637a5?w=800', 0, true),
+('d0000001-0000-4000-a000-000000000008', 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000008', 'https://images.unsplash.com/photo-1560185127-bdf73c36e6a5?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000008', 'https://images.unsplash.com/photo-1585128993280-9456c19c987e?w=800', 2, false),
 
-('d0000001-0000-4000-a000-000000000009', 'https://images.unsplash.com/photo-1560448076-28a11c8a93a7?w=800', 0, true),
+('d0000001-0000-4000-a000-000000000009', 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000009', 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000009', 'https://images.unsplash.com/photo-1560185007-c43e99ee25d1?w=800', 2, false),
 
@@ -691,7 +691,7 @@ INSERT INTO listing_images (listing_id, url, "order", is_cover) VALUES
 ('d0000001-0000-4000-a000-000000000012', 'https://images.unsplash.com/photo-1600566753376-12c8ab7c17a0?w=800', 3, false),
 ('d0000001-0000-4000-a000-000000000012', 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800', 4, false),
 
-('d0000001-0000-4000-a000-000000000013', 'https://images.unsplash.com/photo-1560448204-61dc36dc98c8?w=800', 0, true),
+('d0000001-0000-4000-a000-000000000013', 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000013', 'https://images.unsplash.com/photo-1560448075-bb485b067938?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000013', 'https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?w=800', 2, false),
 
@@ -700,12 +700,12 @@ INSERT INTO listing_images (listing_id, url, "order", is_cover) VALUES
 ('d0000001-0000-4000-a000-000000000014', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000014', 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800', 2, false),
 
-('d0000001-0000-4000-a000-000000000015', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800', 0, true),
+('d0000001-0000-4000-a000-000000000015', 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000015', 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000015', 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800', 2, false),
-('d0000001-0000-4000-a000-000000000015', 'https://images.unsplash.com/photo-1560448076-28a11c8a93a7?w=800', 3, false),
+('d0000001-0000-4000-a000-000000000015', 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800', 3, false),
 
-('d0000001-0000-4000-a000-000000000016', 'https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800', 0, true),
+('d0000001-0000-4000-a000-000000000016', 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800', 0, true),
 ('d0000001-0000-4000-a000-000000000016', 'https://images.unsplash.com/photo-1560448205-17d3a46c84de?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000016', 'https://images.unsplash.com/photo-1586105251261-72a756497a31?w=800', 2, false),
 
@@ -737,7 +737,7 @@ INSERT INTO listing_images (listing_id, url, "order", is_cover) VALUES
 ('d0000001-0000-4000-a000-000000000022', 'https://images.unsplash.com/photo-1560448075-57d0285e52cf?w=800', 2, false),
 
 ('d0000001-0000-4000-a000-000000000023', 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800', 0, true),
-('d0000001-0000-4000-a000-000000000023', 'https://images.unsplash.com/photo-1560448204-61dc36dc98c8?w=800', 1, false),
+('d0000001-0000-4000-a000-000000000023', 'https://images.unsplash.com/photo-1556020685-ae41abfc9365?w=800', 1, false),
 ('d0000001-0000-4000-a000-000000000023', 'https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?w=800', 2, false),
 
 ('d0000001-0000-4000-a000-000000000024', 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800', 0, true),

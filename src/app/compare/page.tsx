@@ -11,6 +11,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
 import type { Listing, ListingWithImages, Favorite } from '@/lib/database.types';
+import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
 
 type FavoriteWithListing = Favorite & {
   listing: ListingWithImages;
@@ -206,9 +207,7 @@ function CompareContent() {
       <div className="px-4 py-4">
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {compareListings.map((listing) => {
-            const coverImg = listing.listing_images?.find((i) => i.is_cover)?.url
-              || listing.listing_images?.[0]?.url
-              || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&h=200&fit=crop';
+            const coverImg = getCoverImage(listing);
 
             return (
               <Link
@@ -223,7 +222,7 @@ function CompareContent() {
                 }}
               >
                 <div className="aspect-[4/3] overflow-hidden">
-                  <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+                  <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => handleListingImageError(e, listing.id)} />
                 </div>
                 <div className="p-2">
                   <p className="text-[11px] font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>

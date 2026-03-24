@@ -17,6 +17,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
 function formatDateFull(dateStr: string): string {
   const d = new Date(dateStr);
@@ -95,7 +96,7 @@ export default function EventDetailPage({
       <div className="relative">
         {event.image_url ? (
           <div className="h-56 overflow-hidden">
-            <img src={event.image_url} alt={event.title ?? 'Etkinlik görseli'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+            <img src={event.image_url} alt={event.title ?? 'Etkinlik görseli'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
         ) : (
@@ -162,7 +163,15 @@ export default function EventDetailPage({
                     {event.location_name}
                   </p>
                   <button
-                    onClick={() => toast('Harita yakında aktif olacak', 'info')}
+                    onClick={() => {
+                      if (event.latitude && event.longitude) {
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`, '_blank');
+                      } else if (event.location_name) {
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location_name)}`, '_blank');
+                      } else {
+                        toast('Konum bilgisi bulunamadı', 'info');
+                      }
+                    }}
                     className="text-xs"
                     style={{ color: 'var(--color-primary)' }}
                   >
@@ -252,8 +261,22 @@ export default function EventDetailPage({
               <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                 Etkinlik Sohbeti
               </h3>
-              <button onClick={() => toast('Etkinlik sohbeti yakında aktif olacak', 'info')} className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>
-                Tüm sohbeti gör
+              <button
+                onClick={() => {
+                  if (!user) {
+                    router.push('/login');
+                    return;
+                  }
+                  if (event?.is_joined && event?.organizer?.id) {
+                    router.push(`/messages/new?to=${event.organizer.id}&subject=${encodeURIComponent(event.title ?? 'Etkinlik')}`);
+                  } else {
+                    toast('Sohbete katılmak için önce etkinliğe katılın', 'info');
+                  }
+                }}
+                className="text-xs font-medium"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                Sohbete Katıl
               </button>
             </div>
             <div className="flex items-center gap-2 py-2">

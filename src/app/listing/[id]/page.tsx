@@ -12,7 +12,9 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import ListingMap from '@/components/ListingMap';
 import type { ListingWithDetails, ReviewInsert } from '@/lib/database.types';
+import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, getCoverImage, getRoomPlaceholder } from '@/lib/image-utils';
 
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
   wifi: <Wifi size={18} />,
@@ -134,7 +136,7 @@ export default function ListingDetailPage({
 
   const images = listing.images?.length
     ? listing.images.sort((a, b) => a.order - b.order)
-    : [{ id: 'placeholder', listing_id: id, url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop', order: 0, is_cover: true, created_at: '', updated_at: '' }];
+    : [{ id: 'placeholder', listing_id: id, url: getRoomPlaceholder(id), order: 0, is_cover: true, created_at: '', updated_at: '' }];
 
   const description = listing.description || '';
   const isLongDesc = description.length > 200;
@@ -214,7 +216,7 @@ export default function ListingDetailPage({
           alt={listing.title}
           className="w-full h-full object-cover"
           loading="lazy"
-          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/800x600/F26522/white?text=Kotwise'; }}
+          onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK_LARGE; }}
         />
         {/* Navigation arrows */}
         {images.length > 1 && (
@@ -454,32 +456,19 @@ export default function ListingDetailPage({
           </h2>
           <div
             className="w-full h-40 rounded-2xl overflow-hidden relative"
-            style={{
-              background: 'linear-gradient(135deg, #E8F0E8 0%, #D4E4D4 50%, #E0E8D8 100%)',
-              border: '1px solid var(--color-border)',
-            }}
+            style={{ border: '1px solid var(--color-border)' }}
           >
-            {/* Roads */}
-            <div className="absolute" style={{ top: '40%', left: 0, right: 0, height: 2, background: 'rgba(200,200,200,0.6)' }} />
-            <div className="absolute" style={{ top: 0, bottom: 0, left: '50%', width: 2, background: 'rgba(200,200,200,0.5)' }} />
-            {/* Pin */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{
-                  background: 'var(--color-primary)',
-                  boxShadow: '0 2px 8px rgba(242,101,34,0.4)',
-                }}
-              >
-                <MapPin size={16} color="white" />
-              </div>
-              <div
-                className="mt-1 px-2 py-0.5 rounded text-[10px] font-medium"
-                style={{ background: 'rgba(255,255,255,0.9)', color: 'var(--color-text-primary)' }}
-              >
-                {listing.city?.name || 'Konum'}
-              </div>
-            </div>
+            <ListingMap
+              listings={[{
+                id: listing.id,
+                title: listing.title,
+                price_per_month: listing.price_per_month,
+                lat: listing.latitude,
+                lng: listing.longitude,
+              }]}
+              singlePin
+              height="160px"
+            />
           </div>
         </div>
 
@@ -613,9 +602,7 @@ export default function ListingDetailPage({
             </h2>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {similarListings.map((sl) => {
-                const coverImg = sl.listing_images?.find((i) => i.is_cover)?.url
-                  || sl.listing_images?.[0]?.url
-                  || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&h=200&fit=crop';
+                const coverImg = getCoverImage(sl);
                 return (
                   <Link
                     key={sl.id}
@@ -627,7 +614,7 @@ export default function ListingDetailPage({
                     }}
                   >
                     <div className="aspect-[3/2] overflow-hidden">
-                      <img src={coverImg} alt={sl.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }} />
+                      <img src={coverImg} alt={sl.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
                     </div>
                     <div className="p-2.5">
                       <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
