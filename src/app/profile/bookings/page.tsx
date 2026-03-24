@@ -159,6 +159,8 @@ function BookingsContent() {
                         src={coverImage}
                         alt={booking.listing?.title ?? ''}
                         className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/200x200/F26522/white?text=Kotwise'; }}
                       />
                     ) : (
                       <div

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
@@ -33,20 +33,25 @@ export default function HostDashboardPage() {
 
 function HostDashboardContent() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { stats, loading, fetchStats } = useHostPanel(user?.id);
   const { bookings, fetchHostBookings } = useBooking(user?.id);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (profile && !profile.is_host) {
+      setRedirecting(true);
       router.replace('/host/apply');
       return;
     }
-    fetchStats();
-    if (user?.id) fetchHostBookings(user.id);
-  }, [profile, fetchStats, fetchHostBookings, user?.id, router]);
+    if (user?.id) {
+      fetchStats();
+      fetchHostBookings(user.id);
+    }
+  }, [profile, authLoading, fetchStats, fetchHostBookings, user?.id, router]);
 
-  if (loading && !stats) {
+  if (authLoading || (loading && !stats) || redirecting) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-dvh">
         <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-primary)' }} />

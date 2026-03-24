@@ -83,7 +83,22 @@ export default function CityDetailPage({
 
   const costBreakdown = city.cost_breakdown ?? {};
   const transportInfo = city.transport_info ?? {};
-  const costEntries = Object.entries(costBreakdown).filter(([, v]) => typeof v === 'number') as [string, number][];
+  // Cost values can be numbers or strings like "12.000-25.000 TL/ay" - extract numeric values
+  const costEntries = Object.entries(costBreakdown)
+    .filter(([key]) => key !== 'total_estimate')
+    .map(([key, v]) => {
+      if (typeof v === 'number') return [key, v] as [string, number];
+      // Try to extract first number from string like "12.000-25.000 TL/ay" or "1.200 TL/ay"
+      const str = String(v);
+      const match = str.match(/[\d.]+/);
+      if (match) {
+        // Handle Turkish number format (dots as thousand separators)
+        const num = Number(match[0].replace(/\./g, ''));
+        if (!isNaN(num) && num > 0) return [key, num] as [string, number];
+      }
+      return null;
+    })
+    .filter((entry): entry is [string, number] => entry !== null);
   const costTotal = costEntries.reduce((sum, [, v]) => sum + v, 0) || 1;
 
   const COST_COLORS = ['#F26522', '#3B82F6', '#22C55E', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4'];
@@ -119,7 +134,7 @@ export default function CityDetailPage({
       <div className="grid grid-cols-4 gap-2 px-4 -mt-4 relative z-10">
         {[
           { icon: Users, label: 'Nüfus', value: city.population ? `${(city.population / 1000000).toFixed(1)}M` : '-' },
-          { icon: Home, label: 'Ort. Kira', value: city.avg_rent ? `${city.avg_rent}${city.currency ?? ''}` : '-' },
+          { icon: Home, label: 'Ort. Kira', value: city.avg_rent ? `${Number(city.avg_rent).toLocaleString('tr-TR')} ${city.currency ?? ''}` : '-' },
           { icon: Compass, label: 'Öğrenci', value: city.student_count ? `${Math.round(city.student_count / 1000)}K` : '-' },
           { icon: Shield, label: 'Güvenlik', value: city.safety_score ? `${city.safety_score}/10` : '-' },
         ].map((stat) => {
@@ -170,6 +185,11 @@ export default function CityDetailPage({
         {/* INFO tab */}
         {activeTab === 'info' && (
           <div className="flex flex-col gap-4 animate-fade-in-up">
+            {(!city.cultural_notes || city.cultural_notes.length === 0) && (!city.tips || city.tips.length === 0) && (
+              <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
+                Bilgi henüz eklenmedi.
+              </p>
+            )}
             {city.cultural_notes?.length > 0 && (
               <div
                 className="rounded-2xl p-4"
@@ -259,7 +279,7 @@ export default function CityDetailPage({
                     <div className="flex items-center gap-1 mt-2">
                       <DollarSign size={12} style={{ color: 'var(--color-success)' }} />
                       <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                        Ort. {n.avg_rent}{city.currency ?? ''}/ay
+                        Ort. {Number(n.avg_rent).toLocaleString('tr-TR')} {city.currency ?? ''}/ay
                       </span>
                     </div>
                   )}
@@ -348,7 +368,7 @@ export default function CityDetailPage({
                           {key.replace(/_/g, ' ')}
                         </span>
                         <span className="text-xs font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                          {val}{city.currency ?? ''}
+                          {val.toLocaleString('tr-TR')} {city.currency ?? ''}
                         </span>
                       </div>
                     ))}
@@ -362,7 +382,7 @@ export default function CityDetailPage({
                 >
                   <span className="text-sm font-medium text-white/90">Toplam Tahmini</span>
                   <span className="text-xl font-bold text-white">
-                    {costTotal}{city.currency ?? ''}/ay
+                    {costTotal.toLocaleString('tr-TR')} {city.currency ?? ''}/ay
                   </span>
                 </div>
               </>

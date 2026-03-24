@@ -41,42 +41,50 @@ export function useHostPanel(hostId?: string) {
 
   // Dashboard stats
   const fetchStats = useCallback(async () => {
-    if (!hostId) return;
+    if (!hostId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
 
-    const [listingsRes, bookingsRes, earningsRes] = await Promise.all([
-      supabase.from('listings').select('id, is_active, rating, review_count').eq('host_id', hostId),
-      supabase.from('bookings').select('id, status, total_price').eq('host_id', hostId),
-      supabase.from('earnings').select('amount, net_amount, period').eq('host_id', hostId),
-    ]);
+    try {
+      const [listingsRes, bookingsRes, earningsRes] = await Promise.all([
+        supabase.from('listings').select('id, is_active, rating, review_count').eq('host_id', hostId),
+        supabase.from('bookings').select('id, status, total_price').eq('host_id', hostId),
+        supabase.from('earnings').select('amount, net_amount, period').eq('host_id', hostId),
+      ]);
 
-    const listings = (listingsRes.data ?? []) as Pick<Listing, 'id' | 'is_active' | 'rating' | 'review_count'>[];
-    const bookings = (bookingsRes.data ?? []) as Pick<Booking, 'id' | 'status' | 'total_price'>[];
-    const earningsData = (earningsRes.data ?? []) as Pick<Earning, 'amount' | 'net_amount' | 'period'>[];
+      const listings = (listingsRes.data ?? []) as Pick<Listing, 'id' | 'is_active' | 'rating' | 'review_count'>[];
+      const bookings = (bookingsRes.data ?? []) as Pick<Booking, 'id' | 'status' | 'total_price'>[];
+      const earningsData = (earningsRes.data ?? []) as Pick<Earning, 'amount' | 'net_amount' | 'period'>[];
 
-    const now = new Date();
-    const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const now = new Date();
+      const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    const totalReviews = listings.reduce((sum, l) => sum + (l.review_count ?? 0), 0);
-    const avgRating = listings.length > 0
-      ? listings.reduce((sum, l) => sum + (l.rating ?? 0), 0) / listings.filter(l => (l.rating ?? 0) > 0).length
-      : 0;
+      const totalReviews = listings.reduce((sum, l) => sum + (l.review_count ?? 0), 0);
+      const ratedListings = listings.filter(l => (l.rating ?? 0) > 0);
+      const avgRating = ratedListings.length > 0
+        ? listings.reduce((sum, l) => sum + (l.rating ?? 0), 0) / ratedListings.length
+        : 0;
 
-    setStats({
-      totalListings: listings.length,
-      activeListings: listings.filter(l => l.is_active).length,
-      totalBookings: bookings.length,
-      pendingBookings: bookings.filter(b => b.status === 'pending').length,
-      totalEarnings: earningsData.reduce((sum, e) => sum + Number(e.net_amount), 0),
-      monthlyEarnings: earningsData
-        .filter(e => e.period === currentPeriod)
-        .reduce((sum, e) => sum + Number(e.net_amount), 0),
-      averageRating: isNaN(avgRating) ? 0 : Number(avgRating.toFixed(2)),
-      totalReviews,
-    });
-
-    setLoading(false);
+      setStats({
+        totalListings: listings.length,
+        activeListings: listings.filter(l => l.is_active).length,
+        totalBookings: bookings.length,
+        pendingBookings: bookings.filter(b => b.status === 'pending').length,
+        totalEarnings: earningsData.reduce((sum, e) => sum + Number(e.net_amount), 0),
+        monthlyEarnings: earningsData
+          .filter(e => e.period === currentPeriod)
+          .reduce((sum, e) => sum + Number(e.net_amount), 0),
+        averageRating: isNaN(avgRating) ? 0 : Number(avgRating.toFixed(2)),
+        totalReviews,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'İstatistikler yüklenemedi');
+    } finally {
+      setLoading(false);
+    }
   }, [hostId]);
 
   // Host application
@@ -118,27 +126,34 @@ export function useHostPanel(hostId?: string) {
 
   // Earnings
   const fetchEarnings = useCallback(async (period?: string) => {
-    if (!hostId) return;
-    setLoading(true);
-
-    let query = supabase
-      .from('earnings')
-      .select('*, booking:bookings!earnings_booking_id_fkey(*)')
-      .eq('host_id', hostId)
-      .order('created_at', { ascending: false });
-
-    if (period) query = query.eq('period', period);
-
-    const { data, error: err } = await query;
-
-    if (err) {
-      setError(err.message);
+    if (!hostId) {
       setLoading(false);
       return;
     }
+    setLoading(true);
 
-    setEarnings((data ?? []) as unknown as EarningWithBooking[]);
-    setLoading(false);
+    try {
+      let query = supabase
+        .from('earnings')
+        .select('*, booking:bookings!earnings_booking_id_fkey(*)')
+        .eq('host_id', hostId)
+        .order('created_at', { ascending: false });
+
+      if (period) query = query.eq('period', period);
+
+      const { data, error: err } = await query;
+
+      if (err) {
+        setError(err.message);
+        return;
+      }
+
+      setEarnings((data ?? []) as unknown as EarningWithBooking[]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Kazançlar yüklenemedi');
+    } finally {
+      setLoading(false);
+    }
   }, [hostId]);
 
   // Calendar view of bookings

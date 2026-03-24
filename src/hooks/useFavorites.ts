@@ -7,30 +7,38 @@ import type { Favorite, Listing } from '@/lib/database.types';
 export function useFavorites(userId?: string) {
   const [favorites, setFavorites] = useState<(Favorite & { listing: Listing })[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!userId);
   const [error, setError] = useState<string | null>(null);
 
   const fetchFavorites = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
-
-    const { data, error: err } = await supabase
-      .from('favorites')
-      .select('*, listing:listings!favorites_listing_id_fkey(*, listing_images!listing_images_listing_id_fkey(url, is_cover))')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (err) {
-      setError(err.message);
+    if (!userId) {
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError(null);
 
-    const items = (data ?? []) as unknown as (Favorite & { listing: Listing })[];
-    setFavorites(items);
-    setFavoriteIds(new Set(items.map(f => f.listing_id)));
-    setLoading(false);
+    try {
+      const { data, error: err } = await supabase
+        .from('favorites')
+        .select('*, listing:listings!favorites_listing_id_fkey(*, listing_images!listing_images_listing_id_fkey(url, is_cover))')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return;
+      }
+
+      const items = (data ?? []) as unknown as (Favorite & { listing: Listing })[];
+      setFavorites(items);
+      setFavoriteIds(new Set(items.map(f => f.listing_id)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Favoriler yüklenemedi');
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => {

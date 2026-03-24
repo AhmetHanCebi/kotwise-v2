@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';
+import Link from 'next/link';
 import {
   Heart,
   MessageCircle,
@@ -155,15 +156,17 @@ export default function CommunityPage() {
         {posts.map((post, i) => (
           <article
             key={post.id}
-            className="rounded-2xl overflow-hidden animate-fade-in-up"
+            className="rounded-2xl overflow-hidden animate-fade-in-up relative"
             style={{
               background: 'var(--color-bg-card)',
               boxShadow: 'var(--shadow-card)',
               animationDelay: `${i * 50}ms`,
             }}
           >
+            {/* Accessible link for navigation */}
+            <Link href={`/community/${post.id}`} className="absolute inset-0 z-0" aria-label={`Gönderi: ${post.content?.slice(0, 50)}`} />
             {/* Post header */}
-            <div className="flex items-center gap-3 p-4 pb-2">
+            <div className="flex items-center gap-3 p-4 pb-2 relative z-10">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden"
                 style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
@@ -197,9 +200,8 @@ export default function CommunityPage() {
             </div>
 
             {/* Content */}
-            <button
-              className="block w-full text-left px-4 pb-2"
-              onClick={() => router.push(`/community/${post.id}`)}
+            <div
+              className="block w-full text-left px-4 pb-2 relative z-10"
             >
               <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
                 {post.content}
@@ -209,13 +211,12 @@ export default function CommunityPage() {
                   {post.hashtags.map((h) => `#${h}`).join(' ')}
                 </p>
               )}
-            </button>
+            </div>
 
             {/* Images */}
             {post.images?.length > 0 && (
-              <button
-                className="w-full"
-                onClick={() => router.push(`/community/${post.id}`)}
+              <div
+                className="w-full relative z-10"
               >
                 <div
                   className={`grid gap-0.5 ${
@@ -249,12 +250,12 @@ export default function CommunityPage() {
                     </div>
                   ))}
                 </div>
-              </button>
+              </div>
             )}
 
             {/* Actions */}
             <div
-              className="flex items-center justify-between px-4 py-3"
+              className="flex items-center justify-between px-4 py-3 relative z-10"
               style={{ borderTop: '1px solid var(--color-border)' }}
             >
               <button

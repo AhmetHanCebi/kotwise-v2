@@ -263,7 +263,7 @@ export default function ListingDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="px-4 pt-4 pb-32">
+      <div className="px-4 pt-4 pb-40">
         {/* Title + Rating */}
         <div className="flex items-start justify-between gap-3">
           <h1
@@ -646,9 +646,9 @@ export default function ListingDetailPage() {
 
       {/* Sticky Bottom Bar */}
       <div
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 px-4 py-3 flex items-center justify-between"
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 px-4 py-3 flex items-center justify-between"
         style={{
-          background: 'rgba(255,255,255,0.95)',
+          background: 'rgba(255,255,255,0.98)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid var(--color-border)',

@@ -7,6 +7,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';
 import type { EventCategory } from '@/lib/database.types';
+import Link from 'next/link';
 import {
   Plus,
   CalendarDays,
@@ -145,7 +146,7 @@ export default function EventsPage() {
       </header>
 
       {/* Content */}
-      <div className="flex-1 pb-24">
+      <div className="flex-1 pb-32">
         {loading && (
           <div className="flex justify-center py-12">
             <Loader2 size={28} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
@@ -165,10 +166,10 @@ export default function EventsPage() {
         {viewMode === 'list' && (
           <div className="flex flex-col gap-3 p-4">
             {events.map((ev, i) => (
-              <button
+              <Link
                 key={ev.id}
-                onClick={() => router.push(`/events/${ev.id}`)}
-                className="rounded-2xl overflow-hidden text-left animate-fade-in-up"
+                href={`/events/${ev.id}`}
+                className="rounded-2xl overflow-hidden text-left animate-fade-in-up block"
                 style={{
                   background: 'var(--color-bg-card)',
                   boxShadow: 'var(--shadow-card)',
@@ -239,7 +240,7 @@ export default function EventsPage() {
                     </div>
                   </div>
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         )}
@@ -260,10 +261,10 @@ export default function EventsPage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   {dayEvents.map((ev) => (
-                    <button
+                    <Link
                       key={ev.id}
-                      onClick={() => router.push(`/events/${ev.id}`)}
-                      className="flex items-center gap-3 p-3 rounded-xl text-left"
+                      href={`/events/${ev.id}`}
+                      className="flex items-center gap-3 p-3 rounded-xl text-left block"
                       style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}
                     >
                       <div
@@ -281,7 +282,7 @@ export default function EventsPage() {
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--color-primary)14', color: 'var(--color-primary)' }}>
                         {ev.participant_count}
                       </span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>

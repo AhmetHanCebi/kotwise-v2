@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoommates } from '@/hooks/useRoommates';
 import AuthGuard from '@/components/AuthGuard';
@@ -326,19 +327,17 @@ function RoommatesPage() {
                 <XIcon size={26} style={{ color: 'var(--color-error)' }} />
               </button>
 
-              <button
-                onClick={() => {
-                  if (currentProfile) router.push(`/roommates/${currentProfile.user_id}`);
-                }}
+              <Link
+                href={currentProfile ? `/roommates/${currentProfile.user_id}` : '#'}
                 className="w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-transform active:scale-90"
                 style={{
                   background: 'var(--color-bg-card)',
                   border: '2px solid var(--color-info)',
                 }}
-                aria-label="Mesaj gönder"
+                aria-label="Profili gör"
               >
                 <MessageCircle size={22} style={{ color: 'var(--color-info)' }} />
-              </button>
+              </Link>
 
               <button
                 onClick={() => handleAction('like')}

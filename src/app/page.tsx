@@ -363,7 +363,7 @@ function SectionHeader({ title, href }: { title: string; href?: string }) {
 
 export default function HomePage() {
   const { user, profile, loading: authLoading } = useAuth();
-  const { city, getById, selectedCityId } = useCities();
+  const { city, cities, getById, selectedCityId, fetchCities } = useCities();
   const { listings, loading: listingsLoading, search: searchListings } = useListings();
   const { events, loading: eventsLoading, fetchEvents } = useEvents(user?.id);
   const { posts, loading: postsLoading, fetchFeed } = usePosts(user?.id);
@@ -375,13 +375,23 @@ export default function HomePage() {
   const [activeCityId, setActiveCityId] = useState<string>('');
   const [postFilter, setPostFilter] = useState<PostFilter>('city');
 
-  // Initial city load from profile
+  // Fetch cities on mount
   useEffect(() => {
-    if (profile?.exchange_city_id && !activeCityId) {
+    fetchCities();
+  }, [fetchCities]);
+
+  // Initial city load from profile or auto-select first city
+  useEffect(() => {
+    if (activeCityId) return;
+    if (profile?.exchange_city_id) {
       setActiveCityId(profile.exchange_city_id);
       getById(profile.exchange_city_id);
+    } else if (!authLoading && cities.length > 0) {
+      // Auto-select first city for first-time visitors
+      setActiveCityId(cities[0].id);
+      getById(cities[0].id);
     }
-  }, [profile, activeCityId, getById]);
+  }, [profile, activeCityId, getById, authLoading, cities]);
 
   // When city data is loaded, set name/code
   useEffect(() => {
