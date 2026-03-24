@@ -28,7 +28,7 @@ import { usePosts } from '@/hooks/usePosts';
 import { useNotifications } from '@/hooks/useNotifications';
 import BottomNav from '@/components/BottomNav';
 import CitySelector from '@/components/CitySelector';
-import type { City, Listing, PostWithDetails } from '@/lib/database.types';
+import type { City, ListingWithImages, PostWithDetails } from '@/lib/database.types';
 import type { EventWithDetails } from '@/lib/database.types';
 
 const countryFlags: Record<string, string> = {
@@ -93,10 +93,9 @@ function PostCardSkeleton() {
 
 // --------------- Card Components ---------------
 
-function ListingCard({ listing }: { listing: Listing & { listing_images?: { url: string; is_cover: boolean }[] } }) {
-  const coverImage = (listing as unknown as { listing_images?: { url: string; is_cover: boolean }[] })
-    .listing_images?.find((img) => img.is_cover)?.url
-    ?? (listing as unknown as { listing_images?: { url: string }[] }).listing_images?.[0]?.url;
+function ListingCard({ listing }: { listing: ListingWithImages }) {
+  const coverImage = listing.listing_images?.find((img) => img.is_cover)?.url
+    ?? listing.listing_images?.[0]?.url;
 
   return (
     <Link

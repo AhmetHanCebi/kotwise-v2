@@ -11,7 +11,6 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useStorage } from '@/hooks/useStorage';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
 import AuthGuard from '@/components/AuthGuard';
 import type { RoomType, ListingInsert } from '@/lib/database.types';
 
@@ -78,7 +77,7 @@ export default function NewListingPage() {
 function NewListingForm() {
   const router = useRouter();
   const { user } = useAuth();
-  const { create } = useListings();
+  const { create, insertImages } = useListings();
   const { upload } = useStorage();
 
   const [step, setStep] = useState(1);
@@ -223,13 +222,7 @@ function NewListingForm() {
       if (result.data) {
         // 3. Insert images
         if (uploadedUrls.length > 0) {
-          const imageInserts = uploadedUrls.map((url, idx) => ({
-            listing_id: result.data!.id,
-            url,
-            order: idx,
-            is_cover: idx === 0,
-          }));
-          await supabase.from('listing_images').insert(imageInserts);
+          await insertImages(result.data.id, uploadedUrls);
         }
 
         router.push(`/listing/${result.data.id}`);

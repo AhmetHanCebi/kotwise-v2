@@ -231,22 +231,22 @@ export default function PostDetailPage({
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden"
                     style={{ background: 'var(--gradient-dark)', color: 'var(--color-text-inverse)' }}
                   >
-                    {(comment as { user?: { avatar_url?: string; full_name?: string } }).user?.avatar_url ? (
+                    {comment.user?.avatar_url ? (
                       <img
-                        src={(comment as { user?: { avatar_url?: string } }).user!.avatar_url!}
+                        src={comment.user.avatar_url}
                         alt=""
                         className="w-full h-full object-cover"
                         loading="lazy"
                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }}
                       />
                     ) : (
-                      ((comment as { user?: { full_name?: string } }).user?.full_name?.[0] ?? '?')
+                      (comment.user?.full_name?.[0] ?? '?')
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                        {(comment as { user?: { full_name?: string } }).user?.full_name ?? 'Anonim'}
+                        {comment.user?.full_name ?? 'Anonim'}
                       </span>
                       <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                         {timeAgo(comment.created_at)}
@@ -270,12 +270,12 @@ export default function PostDetailPage({
                       className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden"
                       style={{ background: 'var(--gradient-dark)', color: 'var(--color-text-inverse)' }}
                     >
-                      {((reply as { user?: { full_name?: string } }).user?.full_name?.[0] ?? '?')}
+                      {(reply.user?.full_name?.[0] ?? '?')}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                          {(reply as { user?: { full_name?: string } }).user?.full_name ?? 'Anonim'}
+                          {reply.user?.full_name ?? 'Anonim'}
                         </span>
                         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                           {timeAgo(reply.created_at)}

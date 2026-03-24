@@ -32,10 +32,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 // Load Leaflet from CDN dynamically
-function loadLeaflet(): Promise<typeof import('leaflet')> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function loadLeaflet(): Promise<any> {
   return new Promise((resolve, reject) => {
     if ((window as unknown as Record<string, unknown>).L) {
-      resolve((window as unknown as Record<string, unknown>).L as typeof import('leaflet'));
+      resolve((window as unknown as Record<string, unknown>).L);
       return;
     }
 
@@ -51,7 +52,7 @@ function loadLeaflet(): Promise<typeof import('leaflet')> {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.onload = () => {
-      resolve((window as unknown as Record<string, unknown>).L as typeof import('leaflet'));
+      resolve((window as unknown as Record<string, unknown>).L);
     };
     script.onerror = () => reject(new Error('Failed to load Leaflet'));
     document.head.appendChild(script);

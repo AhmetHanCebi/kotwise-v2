@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
@@ -42,7 +42,9 @@ function timeAgo(dateStr: string): string {
 export default function MessagesPage() {
   return (
     <AuthGuard>
-      <MessagesContent />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-dvh"><Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-primary)' }} /></div>}>
+        <MessagesContent />
+      </Suspense>
     </AuthGuard>
   );
 }

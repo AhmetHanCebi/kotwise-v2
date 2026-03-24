@@ -20,7 +20,6 @@ import {
   Loader2,
   ArrowRight,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import type { RoommateProfileWithUser } from '@/lib/database.types';
 
 const INTEREST_EMOJIS: Record<string, string> = {
@@ -43,7 +42,7 @@ export default function RoommateProfilePage({
   const { id } = use(params);
   const router = useRouter();
   const { user, profile: myProfile } = useAuth();
-  const { like } = useRoommates(user?.id);
+  const { like, getProfileById } = useRoommates(user?.id);
   const [profileData, setProfileData] = useState<RoommateProfileWithUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [matchNotif, setMatchNotif] = useState(false);
@@ -51,16 +50,12 @@ export default function RoommateProfilePage({
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data } = await supabase
-        .from('roommate_profiles')
-        .select('*, user:profiles!roommate_profiles_user_id_fkey(*)')
-        .eq('user_id', id)
-        .single();
-      setProfileData(data as unknown as RoommateProfileWithUser | null);
+      const data = await getProfileById(id);
+      setProfileData(data);
       setLoading(false);
     }
     load();
-  }, [id]);
+  }, [id, getProfileById]);
 
   const handleLike = useCallback(async () => {
     if (!user) {

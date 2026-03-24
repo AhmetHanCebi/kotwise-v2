@@ -27,7 +27,7 @@ export default function HostBookingsPage() {
 function HostBookingsContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { loading, updateStatus } = useBooking(user?.id);
+  const { loading, updateStatus, fetchHostBookings } = useBooking(user?.id);
 
   const [hostBookings, setHostBookings] = useState<BookingWithDetails[]>([]);
   const [fetching, setFetching] = useState(true);
@@ -35,27 +35,14 @@ function HostBookingsContent() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const fetch = async () => {
+    const load = async () => {
       setFetching(true);
-      const { useBooking: _ } = await import('@/hooks/useBooking');
-      // Direct fetch using supabase
-      const { supabase } = await import('@/lib/supabase');
-      const { data } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
-          host:profiles!bookings_host_id_fkey(*),
-          user:profiles!bookings_user_id_fkey(*)
-        `)
-        .eq('host_id', user.id)
-        .order('created_at', { ascending: false });
-
-      setHostBookings((data ?? []) as unknown as BookingWithDetails[]);
+      const items = await fetchHostBookings(user.id);
+      setHostBookings(items);
       setFetching(false);
     };
-    fetch();
-  }, [user?.id]);
+    load();
+  }, [user?.id, fetchHostBookings]);
 
   const pendingBookings = useMemo(
     () => hostBookings.filter((b) => b.status === 'pending'),

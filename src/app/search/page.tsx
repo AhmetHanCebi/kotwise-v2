@@ -11,7 +11,7 @@ import {
 import { useListings, type ListingFilters } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
-import type { RoomType, Listing, ListingImage } from '@/lib/database.types';
+import type { RoomType, Listing } from '@/lib/database.types';
 import BottomNav from '@/components/BottomNav';
 
 const ROOM_TYPES: { value: RoomType; label: string; icon: React.ReactNode }[] = [

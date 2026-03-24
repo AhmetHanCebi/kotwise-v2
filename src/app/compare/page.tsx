@@ -10,12 +10,10 @@ import {
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
-import type { Listing, Favorite } from '@/lib/database.types';
+import type { Listing, ListingWithImages, Favorite } from '@/lib/database.types';
 
 type FavoriteWithListing = Favorite & {
-  listing: Listing & {
-    listing_images?: { url: string; is_cover: boolean }[];
-  };
+  listing: ListingWithImages;
 };
 
 interface CompareRow {
@@ -95,7 +93,7 @@ function CompareContent() {
   const { user } = useAuth();
   const { favorites } = useFavorites(user?.id);
 
-  const typedFavorites = favorites as unknown as FavoriteWithListing[];
+  const typedFavorites = favorites as FavoriteWithListing[];
   const compareListings = typedFavorites
     .filter((f) => f.listing)
     .map((f) => f.listing)

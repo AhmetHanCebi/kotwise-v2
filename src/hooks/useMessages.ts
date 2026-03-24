@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Conversation, ConversationWithDetails, Message, MessageInsert } from '@/lib/database.types';
+import type { Conversation, ConversationWithDetails, Message, MessageInsert, Profile } from '@/lib/database.types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export function useMessages(userId?: string) {
@@ -222,6 +222,53 @@ export function useMessages(userId?: string) {
     };
   }, [userId, fetchConversations]);
 
+  const searchProfiles = useCallback(async (query: string) => {
+    if (!userId || !query.trim()) return [];
+
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('id', userId)
+        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,university.ilike.%${query}%`)
+        .limit(20);
+
+      return (data ?? []) as Profile[];
+    } catch {
+      return [];
+    }
+  }, [userId]);
+
+  const fetchRecentContacts = useCallback(async () => {
+    if (!userId) return [];
+
+    try {
+      const { data } = await supabase
+        .from('conversations')
+        .select('participant_ids')
+        .contains('participant_ids', [userId])
+        .order('last_message_at', { ascending: false })
+        .limit(10);
+
+      if (!data) return [];
+
+      const ids = [...new Set(data.flatMap((c) => c.participant_ids))].filter(
+        (id) => id !== userId
+      );
+      if (ids.length === 0) return [];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', ids)
+        .limit(10);
+
+      return (profiles ?? []) as Profile[];
+    } catch {
+      return [];
+    }
+  }, [userId]);
+
   return {
     conversations,
     messages,
@@ -232,5 +279,7 @@ export function useMessages(userId?: string) {
     fetchMessages,
     send,
     createConversation,
+    searchProfiles,
+    fetchRecentContacts,
   };
 }

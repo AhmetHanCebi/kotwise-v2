@@ -199,6 +199,32 @@ export function useRoommates(userId?: string) {
     }
   }, [userId]);
 
+  const getProfileById = useCallback(async (targetUserId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: err } = await supabase
+        .from('roommate_profiles')
+        .select('*, user:profiles!roommate_profiles_user_id_fkey(*)')
+        .eq('user_id', targetUserId)
+        .single();
+
+      if (err) {
+        setError(err.message);
+        return null;
+      }
+
+      return data as unknown as RoommateProfileWithUser;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     profiles,
     myProfile,
@@ -211,5 +237,6 @@ export function useRoommates(userId?: string) {
     like,
     skip,
     fetchMatches,
+    getProfileById,
   };
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { use, useState, useEffect, useRef, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
@@ -63,18 +63,21 @@ function groupMessagesByDate(messages: Message[]) {
   return groups;
 }
 
-export default function ChatPage() {
+export default function ChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   return (
     <AuthGuard>
-      <ChatContent />
+      <ChatContent conversationId={id} />
     </AuthGuard>
   );
 }
 
-function ChatContent() {
-  const params = useParams();
+function ChatContent({ conversationId }: { conversationId: string }) {
   const router = useRouter();
-  const conversationId = params.id as string;
   const { user } = useAuth();
   const { messages, loading, fetchMessages, send, conversations, fetchConversations } =
     useMessages(user?.id);

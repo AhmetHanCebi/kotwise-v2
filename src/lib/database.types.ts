@@ -386,6 +386,10 @@ export type EarningUpdate = Partial<Omit<Earning, 'id' | 'created_at'>>;
 // Joined/enriched types (commonly needed in the UI)
 // ============================================================
 
+export interface ListingWithImages extends Listing {
+  listing_images?: { url: string; is_cover: boolean; order?: number }[];
+}
+
 export interface ListingWithDetails extends Listing {
   host: Profile;
   city: City;

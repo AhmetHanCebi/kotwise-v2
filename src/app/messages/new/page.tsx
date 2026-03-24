@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
-import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/database.types';
 import {
   ArrowLeft,
@@ -18,7 +17,9 @@ import {
 export default function NewMessagePage() {
   return (
     <AuthGuard>
-      <NewMessageContent />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-dvh"><Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--color-primary)' }} /></div>}>
+        <NewMessageContent />
+      </Suspense>
     </AuthGuard>
   );
 }
@@ -27,7 +28,7 @@ function NewMessageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const { createConversation } = useMessages(user?.id);
+  const { createConversation, searchProfiles, fetchRecentContacts } = useMessages(user?.id);
 
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
@@ -58,31 +59,10 @@ function NewMessageContent() {
   // Fetch recent contacts (users from existing conversations)
   useEffect(() => {
     if (!user) return;
-    const fetchRecent = async () => {
-      const { data } = await supabase
-        .from('conversations')
-        .select('participant_ids')
-        .contains('participant_ids', [user.id])
-        .order('last_message_at', { ascending: false })
-        .limit(10);
-
-      if (!data) return;
-
-      const ids = [...new Set(data.flatMap((c) => c.participant_ids))].filter(
-        (id) => id !== user.id
-      );
-      if (ids.length === 0) return;
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', ids)
-        .limit(10);
-
-      if (profiles) setRecentContacts(profiles as Profile[]);
-    };
-    fetchRecent();
-  }, [user]);
+    fetchRecentContacts().then((profiles) => {
+      if (profiles.length > 0) setRecentContacts(profiles);
+    });
+  }, [user, fetchRecentContacts]);
 
   // Debounced search
   const handleSearch = useCallback(
@@ -97,18 +77,12 @@ function NewMessageContent() {
 
       debounceRef.current = setTimeout(async () => {
         setLoading(true);
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .neq('id', user?.id ?? '')
-          .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,university.ilike.%${query}%`)
-          .limit(20);
-
-        setResults((data ?? []) as Profile[]);
+        const profiles = await searchProfiles(query);
+        setResults(profiles);
         setLoading(false);
       }, 400);
     },
-    [user?.id]
+    [searchProfiles]
   );
 
   const handleSelect = async (profile: Profile) => {

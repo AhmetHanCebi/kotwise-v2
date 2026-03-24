@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { use, useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Share2, Heart, Star, MapPin, ChevronLeft, ChevronRight,
@@ -12,8 +12,7 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
-import type { Listing, ListingWithDetails, ReviewInsert } from '@/lib/database.types';
+import type { ListingWithDetails, ReviewInsert } from '@/lib/database.types';
 
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
   wifi: <Wifi size={18} />,
@@ -37,12 +36,15 @@ const AMENITY_LABELS: Record<string, string> = {
   guvenlik: 'Güvenlik',
 };
 
-export default function ListingDetailPage() {
-  const params = useParams();
+export default function ListingDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
-  const id = params.id as string;
   const { user } = useAuth();
-  const { getById, listings, search, loading } = useListings();
+  const { getById, listings, search, loading, submitReview } = useListings();
   const { isFavorite, toggle: toggleFavorite } = useFavorites(user?.id);
 
   const [listing, setListing] = useState<ListingWithDetails | null>(null);
@@ -93,8 +95,8 @@ export default function ListingDetailPage() {
       rating: reviewRating,
       comment: reviewComment || null,
     };
-    const { error } = await supabase.from('reviews').insert(input);
-    if (!error) {
+    const result = await submitReview(input);
+    if (!result.error) {
       setShowReviewForm(false);
       setReviewComment('');
       setReviewRating(5);
@@ -611,9 +613,8 @@ export default function ListingDetailPage() {
             </h2>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {similarListings.map((sl) => {
-                const slWithImages = sl as Listing & { listing_images?: { url: string; is_cover: boolean }[] };
-                const coverImg = slWithImages.listing_images?.find((i: { url: string; is_cover: boolean }) => i.is_cover)?.url
-                  || slWithImages.listing_images?.[0]?.url
+                const coverImg = sl.listing_images?.find((i) => i.is_cover)?.url
+                  || sl.listing_images?.[0]?.url
                   || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&h=200&fit=crop';
                 return (
                   <Link

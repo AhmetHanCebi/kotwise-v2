@@ -320,7 +320,7 @@ export default function CityDetailPage({
               </p>
             ) : (
               listings.map((listing) => {
-                const imgs = (listing as unknown as { listing_images?: { url: string; is_cover: boolean }[] }).listing_images;
+                const imgs = listing.listing_images;
                 const coverImg = imgs?.find((i) => i.is_cover)?.url || imgs?.[0]?.url;
                 return (
                   <Link

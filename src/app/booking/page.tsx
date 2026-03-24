@@ -2,15 +2,18 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ArrowLeft, Calendar, User, CreditCard, CheckCircle,
   ChevronRight, MapPin, Star, Loader2, AlertCircle,
+  Clock, XCircle, CheckCircle2, Search,
 } from 'lucide-react';
 import { useListings } from '@/hooks/useListings';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
-import type { ListingWithDetails, BookingInsert } from '@/lib/database.types';
+import BottomNav from '@/components/BottomNav';
+import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
 
 const STEPS = [
   { num: 1, title: 'Tarih', icon: <Calendar size={16} /> },
@@ -21,13 +24,145 @@ const STEPS = [
 
 const SERVICE_FEE_RATE = 0.03;
 
+const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; icon: React.ElementType }> = {
+  pending: { label: 'Onay Bekliyor', color: 'var(--color-warning)', icon: Clock },
+  confirmed: { label: 'Onaylandı', color: 'var(--color-success)', icon: CheckCircle2 },
+  cancelled: { label: 'İptal Edildi', color: 'var(--color-error)', icon: XCircle },
+  completed: { label: 'Tamamlandı', color: 'var(--color-info)', icon: CheckCircle },
+};
+
 export default function BookingPage() {
   return (
     <AuthGuard>
       <Suspense fallback={<div className="min-h-dvh flex items-center justify-center max-w-[430px] mx-auto"><Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-primary)' }} /></div>}>
-        <BookingForm />
+        <BookingContent />
       </Suspense>
     </AuthGuard>
+  );
+}
+
+function BookingContent() {
+  const searchParams = useSearchParams();
+  const listingId = searchParams.get('listingId') || '';
+
+  if (listingId) {
+    return <BookingForm />;
+  }
+
+  return <MyBookings />;
+}
+
+function MyBookings() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { bookings, loading, fetchUserBookings } = useBooking(user?.id);
+
+  useEffect(() => {
+    if (user?.id) fetchUserBookings();
+  }, [user?.id, fetchUserBookings]);
+
+  return (
+    <div
+      className="min-h-dvh flex flex-col max-w-[430px] mx-auto pb-24"
+      style={{ background: 'var(--color-bg)' }}
+    >
+      {/* Header */}
+      <div
+        className="sticky top-0 z-20 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3"
+        style={{
+          background: 'var(--color-bg-card)',
+          borderBottom: '1px solid var(--color-border)',
+        }}
+      >
+        <h1 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+          Rezervasyonlarım
+        </h1>
+      </div>
+
+      <div className="flex-1 px-4 py-4">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={28} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+          </div>
+        ) : bookings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(242,101,34,0.1)' }}
+            >
+              <Calendar size={28} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <div className="text-center">
+              <p className="text-base font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                Henüz rezervasyonunuz yok
+              </p>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                İlanları keşfedip ilk rezervasyonunuzu oluşturun
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/search')}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold"
+              style={{ background: 'var(--color-primary)', color: 'white' }}
+            >
+              <Search size={16} />
+              İlanları Keşfet
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {bookings.map((b) => {
+              const status = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending;
+              const StatusIcon = status.icon;
+              const coverImg = b.listing?.images?.find((i: { is_cover?: boolean }) => i.is_cover)?.url
+                || b.listing?.images?.[0]?.url
+                || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop';
+
+              return (
+                <Link
+                  key={b.id}
+                  href={`/booking/success?bookingId=${b.id}`}
+                  className="flex gap-3 p-3 rounded-xl transition-transform active:scale-[0.98]"
+                  style={{
+                    background: 'var(--color-bg-card)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                    <img
+                      src={coverImg}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/F26522/white?text=Kotwise'; }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {b.listing?.title || 'İlan'}
+                    </p>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                      {new Date(b.check_in).toLocaleDateString('tr-TR')} - {new Date(b.check_out).toLocaleDateString('tr-TR')}
+                    </p>
+                    <div className="flex items-center gap-1 mt-2">
+                      <StatusIcon size={13} style={{ color: status.color }} />
+                      <span className="text-xs font-medium" style={{ color: status.color }}>
+                        {status.label}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
+                      {b.total_price?.toLocaleString('tr-TR')} TL
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <BottomNav />
+    </div>
   );
 }
 

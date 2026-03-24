@@ -9,12 +9,10 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
-import type { Listing, Favorite } from '@/lib/database.types';
+import type { ListingWithImages, Favorite } from '@/lib/database.types';
 
 type FavoriteWithListing = Favorite & {
-  listing: Listing & {
-    listing_images?: { url: string; is_cover: boolean }[];
-  };
+  listing: ListingWithImages;
 };
 
 export default function FavoritesPage() {
@@ -30,7 +28,7 @@ function FavoritesContent() {
   const { favorites, loading, toggle } = useFavorites(user?.id);
   const [activeCity, setActiveCity] = useState<string | null>(null);
 
-  const typedFavorites = favorites as unknown as FavoriteWithListing[];
+  const typedFavorites = favorites as FavoriteWithListing[];
 
   /* Dynamic city tabs from favorites */
   const cities = useMemo(() => {

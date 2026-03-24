@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { use, useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
@@ -14,18 +14,21 @@ import {
   MapPin,
 } from 'lucide-react';
 
-export default function CityChatPage() {
+export default function CityChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   return (
     <AuthGuard>
-      <CityChatContent />
+      <CityChatContent cityId={id} />
     </AuthGuard>
   );
 }
 
-function CityChatContent() {
+function CityChatContent({ cityId }: { cityId: string }) {
   const router = useRouter();
-  const params = useParams();
-  const cityId = params.id as string;
   const { user } = useAuth();
   const { getById: getCityById, city } = useCities();
   const { messages, loading, fetchMessages, send, createConversation } = useMessages(user?.id);

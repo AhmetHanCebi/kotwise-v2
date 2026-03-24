@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Favorite, Listing } from '@/lib/database.types';
+import type { Favorite, ListingWithImages } from '@/lib/database.types';
 
 export function useFavorites(userId?: string) {
-  const [favorites, setFavorites] = useState<(Favorite & { listing: Listing })[]>([]);
+  const [favorites, setFavorites] = useState<(Favorite & { listing: ListingWithImages })[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(!!userId);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function useFavorites(userId?: string) {
         return;
       }
 
-      const items = (data ?? []) as unknown as (Favorite & { listing: Listing })[];
+      const items = (data ?? []) as unknown as (Favorite & { listing: ListingWithImages })[];
       setFavorites(items);
       setFavoriteIds(new Set(items.map(f => f.listing_id)));
     } catch (e) {

@@ -19,6 +19,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ data?: unknown; error?: AuthError }>;
   signInWithGoogle: () => Promise<{ data?: unknown; error?: AuthError }>;
   signOut: () => Promise<{ error?: AuthError }>;
+  resetPassword: (email: string, redirectTo?: string) => Promise<{ error?: AuthError }>;
+  updateUser: (attributes: { email?: string; password?: string }) => Promise<{ data?: unknown; error?: AuthError }>;
   updateProfile: (updates: ProfileUpdate) => Promise<{ data?: unknown; error?: string }>;
   refreshProfile: () => Promise<void>;
 }
@@ -158,6 +160,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   }, []);
 
+  const resetPassword = useCallback(async (email: string, redirectTo?: string) => {
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo ?? `${window.location.origin}/auth/reset`,
+    });
+    if (err) return { error: err };
+    return {};
+  }, []);
+
+  const updateUser = useCallback(async (attributes: { email?: string; password?: string }) => {
+    const { data, error: err } = await supabase.auth.updateUser(attributes);
+    if (err) return { error: err };
+    return { data };
+  }, []);
+
   const updateProfile = useCallback(async (updates: ProfileUpdate) => {
     if (!user) return { error: 'Not authenticated' };
 
@@ -192,6 +208,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signInWithGoogle,
         signOut,
+        resetPassword,
+        updateUser,
         updateProfile,
         refreshProfile,
       }}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Listing, ListingInsert, ListingUpdate, ListingWithDetails, RoomType } from '@/lib/database.types';
+import type { Listing, ListingInsert, ListingUpdate, ListingWithDetails, ListingWithImages, RoomType, ReviewInsert } from '@/lib/database.types';
 
 export interface ListingFilters {
   city_id?: string;
@@ -20,7 +20,7 @@ export interface ListingFilters {
 }
 
 export function useListings() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [listings, setListings] = useState<ListingWithImages[]>([]);
   const [listing, setListing] = useState<ListingWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +72,7 @@ export function useListings() {
         return;
       }
 
-      setListings((data ?? []) as unknown as Listing[]);
+      setListings((data ?? []) as unknown as ListingWithImages[]);
       setTotalCount(count ?? 0);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
@@ -196,6 +196,38 @@ export function useListings() {
     }
   }, []);
 
+  const insertImages = useCallback(async (listingId: string, urls: string[]) => {
+    try {
+      const imageInserts = urls.map((url, idx) => ({
+        listing_id: listingId,
+        url,
+        order: idx,
+        is_cover: idx === 0,
+      }));
+      const { error: err } = await supabase.from('listing_images').insert(imageInserts);
+      if (err) return { error: err.message };
+      return {};
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      return { error: message };
+    }
+  }, []);
+
+  const submitReview = useCallback(async (input: ReviewInsert) => {
+    try {
+      const { data, error: err } = await supabase
+        .from('reviews')
+        .insert(input)
+        .select()
+        .single();
+      if (err) return { error: err.message };
+      return { data };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      return { error: message };
+    }
+  }, []);
+
   return {
     listings,
     listing,
@@ -207,5 +239,7 @@ export function useListings() {
     create,
     update,
     remove,
+    insertImages,
+    submitReview,
   };
 }
