@@ -163,7 +163,7 @@ function ProfileContent() {
           { label: 'İlanlar', value: '0', icon: Home },
           { label: 'Favoriler', value: String(favorites?.length ?? 0), icon: Heart },
           { label: 'Rezervasyonlar', value: String(bookings?.length ?? 0), icon: Calendar },
-          { label: 'Puan', value: '0.0', icon: Star },
+          { label: 'Puan', value: '-', icon: Star },
         ].map((stat) => (
           <div key={stat.label} className="flex flex-col items-center gap-0.5">
             <stat.icon size={16} style={{ color: 'var(--color-primary)' }} />

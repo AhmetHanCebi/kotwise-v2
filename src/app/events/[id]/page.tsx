@@ -145,7 +145,7 @@ export default function EventDetailPage({
                 </p>
                 <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                   <Clock size={10} className="inline mr-1" />
-                  {event.time}
+                  {event.time?.substring(0, 5) ?? event.time}
                 </p>
               </div>
             </div>

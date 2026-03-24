@@ -41,6 +41,7 @@ export function useEvents(userId?: string) {
 
     const enriched = (data ?? []).map(e => ({
       ...e,
+      participant_count: (e.participants ?? []).length,
       is_joined: userId
         ? (e.participants ?? []).some((p: { user_id: string }) => p.user_id === userId)
         : false,
@@ -73,6 +74,7 @@ export function useEvents(userId?: string) {
 
     const result = {
       ...data,
+      participant_count: (data.participants ?? []).length,
       is_joined: userId
         ? (data.participants ?? []).some((p: { user_id: string }) => p.user_id === userId)
         : false,

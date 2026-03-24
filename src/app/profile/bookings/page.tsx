@@ -211,7 +211,7 @@ function BookingsContent() {
                       </span>
                     </div>
                     <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                      {booking.total_price} {booking.listing?.currency ?? 'EUR'}
+                      {Number(booking.total_price).toLocaleString('tr-TR')} {booking.listing?.currency === 'TRY' ? 'TL' : (booking.listing?.currency ?? 'EUR')}
                     </span>
                   </div>
 

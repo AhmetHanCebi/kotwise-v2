@@ -57,9 +57,39 @@ export function usePosts(userId?: string) {
       likedPostIds = new Set((likes ?? []).map(l => l.post_id));
     }
 
+    // Fetch comment counts for these posts
+    let commentCounts: Record<string, number> = {};
+    if (data?.length) {
+      const { data: comments } = await supabase
+        .from('post_comments')
+        .select('post_id')
+        .in('post_id', data.map(p => p.id));
+      if (comments) {
+        for (const c of comments) {
+          commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1;
+        }
+      }
+    }
+
+    // Fetch like counts for these posts
+    let likeCounts: Record<string, number> = {};
+    if (data?.length) {
+      const { data: likes } = await supabase
+        .from('post_likes')
+        .select('post_id')
+        .in('post_id', data.map(p => p.id));
+      if (likes) {
+        for (const l of likes) {
+          likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1;
+        }
+      }
+    }
+
     const enriched = (data ?? []).map(p => ({
       ...p,
       comments: [],
+      like_count: likeCounts[p.id] || p.like_count || 0,
+      comment_count: commentCounts[p.id] || p.comment_count || 0,
       is_liked: likedPostIds.has(p.id),
     })) as unknown as PostWithDetails[];
 
@@ -104,7 +134,20 @@ export function usePosts(userId?: string) {
       isLiked = !!like;
     }
 
-    const result = { ...data, is_liked: isLiked } as unknown as PostWithDetails;
+    // Compute accurate counts from joined data
+    const actualCommentCount = (data.comments ?? []).length;
+    // Fetch actual like count
+    const { count: actualLikeCount } = await supabase
+      .from('post_likes')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', id);
+
+    const result = {
+      ...data,
+      comment_count: actualCommentCount || data.comment_count || 0,
+      like_count: actualLikeCount ?? data.like_count ?? 0,
+      is_liked: isLiked,
+    } as unknown as PostWithDetails;
     setPost(result);
     setLoading(false);
     return result;

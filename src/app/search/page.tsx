@@ -374,22 +374,31 @@ function SearchContent() {
       {/* Results Count */}
       <div className="px-4 py-3">
         <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          {loading ? 'Aranıyor...' : `${totalCount} ilan bulundu`}
+          {loading ? `${totalCount > 0 ? totalCount : ''} ilan aranıyor...` : `${totalCount} ilan bulundu`}
         </p>
       </div>
 
       {/* Listing Cards */}
       <div className="flex-1 px-4 pb-32 flex flex-col gap-4">
         {loading && listings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2
-              size={32}
-              className="animate-spin"
-              style={{ color: 'var(--color-primary)' }}
-            />
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              İlanlar yükleniyor...
-            </p>
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl overflow-hidden"
+                style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+              >
+                <div className="aspect-[4/3] animate-shimmer" />
+                <div className="p-3 flex flex-col gap-2">
+                  <div className="h-4 w-3/4 rounded animate-shimmer" />
+                  <div className="h-3 w-1/2 rounded animate-shimmer" />
+                  <div className="flex gap-2">
+                    <div className="h-5 w-16 rounded-full animate-shimmer" />
+                    <div className="h-5 w-16 rounded-full animate-shimmer" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : listings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">

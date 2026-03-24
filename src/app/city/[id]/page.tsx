@@ -2,7 +2,9 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useCities } from '@/hooks/useCities';
+import { useListings } from '@/hooks/useListings';
 import {
   ArrowLeft,
   MapPin,
@@ -21,13 +23,15 @@ import {
   Compass,
   HelpCircle,
   Banknote,
+  Star,
 } from 'lucide-react';
 
-type TabKey = 'info' | 'neighborhoods' | 'transport' | 'cost' | 'faq';
+type TabKey = 'info' | 'neighborhoods' | 'listings' | 'transport' | 'cost' | 'faq';
 
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: 'info', label: 'Bilgi', icon: Info },
   { key: 'neighborhoods', label: 'Mahalleler', icon: Building },
+  { key: 'listings', label: 'İlanlar', icon: Home },
   { key: 'transport', label: 'Ulaşım', icon: Bus },
   { key: 'cost', label: 'Maliyet', icon: Banknote },
   { key: 'faq', label: 'SSS', icon: HelpCircle },
@@ -55,12 +59,14 @@ export default function CityDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const { city, loading, getById } = useCities();
+  const { listings, loading: listingsLoading, search: searchListings } = useListings();
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
 
   useEffect(() => {
     getById(id);
-  }, [id, getById]);
+    searchListings({ city_id: id, limit: 20, sort_by: 'newest' });
+  }, [id, getById, searchListings]);
 
   if (loading && !city) {
     return (
@@ -298,6 +304,66 @@ export default function CityDetailPage({
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* LISTINGS tab */}
+        {activeTab === 'listings' && (
+          <div className="flex flex-col gap-3 animate-fade-in-up">
+            {listingsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 size={28} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+              </div>
+            ) : listings.length === 0 ? (
+              <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
+                Bu şehirde henüz ilan yok.
+              </p>
+            ) : (
+              listings.map((listing) => {
+                const imgs = (listing as unknown as { listing_images?: { url: string; is_cover: boolean }[] }).listing_images;
+                const coverImg = imgs?.find((i) => i.is_cover)?.url || imgs?.[0]?.url;
+                return (
+                  <Link
+                    key={listing.id}
+                    href={`/listing/${listing.id}`}
+                    className="flex gap-3 p-3 rounded-xl"
+                    style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+                  >
+                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0" style={{ background: '#F3F4F6' }}>
+                      {coverImg ? (
+                        <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/200x200/F26522/white?text=Kotwise'; }} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Home size={20} style={{ color: 'var(--color-text-muted)' }} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                        {listing.title}
+                      </h3>
+                      {listing.address && (
+                        <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
+                          <MapPin size={10} />
+                          {listing.address}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
+                          {Number(listing.price_per_month).toLocaleString('tr-TR')} {listing.currency}/ay
+                        </span>
+                        {listing.rating > 0 && (
+                          <span className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                            <Star size={10} fill="var(--color-warning)" color="var(--color-warning)" />
+                            {Number(listing.rating).toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
           </div>
         )}
 

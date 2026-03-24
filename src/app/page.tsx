@@ -230,7 +230,7 @@ function EventCard({ event }: { event: EventWithDetails }) {
         </div>
         {event.time && (
           <span className="text-xs font-semibold" style={{ color: 'var(--color-primary)' }}>
-            {event.time}
+            {event.time?.substring(0, 5) ?? event.time}
           </span>
         )}
       </div>

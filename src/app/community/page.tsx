@@ -19,9 +19,9 @@ import {
 } from 'lucide-react';
 
 const TRENDING_HASHTAGS = [
-  '#ErasmusHayati', '#BarcelonaGunleri', '#OgrenciYasam',
-  '#YurtDisiEgitim', '#SehirKesfi', '#BursIpuclari',
-  '#YemekTarifleri', '#Erasmus2026', '#KulturSoku',
+  '#ErasmusHayatı', '#BarcelonaGünleri', '#ÖğrenciYaşam',
+  '#YurtDışıEğitim', '#ŞehirKeşfi', '#Bürsİpuçları',
+  '#YemekTarifleri', '#Erasmus2026', '#KültürŞoku',
 ];
 
 function timeAgo(dateStr: string): string {

@@ -205,7 +205,7 @@ export default function EventsPage() {
                       </h3>
                       <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
                         <CalendarDays size={12} />
-                        {formatDay(ev.date)}, {ev.time}
+                        {formatDay(ev.date)}, {ev.time?.substring(0, 5) ?? ev.time}
                       </p>
                       {ev.location_name && (
                         <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -276,7 +276,7 @@ export default function EventsPage() {
                           {ev.title}
                         </p>
                         <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          {ev.time} {ev.location_name ? `- ${ev.location_name}` : ''}
+                          {ev.time?.substring(0, 5) ?? ev.time} {ev.location_name ? `- ${ev.location_name}` : ''}
                         </p>
                       </div>
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--color-primary)14', color: 'var(--color-primary)' }}>
