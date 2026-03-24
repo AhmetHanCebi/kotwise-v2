@@ -13,23 +13,29 @@ export function useMentors() {
     setLoading(true);
     setError(null);
 
-    let query = supabase
-      .from('mentor_profiles')
-      .select('*, user:profiles!mentor_profiles_user_id_fkey(*), city:cities!mentor_profiles_city_id_fkey(*)')
-      .eq('status', 'active');
+    try {
+      let query = supabase
+        .from('mentor_profiles')
+        .select('*, user:profiles!mentor_profiles_user_id_fkey(*), city:cities!mentor_profiles_city_id_fkey(*)')
+        .eq('status', 'active');
 
-    if (cityId) query = query.eq('city_id', cityId);
+      if (cityId) query = query.eq('city_id', cityId);
 
-    const { data, error: err } = await query;
+      const { data, error: err } = await query;
 
-    if (err) {
-      setError(err.message);
-      setLoading(false);
+      if (err) {
+        setError(err.message);
+        return;
+      }
+
+      setMentors((data ?? []) as unknown as MentorProfileWithUser[]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
       return;
+    } finally {
+      setLoading(false);
     }
-
-    setMentors((data ?? []) as unknown as MentorProfileWithUser[]);
-    setLoading(false);
   }, []);
 
   const fetchByCity = useCallback(async (cityId: string) => {
@@ -40,38 +46,50 @@ export function useMentors() {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('mentor_profiles')
-      .insert(input)
-      .select()
-      .single();
+    try {
+      const { data, error: err } = await supabase
+        .from('mentor_profiles')
+        .insert(input)
+        .select()
+        .single();
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        return { error: err.message };
+      }
+
+      // Update profile is_mentor flag
+      await supabase
+        .from('profiles')
+        .update({ is_mentor: true })
+        .eq('id', input.user_id);
+
+      return { data: data as MentorProfile };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return { error: message };
+    } finally {
       setLoading(false);
-      return { error: err.message };
     }
-
-    // Update profile is_mentor flag
-    await supabase
-      .from('profiles')
-      .update({ is_mentor: true })
-      .eq('id', input.user_id);
-
-    setLoading(false);
-    return { data: data as MentorProfile };
   }, []);
 
   const updateProfile = useCallback(async (id: string, updates: Partial<MentorProfile>) => {
-    const { data, error: err } = await supabase
-      .from('mentor_profiles')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const { data, error: err } = await supabase
+        .from('mentor_profiles')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (err) return { error: err.message };
-    return { data: data as MentorProfile };
+      if (err) return { error: err.message };
+      return { data: data as MentorProfile };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return { error: message };
+    }
   }, []);
 
   return {

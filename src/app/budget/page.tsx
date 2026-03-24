@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import type { City } from '@/lib/database.types';
+import { useBudget } from '@/hooks/useBudget';
 import {
   ArrowLeft,
   Calculator,
@@ -39,25 +38,16 @@ const defaultAmounts: Record<CategoryKey, number> = {
 
 export default function BudgetPage() {
   const router = useRouter();
-  const [cities, setCities] = useState<City[]>([]);
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const { cities, loading: loadingCities, fetchCities } = useBudget();
+  const [selectedCity, setSelectedCity] = useState<(typeof cities)[number] | null>(null);
   const [showCityPicker, setShowCityPicker] = useState(false);
   const [citySearch, setCitySearch] = useState('');
   const [duration, setDuration] = useState(5);
   const [amounts, setAmounts] = useState<Record<CategoryKey, number>>(defaultAmounts);
-  const [loadingCities, setLoadingCities] = useState(true);
 
   useEffect(() => {
-    const fetchCities = async () => {
-      const { data } = await supabase
-        .from('cities')
-        .select('*')
-        .order('name', { ascending: true });
-      setCities((data ?? []) as City[]);
-      setLoadingCities(false);
-    };
     fetchCities();
-  }, []);
+  }, [fetchCities]);
 
   const filteredCities = useMemo(() => {
     if (!citySearch.trim()) return cities;

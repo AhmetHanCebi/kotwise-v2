@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
@@ -49,10 +49,19 @@ export default function MessagesPage() {
 
 function MessagesContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const { conversations, loading, fetchConversations } = useMessages(user?.id);
   const [filter, setFilter] = useState<FilterTab>('all');
   const [search, setSearch] = useState('');
+
+  // Handle ?to=userId param — redirect to new message with that user
+  useEffect(() => {
+    const toUserId = searchParams.get('to');
+    if (toUserId) {
+      router.replace(`/messages/new?to=${toUserId}`);
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     fetchConversations();

@@ -15,120 +15,149 @@ export function useBooking(userId?: string) {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
-        host:profiles!bookings_host_id_fkey(*),
-        user:profiles!bookings_user_id_fkey(*)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error: err } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
+          host:profiles!bookings_host_id_fkey(*),
+          user:profiles!bookings_user_id_fkey(*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        return;
+      }
+
+      setBookings((data ?? []) as unknown as BookingWithDetails[]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setBookings((data ?? []) as unknown as BookingWithDetails[]);
-    setLoading(false);
   }, [userId]);
 
   const fetchHostBookings = useCallback(async (hostId: string) => {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
-        host:profiles!bookings_host_id_fkey(*),
-        user:profiles!bookings_user_id_fkey(*)
-      `)
-      .eq('host_id', hostId)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error: err } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
+          host:profiles!bookings_host_id_fkey(*),
+          user:profiles!bookings_user_id_fkey(*)
+        `)
+        .eq('host_id', hostId)
+        .order('created_at', { ascending: false });
 
-    if (err) {
-      setError(err.message);
-      setLoading(false);
+      if (err) {
+        setError(err.message);
+        return [];
+      }
+
+      const items = (data ?? []) as unknown as BookingWithDetails[];
+      return items;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
       return [];
+    } finally {
+      setLoading(false);
     }
-
-    const items = (data ?? []) as unknown as BookingWithDetails[];
-    setLoading(false);
-    return items;
   }, []);
 
   const getById = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
-        host:profiles!bookings_host_id_fkey(*),
-        user:profiles!bookings_user_id_fkey(*)
-      `)
-      .eq('id', id)
-      .single();
+    try {
+      const { data, error: err } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          listing:listings!bookings_listing_id_fkey(*, images:listing_images!listing_images_listing_id_fkey(*)),
+          host:profiles!bookings_host_id_fkey(*),
+          user:profiles!bookings_user_id_fkey(*)
+        `)
+        .eq('id', id)
+        .single();
 
-    if (err) {
-      setError(err.message);
-      setLoading(false);
+      if (err) {
+        setError(err.message);
+        return null;
+      }
+
+      const result = data as unknown as BookingWithDetails;
+      setBooking(result);
+      return result;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
       return null;
+    } finally {
+      setLoading(false);
     }
-
-    const result = data as unknown as BookingWithDetails;
-    setBooking(result);
-    setLoading(false);
-    return result;
   }, []);
 
   const create = useCallback(async (input: BookingInsert) => {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('bookings')
-      .insert(input)
-      .select()
-      .single();
+    try {
+      const { data, error: err } = await supabase
+        .from('bookings')
+        .insert(input)
+        .select()
+        .single();
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        return { error: err.message };
+      }
+
+      return { data: data as Booking };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return { error: message };
+    } finally {
       setLoading(false);
-      return { error: err.message };
     }
-
-    setLoading(false);
-    return { data: data as Booking };
   }, []);
 
   const updateStatus = useCallback(async (id: string, status: BookingStatus) => {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('bookings')
-      .update({ status })
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const { data, error: err } = await supabase
+        .from('bookings')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        return { error: err.message };
+      }
+
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+      return { data: data as Booking };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return { error: message };
+    } finally {
       setLoading(false);
-      return { error: err.message };
     }
-
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
-    setLoading(false);
-    return { data: data as Booking };
   }, []);
 
   const cancel = useCallback(async (id: string) => {

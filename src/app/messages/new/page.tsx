@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
@@ -25,6 +25,7 @@ export default function NewMessagePage() {
 
 function NewMessageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const { createConversation } = useMessages(user?.id);
 
@@ -34,6 +35,25 @@ function NewMessageContent() {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const toHandledRef = useRef(false);
+
+  // Handle ?to=userId — auto-start conversation with that user
+  useEffect(() => {
+    const toUserId = searchParams.get('to');
+    if (!toUserId || !user || toHandledRef.current) return;
+    toHandledRef.current = true;
+
+    const startConversation = async () => {
+      setCreating(toUserId);
+      const result = await createConversation([toUserId]);
+      if ('data' in result && result.data) {
+        router.replace(`/messages/${result.data.id}`);
+      } else {
+        setCreating(null);
+      }
+    };
+    startConversation();
+  }, [searchParams, user, createConversation, router]);
 
   // Fetch recent contacts (users from existing conversations)
   useEffect(() => {

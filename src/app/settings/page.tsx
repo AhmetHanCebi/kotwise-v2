@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Loader2,
   AlertTriangle,
+  Mail,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 
@@ -184,6 +185,15 @@ function SettingsContent() {
             value={privacyOnlineStatus}
             onChange={() => { setPrivacyOnlineStatus(!privacyOnlineStatus); toast('Ayarlarınız kaydedildi', 'success'); }}
           />
+        </div>
+
+        {/* Yardim Section */}
+        <div id="yardim">
+          <SectionTitle title="Yardım & Destek" />
+          <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
+            <LinkRow icon={<MessageCircle size={18} style={{ color: '#06B6D4' }} />} label="Sıkça Sorulan Sorular" border onClick={() => toast('SSS sayfası yakında eklenecek', 'info')} />
+            <LinkRow icon={<Mail size={18} style={{ color: '#3B82F6' }} />} label="Destek Ekibiyle İletişim" onClick={() => toast('destek@kotwise.com adresine e-posta gönderebilirsiniz', 'info')} />
+          </div>
         </div>
 
         {/* Hakkinda Section */}

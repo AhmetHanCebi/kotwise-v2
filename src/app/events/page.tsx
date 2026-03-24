@@ -8,6 +8,7 @@ import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';
 import type { EventCategory } from '@/lib/database.types';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   Plus,
   CalendarDays,
@@ -38,6 +39,8 @@ const CATEGORIES: { key: EventCategory | 'all'; label: string; icon: React.Eleme
   { key: 'food', label: 'Yemek', icon: UtensilsCrossed },
   { key: 'other', label: 'Diğer', icon: MoreHorizontal },
 ];
+
+const EventMap = dynamic(() => import('@/components/EventMap'), { ssr: false });
 
 type ViewMode = 'list' | 'map' | 'calendar';
 
@@ -290,13 +293,22 @@ export default function EventsPage() {
           </div>
         )}
 
-        {/* Map view placeholder */}
+        {/* Map view */}
         {viewMode === 'map' && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 px-4">
-            <Map size={48} style={{ color: 'var(--color-text-muted)' }} />
-            <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
-              Harita görünümü yakında eklenecek.
-            </p>
+          <div className="p-4">
+            <EventMap
+              events={events.map((ev) => ({
+                id: ev.id,
+                title: ev.title,
+                date: ev.date,
+                time: ev.time,
+                location_name: ev.location_name,
+                latitude: ev.latitude ?? null,
+                longitude: ev.longitude ?? null,
+                category: ev.category,
+                participant_count: ev.participant_count,
+              }))}
+            />
           </div>
         )}
       </div>

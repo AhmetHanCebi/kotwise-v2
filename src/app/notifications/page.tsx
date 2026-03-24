@@ -70,9 +70,27 @@ function NotificationsContent() {
     setMarkingAll(false);
   };
 
-  const handleNotifClick = async (notifId: string, isRead: boolean) => {
-    if (!isRead) {
-      await markRead(notifId);
+  const getNotifHref = (notif: { type: NotificationType; related_id: string | null; related_type: string | null }): string | null => {
+    if (!notif.related_id) return null;
+    switch (notif.type) {
+      case 'message': return `/messages/${notif.related_id}`;
+      case 'booking': return '/profile/bookings';
+      case 'event': return `/events/${notif.related_id}`;
+      case 'community': return `/community/${notif.related_id}`;
+      case 'review': return notif.related_id ? `/listings/${notif.related_id}` : null;
+      case 'match': return `/roommates/${notif.related_id}`;
+      case 'price': return notif.related_id ? `/listings/${notif.related_id}` : null;
+      default: return null;
+    }
+  };
+
+  const handleNotifClick = async (notif: { id: string; is_read: boolean; type: NotificationType; related_id: string | null; related_type: string | null }) => {
+    if (!notif.is_read) {
+      await markRead(notif.id);
+    }
+    const href = getNotifHref(notif);
+    if (href) {
+      router.push(href);
     }
   };
 
@@ -193,7 +211,7 @@ function NotificationsContent() {
               return (
                 <button
                   key={notif.id}
-                  onClick={() => handleNotifClick(notif.id, notif.is_read)}
+                  onClick={() => handleNotifClick(notif)}
                   className="flex items-start gap-3 px-3 py-3 rounded-xl w-full text-left transition-all active:scale-[0.98]"
                   style={{
                     background: 'var(--color-bg-card)',

@@ -15,52 +15,69 @@ export function useNotifications(userId?: string) {
     setLoading(true);
     setError(null);
 
-    const { data, error: err } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    try {
+      const { data, error: err } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
-    if (err) {
-      setError(err.message);
+      if (err) {
+        setError(err.message);
+        return;
+      }
+
+      const items = (data ?? []) as Notification[];
+      setNotifications(items);
+      setUnreadCount(items.filter(n => !n.is_read).length);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const items = (data ?? []) as Notification[];
-    setNotifications(items);
-    setUnreadCount(items.filter(n => !n.is_read).length);
-    setLoading(false);
   }, [userId]);
 
   const markRead = useCallback(async (id: string) => {
-    const { error: err } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', id);
+    try {
+      const { error: err } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id);
 
-    if (err) return { error: err.message };
+      if (err) return { error: err.message };
 
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-    setUnreadCount(prev => Math.max(0, prev - 1));
-    return {};
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      return {};
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return { error: message };
+    }
   }, []);
 
   const markAllRead = useCallback(async () => {
     if (!userId) return { error: 'Not authenticated' };
 
-    const { error: err } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', userId)
-      .eq('is_read', false);
+    try {
+      const { error: err } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
 
-    if (err) return { error: err.message };
+      if (err) return { error: err.message };
 
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    setUnreadCount(0);
-    return {};
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+      return {};
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
+      setError(message);
+      return { error: message };
+    }
   }, [userId]);
 
   // Initial fetch
