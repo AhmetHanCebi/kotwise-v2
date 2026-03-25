@@ -209,9 +209,9 @@ function NotificationsContent() {
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--color-border)' }}
+              style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
             >
-              <Bell size={28} style={{ color: 'var(--color-text-muted)' }} />
+              <Bell size={28} style={{ color: 'var(--color-primary)' }} />
             </div>
             <p
               className="text-sm font-medium"
@@ -219,6 +219,16 @@ function NotificationsContent() {
             >
               {filter === 'unread' ? 'Okunmamış bildirim yok' : 'Henüz bildiriminiz yok'}
             </p>
+            <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+              İlanlar, etkinlikler ve mesajlarla ilgili bildirimler burada görünecek
+            </p>
+            <button
+              onClick={() => router.push('/explore')}
+              className="px-5 py-2.5 rounded-full text-sm font-semibold mt-1"
+              style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+            >
+              Keşfet
+            </button>
           </div>
         ) : (
           <div className="flex flex-col gap-2">

@@ -185,17 +185,55 @@ export default function EventsPage() {
       {/* Content */}
       <div className="flex-1 pb-32">
         {loading && (
-          <div className="flex justify-center py-12">
-            <Loader2 size={28} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+          <div className="flex flex-col gap-3 p-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl overflow-hidden"
+                style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+              >
+                <div className="h-36 animate-shimmer" />
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl animate-shimmer flex-shrink-0" />
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="h-4 w-3/4 rounded animate-shimmer" />
+                      <div className="h-3 w-1/2 rounded animate-shimmer" />
+                      <div className="h-3 w-1/3 rounded animate-shimmer" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <div className="h-6 w-24 rounded animate-shimmer" />
+                    <div className="h-4 w-20 rounded animate-shimmer" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {!loading && events.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3 px-4">
-            <CalendarDays size={48} style={{ color: 'var(--color-text-muted)' }} />
-            <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
-              Bu kategoride etkinlik bulunamadı.
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
+            >
+              <CalendarDays size={28} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <p className="text-sm font-medium text-center" style={{ color: 'var(--color-text-secondary)' }}>
+              Bu kategoride etkinlik bulunamadı
             </p>
+            <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+              İlk etkinliği sen oluştur!
+            </p>
+            <button
+              onClick={() => router.push('/events/new')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold mt-1"
+              style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+            >
+              <Plus size={16} />
+              Etkinlik Oluştur
+            </button>
           </div>
         )}
 

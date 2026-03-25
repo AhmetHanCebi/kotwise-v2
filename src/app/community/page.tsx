@@ -352,7 +352,37 @@ function CommunityPage() {
           </Link>
         ))}
 
-        {loading && (
+        {loading && posts.length === 0 && (
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl overflow-hidden"
+                style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+              >
+                <div className="flex items-center gap-3 p-4 pb-2">
+                  <div className="w-10 h-10 rounded-full animate-shimmer" />
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <div className="h-3 w-24 rounded animate-shimmer" />
+                    <div className="h-2.5 w-16 rounded animate-shimmer" />
+                  </div>
+                </div>
+                <div className="px-4 pb-3 flex flex-col gap-2">
+                  <div className="h-3 w-full rounded animate-shimmer" />
+                  <div className="h-3 w-3/4 rounded animate-shimmer" />
+                </div>
+                <div className="h-40 animate-shimmer" />
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <div className="h-5 w-10 rounded animate-shimmer" />
+                  <div className="h-5 w-10 rounded animate-shimmer" />
+                  <div className="h-5 w-10 rounded animate-shimmer" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {loading && posts.length > 0 && (
           <div className="flex justify-center py-8">
             <Loader2 size={28} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
           </div>
@@ -360,10 +390,26 @@ function CommunityPage() {
 
         {!loading && posts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <ImageIcon size={48} style={{ color: 'var(--color-text-muted)' }} />
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              Henüz gönderi yok. İlk gönderiyi sen paylaş!
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
+            >
+              <MessageCircle size={28} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              Henüz gönderi yok
             </p>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              İlk gönderiyi sen paylaş!
+            </p>
+            <button
+              onClick={() => router.push('/community/new')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold mt-1"
+              style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+            >
+              <Plus size={16} />
+              Gönderi Paylaş
+            </button>
           </div>
         )}
 

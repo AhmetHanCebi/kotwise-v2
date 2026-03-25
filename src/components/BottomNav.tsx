@@ -85,14 +85,14 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors"
+              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-all duration-200 active:scale-90"
               style={{
                 color: isActive
                   ? 'var(--color-primary)'
                   : 'var(--color-text-muted)',
               }}
             >
-              <span className="relative">
+              <span className={`relative transition-transform duration-200 ${isActive ? 'scale-110' : 'scale-100'}`}>
                 <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
                 {tab.href === '/messages' && <Badge count={unreadMessages} />}
                 {tab.href === '/profile' && unreadNotifications > 0 && <BadgeDot />}

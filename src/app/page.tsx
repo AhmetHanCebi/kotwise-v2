@@ -109,13 +109,13 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className="flex-shrink-0 w-[260px] rounded-2xl overflow-hidden transition-transform active:scale-[0.98]"
+      className="flex-shrink-0 w-[260px] rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.98] hover:shadow-lg hover:-translate-y-0.5"
       style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
     >
       {/* Image */}
       <div className="relative h-36 overflow-hidden" style={{ background: 'var(--color-bg-input)' }}>
         {coverImage ? (
-          <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
+          <img src={coverImage} alt={listing.title} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <HomeIcon size={32} style={{ color: 'var(--color-text-muted)' }} />

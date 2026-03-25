@@ -174,20 +174,31 @@ function MessagesContent() {
       {/* Conversation List */}
       <div className="flex-1 px-4">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2
-              size={28}
-              className="animate-spin"
-              style={{ color: 'var(--color-primary)' }}
-            />
+          <div className="flex flex-col gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-3 py-3 rounded-xl"
+                style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}
+              >
+                <div className="w-12 h-12 rounded-full animate-shimmer flex-shrink-0" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="h-3.5 w-28 rounded animate-shimmer" />
+                    <div className="h-2.5 w-10 rounded animate-shimmer" />
+                  </div>
+                  <div className="h-3 w-3/4 rounded animate-shimmer" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--color-border)' }}
+              style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
             >
-              <MessageCircle size={28} style={{ color: 'var(--color-text-muted)' }} />
+              <MessageCircle size={28} style={{ color: 'var(--color-primary)' }} />
             </div>
             <p
               className="text-sm font-medium"
@@ -195,9 +206,18 @@ function MessagesContent() {
             >
               {search ? 'Sonuç bulunamadı' : 'Henüz mesajınız yok'}
             </p>
-            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Yeni bir sohbet başlatmak için + butonuna basın
+            <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+              {search ? 'Farklı bir arama deneyin' : 'Bir ilana mesaj göndererek sohbet başlatın'}
             </p>
+            {!search && (
+              <button
+                onClick={() => router.push('/search')}
+                className="px-5 py-2.5 rounded-full text-sm font-semibold mt-1"
+                style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+              >
+                İlanları Gör
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-1">

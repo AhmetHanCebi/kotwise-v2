@@ -548,7 +548,7 @@ function ListingCard({
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className="rounded-2xl overflow-hidden animate-fade-in-up block"
+      className="rounded-2xl overflow-hidden animate-fade-in-up block transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
       style={{
         background: 'var(--color-bg-card)',
         boxShadow: 'var(--shadow-card)',
@@ -559,7 +559,7 @@ function ListingCard({
         <img
           src={getCoverImage(listing)}
           alt={listing.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           loading="lazy"
           onError={(e) => handleListingImageError(e, listing.id)}
         />
@@ -582,7 +582,7 @@ function ListingCard({
             e.stopPropagation();
             onToggleFavorite();
           }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-90"
           style={{
             background: 'rgba(0,0,0,0.3)',
             backdropFilter: 'blur(8px)',

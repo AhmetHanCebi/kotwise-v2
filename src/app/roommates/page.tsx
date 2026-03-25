@@ -256,18 +256,55 @@ function RoommatesPage() {
       {/* Card area */}
       <div className="flex-1 flex items-center justify-center px-4 py-4 pb-24">
         {loading && profiles.length === 0 && (
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
-            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Profiller yükleniyor...</p>
+          <div className="w-full max-w-sm">
+            <div
+              className="rounded-3xl overflow-hidden"
+              style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-lg)' }}
+            >
+              <div className="h-80 animate-shimmer" />
+              <div className="p-4 flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2">
+                  <div className="h-6 w-16 rounded-full animate-shimmer" />
+                  <div className="h-6 w-20 rounded-full animate-shimmer" />
+                  <div className="h-6 w-14 rounded-full animate-shimmer" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-4 w-20 rounded animate-shimmer" />
+                  <div className="h-4 w-16 rounded animate-shimmer" />
+                </div>
+                <div className="h-3 w-full rounded animate-shimmer" />
+                <div className="h-3 w-2/3 rounded animate-shimmer" />
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-6 mt-6">
+              <div className="w-14 h-14 rounded-full animate-shimmer" />
+              <div className="w-12 h-12 rounded-full animate-shimmer" />
+              <div className="w-14 h-14 rounded-full animate-shimmer" />
+            </div>
           </div>
         )}
 
-        {!loading && !currentProfile && (
+        {!loading && !currentProfile && myProfile && (
           <div className="flex flex-col items-center gap-3 text-center px-4">
-            <Users size={48} style={{ color: 'var(--color-text-muted)' }} />
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              Şu an gösterilecek profil kalmadı. Daha sonra tekrar dene!
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)' }}
+            >
+              <UserPlus size={28} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              Şu an gösterilecek profil kalmadı
             </p>
+            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              Yeni profiller eklendikçe burada görünecek
+            </p>
+            <button
+              onClick={() => router.push('/explore')}
+              className="px-5 py-2.5 rounded-full text-sm font-semibold mt-1"
+              style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+            >
+              Keşfet
+            </button>
           </div>
         )}
 
