@@ -118,3 +118,11 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
 }
+
+/* Tap feedback for interactive elements */
+.tap-feedback {
+  transition: transform 0.1s ease;
+}
+.tap-feedback:active {
+  transform: scale(0.97);
+}

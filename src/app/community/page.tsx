@@ -8,6 +8,7 @@ import { usePosts } from '@/hooks/usePosts';
 import { useCities } from '@/hooks/useCities';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import BackToTop from '@/components/BackToTop';
 import Link from 'next/link';
 import {
   Heart,
@@ -215,7 +216,7 @@ function CommunityPage() {
           <Link
             key={post.id}
             href={`/community/${post.id}`}
-            className="rounded-2xl overflow-hidden animate-fade-in-up block"
+            className="rounded-2xl overflow-hidden animate-fade-in-up block tap-feedback"
             style={{
               background: 'var(--color-bg-card)',
               boxShadow: 'var(--shadow-card)',
@@ -450,10 +451,12 @@ function CommunityPage() {
         </div>
       )}
 
+      <BackToTop />
+
       {/* New Post FAB */}
       <button
         onClick={() => router.push('/community/new')}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40 transition-transform active:scale-90"
+        className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40 transition-transform active:scale-90 tap-feedback"
         style={{
           background: 'var(--gradient-primary)',
           maxWidth: '430px',

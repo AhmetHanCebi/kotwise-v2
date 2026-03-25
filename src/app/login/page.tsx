@@ -171,7 +171,7 @@ export default function LoginPage() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="flex items-center justify-center gap-2 h-14 rounded-2xl text-base font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60 mt-2"
+            className="flex items-center justify-center gap-2 h-14 rounded-2xl text-base font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60 mt-2 tap-feedback"
             style={{ background: 'var(--gradient-primary)' }}
           >
             {loading ? (

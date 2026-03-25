@@ -576,7 +576,7 @@ export default function RegisterPage() {
         <button
           onClick={handleNext}
           disabled={loading}
-          className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl text-base font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60"
+          className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl text-base font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60 tap-feedback"
           style={{ background: 'var(--gradient-primary)' }}
         >
           {loading ? (

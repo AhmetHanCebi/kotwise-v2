@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import type { RoomType, Listing } from '@/lib/database.types';
 import { getCoverImage as getCoverImg, handleListingImageError } from '@/lib/image-utils';
 import BottomNav from '@/components/BottomNav';
+import BackToTop from '@/components/BackToTop';
 import BottomSheet from '@/components/BottomSheet';
 
 import { formatCurrency } from '@/lib/currency-utils';
@@ -602,6 +603,7 @@ function SearchContent() {
         <span className="text-sm font-semibold">Harita</span>
       </Link>
 
+      <BackToTop />
       <BottomNav />
     </div>
   );
@@ -620,7 +622,7 @@ function ListingCard({
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className="rounded-2xl overflow-hidden animate-fade-in-up block transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+      className="rounded-2xl overflow-hidden animate-fade-in-up block transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 tap-feedback"
       style={{
         background: 'var(--color-bg-card)',
         boxShadow: 'var(--shadow-card)',
