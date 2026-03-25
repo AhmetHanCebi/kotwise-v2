@@ -15,6 +15,7 @@ import {
   Loader2,
   LogIn,
   LogOut,
+  CalendarPlus,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
@@ -40,6 +41,7 @@ export default function EventDetailPage({
   const { event, loading, getById, join, leave } = useEvents(user?.id);
   const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState(false);
+  const [justJoined, setJustJoined] = useState(false);
 
   useEffect(() => {
     getById(id);
@@ -53,8 +55,11 @@ export default function EventDetailPage({
     setActionLoading(true);
     if (event?.is_joined) {
       await leave(id);
+      setJustJoined(false);
     } else {
       await join(id);
+      setJustJoined(true);
+      setTimeout(() => setJustJoined(false), 600);
     }
     await getById(id);
     setActionLoading(false);
@@ -298,30 +303,50 @@ export default function EventDetailPage({
         className="sticky bottom-0 px-4 py-4 pb-[env(safe-area-inset-bottom)] glass-effect"
         style={{ borderTop: '1px solid var(--color-border)' }}
       >
-        <button
-          onClick={handleJoinLeave}
-          disabled={actionLoading}
-          className="w-full h-12 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-[0.98]"
-          style={{
-            background: event.is_joined ? 'var(--color-bg)' : 'var(--gradient-primary)',
-            color: event.is_joined ? 'var(--color-error)' : 'var(--color-text-inverse)',
-            border: event.is_joined ? '2px solid var(--color-error)' : 'none',
-          }}
-        >
-          {actionLoading ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : event.is_joined ? (
-            <>
-              <LogOut size={18} />
-              Ayrıl
-            </>
-          ) : (
-            <>
-              <LogIn size={18} />
-              Katıl
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleJoinLeave}
+            disabled={actionLoading}
+            className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-[0.98]${justJoined ? ' animate-celebrate-bounce' : ''}`}
+            style={{
+              background: event.is_joined ? 'var(--color-bg)' : 'var(--gradient-primary)',
+              color: event.is_joined ? 'var(--color-error)' : 'var(--color-text-inverse)',
+              border: event.is_joined ? '2px solid var(--color-error)' : 'none',
+            }}
+          >
+            {actionLoading ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : event.is_joined ? (
+              <>
+                <LogOut size={18} />
+                Ayrıl
+              </>
+            ) : (
+              <>
+                <LogIn size={18} />
+                Katıl
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => {
+              const start = new Date(`${event.date}T${event.time ?? '00:00:00'}`);
+              const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+              const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+              const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title ?? '')}&dates=${fmt(start)}/${fmt(end)}&location=${encodeURIComponent(event.location_name ?? '')}&details=${encodeURIComponent(event.description ?? '')}`;
+              window.open(url, '_blank');
+            }}
+            className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: 'var(--color-bg)',
+              border: '1px solid var(--color-border)',
+            }}
+            aria-label="Takvime Ekle"
+            title="Takvime Ekle"
+          >
+            <CalendarPlus size={20} style={{ color: 'var(--color-primary)' }} />
+          </button>
+        </div>
       </div>
     </div>
   );

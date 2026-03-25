@@ -591,6 +591,45 @@ export default function ListingDetailPage({
             )}
           </div>
 
+          {/* Rating Summary */}
+          {listing.reviews?.length > 0 && (() => {
+            const reviews = listing.reviews;
+            const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+            return (
+              <div className="flex items-center gap-4 mb-4 p-4 rounded-2xl"
+                style={{ background: 'var(--color-bg)' }}>
+                <div className="text-center">
+                  <div className="text-3xl font-extrabold" style={{ color: 'var(--color-text-primary)' }}>
+                    {averageRating.toFixed(1)}
+                  </div>
+                  <div className="flex items-center gap-0.5 mt-1">
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} size={12} fill={s <= Math.round(averageRating) ? '#F59E0B' : 'none'}
+                        stroke="#F59E0B" />
+                    ))}
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                    {reviews.length} değerlendirme
+                  </p>
+                </div>
+                <div className="flex-1 space-y-1">
+                  {[5,4,3,2,1].map(n => {
+                    const count = reviews.filter(r => Math.round(r.rating) === n).length;
+                    const pct = reviews.length ? (count / reviews.length) * 100 : 0;
+                    return (
+                      <div key={n} className="flex items-center gap-2">
+                        <span className="text-xs w-3">{n}</span>
+                        <div className="flex-1 h-2 rounded-full" style={{ background: 'var(--color-border)' }}>
+                          <div className="h-full rounded-full bg-amber-400" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Review Form */}
           {showReviewForm && (
             <div

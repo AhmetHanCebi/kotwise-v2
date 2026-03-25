@@ -60,6 +60,7 @@ function CommunityPage() {
   const [hasMore, setHasMore] = useState(true);
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>(FALLBACK_HASHTAGS);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [animatingLike, setAnimatingLike] = useState<string | null>(null);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch trending hashtags from RPC
@@ -140,7 +141,9 @@ function CommunityPage() {
       router.push('/login');
       return;
     }
+    setAnimatingLike(postId);
     await toggleLike(postId);
+    setTimeout(() => setAnimatingLike(null), 600);
   };
 
   const handleShare = async (postId: string) => {
@@ -316,20 +319,29 @@ function CommunityPage() {
             >
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLike(post.id); }}
-                className="flex items-center gap-1.5 transition-transform active:scale-90"
+                className="flex items-center gap-1.5 transition-transform active:scale-90 relative"
                 aria-label="Beğen"
               >
                 <Heart
                   size={20}
-                  fill={post.is_liked ? 'var(--color-error)' : 'none'}
-                  style={{ color: post.is_liked ? 'var(--color-error)' : 'var(--color-text-muted)' }}
+                  fill={post.is_liked ? '#EF4444' : 'none'}
+                  className={animatingLike === post.id ? 'animate-heart-beat' : ''}
+                  style={{ color: post.is_liked ? '#EF4444' : 'var(--color-text-muted)' }}
                 />
                 <span
                   className="text-xs font-medium"
-                  style={{ color: post.is_liked ? 'var(--color-error)' : 'var(--color-text-muted)' }}
+                  style={{ color: post.is_liked ? '#EF4444' : 'var(--color-text-muted)' }}
                 >
                   {post.like_count || ''}
                 </span>
+                {animatingLike === post.id && post.is_liked && (
+                  <span
+                    className="absolute -top-3 left-1 text-xs font-bold animate-float-up pointer-events-none"
+                    style={{ color: '#EF4444' }}
+                  >
+                    +1
+                  </span>
+                )}
               </button>
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(`/community/${post.id}`); }}
