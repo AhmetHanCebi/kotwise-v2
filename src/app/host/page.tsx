@@ -90,24 +90,28 @@ function HostDashboardContent() {
             label="Aktif Ilan"
             value={String(stats?.activeListings ?? 0)}
             color="#3B82F6"
+            trend="stable"
           />
           <StatCard
             icon={<DollarSign size={18} />}
             label="Bu Ay Kazanç"
             value={`${stats?.monthlyEarnings ?? 0} ${currencySymbol(stats?.currency)}`}
             color="#22C55E"
+            trend="up"
           />
           <StatCard
             icon={<Star size={18} />}
             label="Ortalama Puan"
             value={String(stats?.averageRating ?? '0.0')}
             color="#F59E0B"
+            trend="up"
           />
           <StatCard
             icon={<MessageCircle size={18} />}
             label="Yanıtlama"
             value={`${stats?.responseRate ?? 0}%`}
             color="#8B5CF6"
+            trend="stable"
           />
         </div>
       </div>
@@ -121,7 +125,20 @@ function HostDashboardContent() {
           Hızlı İşlemler
         </p>
         <div className="grid grid-cols-3 gap-2 mb-5">
-          <QuickAction href="/listing/new" icon={<PlusCircle size={20} />} label="Yeni Ilan" />
+          <Link
+            href="/listing/new"
+            className="flex flex-col items-center gap-1.5 py-3 rounded-xl active:scale-95 transition-transform"
+            style={{
+              background: 'var(--gradient-primary)',
+              boxShadow: '0 4px 14px rgba(242, 101, 34, 0.3)',
+              color: '#FFFFFF',
+            }}
+          >
+            <PlusCircle size={20} />
+            <span className="text-[11px] font-semibold text-white">
+              Yeni Ilan
+            </span>
+          </Link>
           <QuickAction href="/host/calendar" icon={<Calendar size={20} />} label="Takvim" />
           <QuickAction href="/messages" icon={<MessageCircle size={20} />} label="Mesajlar" />
         </div>
@@ -208,26 +225,40 @@ function StatCard({
   label,
   value,
   color,
+  trend,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   color: string;
+  trend?: 'up' | 'stable';
 }) {
   return (
     <div
-      className="px-3 py-3 rounded-xl"
-      style={{ background: 'rgba(255,255,255,0.1)' }}
+      className="px-3 py-3 rounded-xl relative overflow-hidden"
+      style={{ background: `linear-gradient(135deg, ${color}30, ${color}10)` }}
     >
+      {/* Subtle decorative circle */}
+      <div
+        className="absolute -top-3 -right-3 w-10 h-10 rounded-full opacity-20"
+        style={{ background: color }}
+      />
       <div className="flex items-center gap-2 mb-1.5">
         <div style={{ color }}>{icon}</div>
         <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.7)' }}>
           {label}
         </span>
       </div>
-      <p className="text-lg font-bold" style={{ color: 'var(--color-text-inverse)' }}>
-        {value}
-      </p>
+      <div className="flex items-center gap-1.5">
+        <p className="text-lg font-bold" style={{ color: 'var(--color-text-inverse)' }}>
+          {value}
+        </p>
+        {trend && (
+          <span className="text-xs font-semibold" style={{ color: trend === 'up' ? '#4ADE80' : 'rgba(255,255,255,0.5)' }}>
+            {trend === 'up' ? '↑' : '→'}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

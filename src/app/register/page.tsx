@@ -15,6 +15,8 @@ import {
   MapPin,
   Camera,
   Check,
+  Settings,
+  CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStorage } from '@/hooks/useStorage';
@@ -162,12 +164,6 @@ export default function RegisterPage() {
           <ArrowLeft size={22} />
         </button>
         <div className="flex-1">
-          <p
-            className="text-xs font-semibold"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            Adım {step}/3
-          </p>
           <h1
             className="text-lg font-bold"
             style={{ color: 'var(--color-text-primary)' }}
@@ -176,6 +172,62 @@ export default function RegisterPage() {
             {step === 2 && 'Üniversite Bilgileri'}
             {step === 3 && 'Kişiselleştir'}
           </h1>
+        </div>
+      </div>
+
+      {/* Step indicators with icons */}
+      <div className="px-5 mb-2">
+        <div className="flex items-center justify-center gap-2">
+          {[
+            { icon: User, label: 'Hesap' },
+            { icon: GraduationCap, label: 'Universite' },
+            { icon: Settings, label: 'Tercihler' },
+          ].map((s, i) => {
+            const stepNum = i + 1;
+            const isCompleted = step > stepNum;
+            const isCurrent = step === stepNum;
+            const Icon = isCompleted ? CheckCircle : s.icon;
+            return (
+              <div key={i} className="flex items-center gap-2">
+                {i > 0 && (
+                  <div
+                    className="w-8 h-0.5 rounded-full"
+                    style={{
+                      background: isCompleted ? 'var(--color-success)' : 'var(--color-border)',
+                    }}
+                  />
+                )}
+                <div className="flex flex-col items-center gap-1">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: isCompleted
+                        ? 'var(--color-success)'
+                        : isCurrent
+                          ? 'var(--color-primary)'
+                          : 'var(--color-bg-card)',
+                      border: isCurrent || isCompleted ? 'none' : '1.5px solid var(--color-border)',
+                      color: isCompleted || isCurrent ? '#fff' : 'var(--color-text-muted)',
+                    }}
+                  >
+                    <Icon size={16} />
+                  </div>
+                  <span
+                    className="text-[10px] font-medium"
+                    style={{
+                      color: isCompleted
+                        ? 'var(--color-success)'
+                        : isCurrent
+                          ? 'var(--color-primary)'
+                          : 'var(--color-text-muted)',
+                    }}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

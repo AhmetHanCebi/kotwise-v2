@@ -124,6 +124,33 @@ export default function WelcomePage() {
           </div>
         </div>
 
+        {/* Social Proof */}
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex -space-x-2">
+            {['E', 'A', 'M'].map((initial, i) => (
+              <div
+                key={i}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-white/30"
+                style={{
+                  background: ['#3B82F6', '#22C55E', '#F59E0B'][i],
+                  color: '#fff',
+                }}
+              >
+                {initial}
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-white">
+              1.200+ öğrenci Kotwise ile ev buldu
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-yellow-300">★★★★★</span>
+              <span className="text-xs text-white/70 font-medium">4.9</span>
+            </div>
+          </div>
+        </div>
+
         {/* Buttons */}
         <div className="flex flex-col gap-3 pb-4">
           <Link

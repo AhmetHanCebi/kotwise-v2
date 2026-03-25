@@ -64,6 +64,7 @@ export default function CityDetailPage({
   const { listings, loading: listingsLoading, search: searchListings } = useListings();
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null);
 
   useEffect(() => {
     getById(id);
@@ -267,45 +268,69 @@ export default function CityDetailPage({
                 Mahalle bilgisi henüz eklenmedi.
               </p>
             )}
-            {city.neighborhoods?.map((n) => (
-              <div
-                key={n.id}
-                className="rounded-2xl overflow-hidden"
-                style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
-              >
-                {n.image_url && (
-                  <div className="h-32 overflow-hidden">
-                    <img src={n.image_url} alt={`${n.name} mahallesi`} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
-                  </div>
-                )}
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                      {n.name}
-                    </h3>
-                    <SafetyBadge score={n.safety} />
-                  </div>
-                  {n.vibe && (
-                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                      {n.vibe}
-                    </p>
-                  )}
-                  {n.description && (
-                    <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                      {n.description}
-                    </p>
-                  )}
-                  {n.avg_rent && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <DollarSign size={12} style={{ color: 'var(--color-success)' }} />
-                      <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                        Ort. {formatPrice(Number(n.avg_rent))} {currencySymbol(city.currency)}/ay
-                      </span>
+            {city.neighborhoods?.map((n) => {
+              const isSelected = selectedNeighborhood === n.id;
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => setSelectedNeighborhood(isSelected ? null : n.id)}
+                  className="rounded-2xl overflow-hidden text-left w-full transition-all"
+                  style={{
+                    background: 'var(--color-bg-card)',
+                    boxShadow: isSelected ? '0 0 0 2px var(--color-primary), var(--shadow-card)' : 'var(--shadow-card)',
+                  }}
+                >
+                  {n.image_url && (
+                    <div className="h-32 overflow-hidden relative">
+                      <img src={n.image_url} alt={`${n.name} mahallesi`} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center animate-bounce" style={{ background: 'var(--color-primary)' }}>
+                          <MapPin size={14} style={{ color: '#fff' }} />
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              </div>
-            ))}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold" style={{ color: isSelected ? 'var(--color-primary)' : 'var(--color-text-primary)' }}>
+                        {n.name}
+                      </h3>
+                      <SafetyBadge score={n.safety} />
+                    </div>
+                    {n.vibe && (
+                      <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                        {n.vibe}
+                      </p>
+                    )}
+                    {n.description && (
+                      <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        {n.description}
+                      </p>
+                    )}
+                    {n.avg_rent && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <DollarSign size={12} style={{ color: 'var(--color-success)' }} />
+                        <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
+                          Ort. {formatPrice(Number(n.avg_rent))} {currencySymbol(city.currency)}/ay
+                        </span>
+                      </div>
+                    )}
+                    {isSelected && (
+                      <Link
+                        href={`/search?city=${id}&neighborhood=${encodeURIComponent(n.name)}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center justify-center gap-2 mt-3 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-[0.98]"
+                        style={{ background: 'var(--gradient-primary)', color: '#fff' }}
+                      >
+                        <Search size={14} />
+                        Bu Mahallede Ara
+                      </Link>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
