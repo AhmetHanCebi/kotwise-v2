@@ -7,6 +7,7 @@ import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
+import PageHeader from '@/components/PageHeader';
 import {
   Search,
   Plus,
@@ -97,25 +98,22 @@ function MessagesContent() {
 
   return (
     <div className="flex flex-col flex-1 pb-20" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <div className="px-4 pt-[env(safe-area-inset-top)] pb-2">
-        <div className="flex items-center justify-between py-4">
-          <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Mesajlar
-          </h1>
-          <div className="flex items-center gap-2">
-            <span
-              className="text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{
-                background: 'var(--color-primary)',
-                color: 'var(--color-text-inverse)',
-              }}
-            >
-              {conversations.length}
-            </span>
-          </div>
-        </div>
+      <PageHeader
+        title="Mesajlar"
+        rightContent={
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{
+              background: 'var(--color-primary)',
+              color: 'var(--color-text-inverse)',
+            }}
+          >
+            {conversations.length}
+          </span>
+        }
+      />
 
+      <div className="px-4 pt-3 pb-2">
         {/* Search */}
         <div
           className="flex items-center gap-2 px-3 py-2.5 rounded-xl mb-3"

@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useHostPanel } from '@/hooks/useHostPanel';
+import PageHeader from '@/components/PageHeader';
 import {
-  ArrowLeft,
   TrendingUp,
   DollarSign,
   Loader2,
@@ -24,7 +23,6 @@ export default function EarningsPage() {
 }
 
 function EarningsContent() {
-  const router = useRouter();
   const { user } = useAuth();
   const { stats, earnings, loading, fetchStats, fetchEarnings } = useHostPanel(user?.id);
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
@@ -86,23 +84,7 @@ function EarningsContent() {
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 pt-[calc(env(safe-area-inset-top)+12px)]"
-        style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)' }}
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-1.5 rounded-full active:opacity-70"
-          style={{ color: 'var(--color-text-primary)' }}
-          aria-label="Geri"
-        >
-          <ArrowLeft size={22} />
-        </button>
-        <h1 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Kazançlar
-        </h1>
-      </div>
+      <PageHeader title="Kazançlar" showBack />
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {loading && earnings.length === 0 ? (

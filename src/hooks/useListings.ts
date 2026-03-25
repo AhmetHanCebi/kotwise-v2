@@ -27,7 +27,7 @@ export function useListings() {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
 
-  const search = useCallback(async (filters: ListingFilters = {}) => {
+  const search = useCallback(async (filters: ListingFilters = {}, options?: { append?: boolean }) => {
     setLoading(true);
     setError(null);
 
@@ -80,7 +80,12 @@ export function useListings() {
         return;
       }
 
-      setListings((data ?? []) as unknown as ListingWithImages[]);
+      const newItems = (data ?? []) as unknown as ListingWithImages[];
+      if (options?.append) {
+        setListings(prev => [...prev, ...newItems]);
+      } else {
+        setListings(newItems);
+      }
       setTotalCount(count ?? 0);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';

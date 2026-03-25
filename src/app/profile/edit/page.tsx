@@ -215,9 +215,9 @@ function EditProfileContent() {
           <div
             className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4 text-sm font-medium"
             style={{
-              background: '#FEF2F2',
+              background: 'rgba(239,68,68,0.08)',
               color: 'var(--color-error)',
-              border: '1px solid #FECACA',
+              border: '1px solid rgba(239,68,68,0.2)',
             }}
           >
             {validationError}

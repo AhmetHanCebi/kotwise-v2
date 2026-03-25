@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import PageHeader from '@/components/PageHeader';
 import {
   Heart, MapPin, Star, Search, Loader2, ArrowLeftRight,
 } from 'lucide-react';
@@ -56,19 +57,11 @@ function FavoritesContent() {
       className="min-h-dvh flex flex-col max-w-[430px] mx-auto"
       style={{ background: 'var(--color-bg)' }}
     >
-      {/* Header */}
-      <div
-        className="sticky top-0 z-20 px-4 pt-[calc(16px+env(safe-area-inset-top))] pb-3"
-        style={{
-          background: 'var(--color-bg-card)',
-          borderBottom: '1px solid var(--color-border)',
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Favorilerim
-          </h1>
-          {filteredFavorites.length >= 2 && (
+      <PageHeader
+        title="Favorilerim"
+        sticky
+        rightContent={
+          filteredFavorites.length >= 2 ? (
             <Link
               href="/compare"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
@@ -80,40 +73,40 @@ function FavoritesContent() {
               <ArrowLeftRight size={13} />
               Karşılaştır
             </Link>
-          )}
-        </div>
+          ) : undefined
+        }
+      />
 
-        {/* City Tabs */}
-        {cities.length > 1 && (
-          <div className="flex items-center gap-2 mt-3 overflow-x-auto scrollbar-hide">
+      {/* City Tabs */}
+      {cities.length > 1 && (
+        <div className="flex items-center gap-2 px-4 pt-3 pb-2 overflow-x-auto scrollbar-hide">
+          <button
+            onClick={() => setActiveCity(null)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition-colors"
+            style={{
+              background: !activeCity ? 'var(--color-primary)' : 'var(--color-bg)',
+              color: !activeCity ? 'white' : 'var(--color-text-primary)',
+              border: `1px solid ${!activeCity ? 'var(--color-primary)' : 'var(--color-border)'}`,
+            }}
+          >
+            Tümü
+          </button>
+          {cities.map((city) => (
             <button
-              onClick={() => setActiveCity(null)}
+              key={city.id}
+              onClick={() => setActiveCity(city.id)}
               className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition-colors"
               style={{
-                background: !activeCity ? 'var(--color-primary)' : 'var(--color-bg)',
-                color: !activeCity ? 'white' : 'var(--color-text-primary)',
-                border: `1px solid ${!activeCity ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: activeCity === city.id ? 'var(--color-primary)' : 'var(--color-bg)',
+                color: activeCity === city.id ? 'white' : 'var(--color-text-primary)',
+                border: `1px solid ${activeCity === city.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
               }}
             >
-              Tümü
+              {city.name}
             </button>
-            {cities.map((city) => (
-              <button
-                key={city.id}
-                onClick={() => setActiveCity(city.id)}
-                className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition-colors"
-                style={{
-                  background: activeCity === city.id ? 'var(--color-primary)' : 'var(--color-bg)',
-                  color: activeCity === city.id ? 'white' : 'var(--color-text-primary)',
-                  border: `1px solid ${activeCity === city.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                }}
-              >
-                {city.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 px-4 py-4 pb-28">

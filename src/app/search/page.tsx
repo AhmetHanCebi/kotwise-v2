@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -47,6 +47,8 @@ function getCoverImage(listing: ListingWithImages): string {
   return getCoverImg(listing);
 }
 
+const PAGE_SIZE = 10;
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -57,6 +59,9 @@ function SearchContent() {
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef<HTMLDivElement | null>(null);
   const [filters, setFilters] = useState<ListingFilters>({
     search: searchParams.get('q') || undefined,
     city_id: searchParams.get('city') || undefined,
@@ -69,20 +74,54 @@ function SearchContent() {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   const doSearch = useCallback(
-    (f: ListingFilters) => {
-      search(f);
+    (f: ListingFilters, append = false) => {
+      search({ ...f, limit: PAGE_SIZE }, { append });
     },
     [search]
   );
 
   useEffect(() => {
-    doSearch(filters);
+    setPage(1);
+    setHasMore(true);
+    doSearch({ ...filters, page: 1 });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update hasMore when listings/totalCount change
+  useEffect(() => {
+    if (listings.length >= totalCount && totalCount > 0) {
+      setHasMore(false);
+    }
+  }, [listings.length, totalCount]);
+
+  const loadMore = useCallback(() => {
+    if (loading || !hasMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    doSearch({ ...filters, page: nextPage }, true);
+  }, [loading, hasMore, page, filters, doSearch]);
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const el = observerRef.current;
+    if (!el || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && listings.length > 0 && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore, listings.length, hasMore, loading]);
 
   const handleSearch = () => {
     const updated = { ...filters, search: query || undefined };
     setFilters(updated);
-    doSearch(updated);
+    setPage(1);
+    setHasMore(true);
+    doSearch({ ...updated, page: 1 });
   };
 
   const handleFilterApply = () => {
@@ -92,14 +131,18 @@ function SearchContent() {
       max_price: priceRange.max ? Number(priceRange.max) : undefined,
     };
     setFilters(updated);
-    doSearch(updated);
+    setPage(1);
+    setHasMore(true);
+    doSearch({ ...updated, page: 1 });
     setShowFilters(false);
   };
 
   const handleSortChange = (sort: ListingFilters['sort_by']) => {
     const updated = { ...filters, sort_by: sort };
     setFilters(updated);
-    doSearch(updated);
+    setPage(1);
+    setHasMore(true);
+    doSearch({ ...updated, page: 1 });
     setShowSort(false);
   };
 
@@ -164,7 +207,9 @@ function SearchContent() {
                 setQuery('');
                 const updated = { ...filters, search: undefined };
                 setFilters(updated);
-                doSearch(updated);
+                setPage(1);
+                setHasMore(true);
+                doSearch({ ...updated, page: 1 });
               }}
               aria-label="Aramayı temizle"
             >
@@ -222,7 +267,9 @@ function SearchContent() {
                   room_type: filters.room_type === rt.value ? undefined : rt.value,
                 };
                 setFilters(updated);
-                doSearch(updated);
+                setPage(1);
+                setHasMore(true);
+                doSearch({ ...updated, page: 1 });
               }}
               className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition-colors"
               style={{
@@ -411,14 +458,36 @@ function SearchContent() {
             </p>
           </div>
         ) : (
-          (listings as ListingWithImages[]).map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              isFavorite={isFavorite(listing.id)}
-              onToggleFavorite={() => toggleFavorite(listing.id)}
-            />
-          ))
+          <>
+            {(listings as ListingWithImages[]).map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isFavorite={isFavorite(listing.id)}
+                onToggleFavorite={() => toggleFavorite(listing.id)}
+              />
+            ))}
+
+            {/* Loading spinner for next page */}
+            {loading && listings.length > 0 && (
+              <div className="flex justify-center py-6">
+                <Loader2 size={24} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+              </div>
+            )}
+
+            {/* All loaded message */}
+            {!hasMore && listings.length > 0 && (
+              <p
+                className="text-center text-xs py-6"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Tüm ilanlar yüklendi
+              </p>
+            )}
+
+            {/* Infinite scroll trigger */}
+            <div ref={observerRef} className="h-4" />
+          </>
         )}
       </div>
 

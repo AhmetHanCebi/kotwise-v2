@@ -7,6 +7,7 @@ import { useMentors } from '@/hooks/useMentors';
 import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';
 import Link from 'next/link';
+import PageHeader from '@/components/PageHeader';
 import {
   MessageCircle,
   MapPin,
@@ -71,47 +72,41 @@ export default function MentorsPage() {
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <header
-        className="glass-effect sticky top-0 z-40 px-4 pt-[env(safe-area-inset-top)]"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-center justify-between h-14">
-          <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Mentor Bul
-          </h1>
-          <GraduationCap size={22} style={{ color: 'var(--color-primary)' }} />
-        </div>
+      <PageHeader
+        title="Mentor Bul"
+        glass
+        sticky
+        rightContent={<GraduationCap size={22} style={{ color: 'var(--color-primary)' }} />}
+      />
 
-        {/* City filter */}
-        <div className="flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
+      {/* City filter */}
+      <div className="flex gap-2 overflow-x-auto px-4 pb-3 pt-2 scrollbar-hide">
+        <button
+          onClick={() => { setActiveCityId(null); fetchMentors(); }}
+          className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+          style={{
+            background: !activeCityId ? 'var(--color-primary)' : 'var(--color-bg-card)',
+            color: !activeCityId ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+            border: `1px solid ${!activeCityId ? 'var(--color-primary)' : 'var(--color-border)'}`,
+          }}
+        >
+          Tümü
+        </button>
+        {cities.map((city) => (
           <button
-            onClick={() => { setActiveCityId(null); fetchMentors(); }}
+            key={city.id}
+            onClick={() => setActiveCityId(city.id)}
             className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
             style={{
-              background: !activeCityId ? 'var(--color-primary)' : 'var(--color-bg-card)',
-              color: !activeCityId ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
-              border: `1px solid ${!activeCityId ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              background: activeCityId === city.id ? 'var(--color-primary)' : 'var(--color-bg-card)',
+              color: activeCityId === city.id ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+              border: `1px solid ${activeCityId === city.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
             }}
           >
-            Tümü
+            {city.name}
           </button>
-          {cities.map((city) => (
-            <button
-              key={city.id}
-              onClick={() => setActiveCityId(city.id)}
-              className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
-              style={{
-                background: activeCityId === city.id ? 'var(--color-primary)' : 'var(--color-bg-card)',
-                color: activeCityId === city.id ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
-                border: `1px solid ${activeCityId === city.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
-              }}
-            >
-              {city.name}
-            </button>
-          ))}
-        </div>
-      </header>
+        ))}
+      </div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col gap-3 p-4 pb-24">

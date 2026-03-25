@@ -7,8 +7,8 @@ import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationType } from '@/lib/database.types';
+import PageHeader from '@/components/PageHeader';
 import {
-  ArrowLeft,
   MessageCircle,
   Heart,
   Home,
@@ -110,30 +110,11 @@ function NotificationsContent() {
 
   return (
     <div className="flex flex-col flex-1 min-h-dvh" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <div
-        className="px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3"
-        style={{
-          background: 'var(--color-bg-card)',
-          borderBottom: '1px solid var(--color-border)',
-        }}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="p-1.5 rounded-full active:opacity-70"
-              style={{ color: 'var(--color-text-primary)' }}
-              aria-label="Geri"
-            >
-              <ArrowLeft size={22} />
-            </button>
-            <h1
-              className="text-lg font-bold"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Bildirimler
-            </h1>
+      <PageHeader
+        title="Bildirimler"
+        showBack
+        rightContent={
+          <>
             {unreadCount > 0 && (
               <span
                 className="text-[11px] font-bold px-2 py-0.5 rounded-full"
@@ -145,50 +126,49 @@ function NotificationsContent() {
                 {unreadCount}
               </span>
             )}
-          </div>
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                disabled={markingAll}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full active:opacity-70"
+                style={{
+                  color: 'var(--color-primary)',
+                  background: 'rgba(242,101,34,0.08)',
+                }}
+              >
+                {markingAll ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <CheckCheck size={14} />
+                )}
+                Tümünü Okundu İşaretle
+              </button>
+            )}
+          </>
+        }
+      />
 
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllRead}
-              disabled={markingAll}
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full active:opacity-70"
-              style={{
-                color: 'var(--color-primary)',
-                background: 'rgba(242,101,34,0.08)',
-              }}
-            >
-              {markingAll ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <CheckCheck size={14} />
-              )}
-              Tümünü Okundu İşaretle
-            </button>
-          )}
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="flex gap-2">
-          {(['all', 'unread'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-              style={{
-                background:
-                  filter === f ? 'var(--color-primary)' : 'var(--color-bg)',
-                color:
-                  filter === f
-                    ? 'var(--color-text-inverse)'
-                    : 'var(--color-text-secondary)',
-                border:
-                  filter === f ? 'none' : '1px solid var(--color-border)',
-              }}
-            >
-              {f === 'all' ? 'Tümü' : 'Okunmamış'}
-            </button>
-          ))}
-        </div>
+      {/* Filter Tabs */}
+      <div className="flex gap-2 px-4 pt-3 pb-2">
+        {(['all', 'unread'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+            style={{
+              background:
+                filter === f ? 'var(--color-primary)' : 'var(--color-bg)',
+              color:
+                filter === f
+                  ? 'var(--color-text-inverse)'
+                  : 'var(--color-text-secondary)',
+              border:
+                filter === f ? 'none' : '1px solid var(--color-border)',
+            }}
+          >
+            {f === 'all' ? 'Tümü' : 'Okunmamış'}
+          </button>
+        ))}
       </div>
 
       {/* Notification List */}

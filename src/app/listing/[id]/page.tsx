@@ -95,10 +95,7 @@ export default function ListingDetailPage({
         setTimeout(() => setShareToast(false), 2000);
       }
     } catch (err) {
-      // User cancelled share or clipboard failed — ignore AbortError from share dialog
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('Share failed:', err);
-      }
+      // User cancelled share or clipboard failed — silently ignore
     }
   };
 

@@ -38,6 +38,7 @@ export interface Profile {
   is_mentor: boolean;
   is_verified: boolean;
   onboarding_completed: boolean;
+  birth_date: string | null;
   push_token: string | null;
   created_at: string;
   updated_at: string;
@@ -266,6 +267,7 @@ export interface RoommateProfile {
   exchange_city: string | null;
   exchange_start: string | null;
   exchange_end: string | null;
+  photos: string[];
   created_at: string;
   updated_at: string;
 }

@@ -49,12 +49,16 @@ interface ListingLike {
 
 /** Extract the cover image for a listing, with stock photo fallback */
 export function getCoverImage(listing: ListingLike): string {
-  const imgs = listing.listing_images ?? listing.images;
-  if (!imgs || imgs.length === 0) {
+  // Check both possible image array locations
+  const imgs = (listing.listing_images?.length ? listing.listing_images : null)
+    ?? (listing.images?.length ? listing.images : null);
+  if (!imgs) {
     return getRoomPlaceholder(listing.id);
   }
   const cover = imgs.find((i) => i.is_cover);
-  return cover?.url || imgs[0]?.url || getRoomPlaceholder(listing.id);
+  const url = cover?.url || imgs[0]?.url;
+  // Ensure we have a valid non-empty URL
+  return url && url.length > 0 ? url : getRoomPlaceholder(listing.id);
 }
 
 /** Standard onError handler for listing images */

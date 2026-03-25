@@ -21,6 +21,7 @@ interface DashboardStats {
   averageRating: number;
   totalReviews: number;
   responseRate: number;
+  currency?: string;
 }
 
 interface CalendarBooking {
@@ -51,13 +52,13 @@ export function useHostPanel(hostId?: string) {
 
     try {
       const [listingsRes, bookingsRes, earningsRes, conversationsRes] = await Promise.all([
-        supabase.from('listings').select('id, is_active, rating, review_count').eq('host_id', hostId),
+        supabase.from('listings').select('id, is_active, rating, review_count, currency').eq('host_id', hostId),
         supabase.from('bookings').select('id, status, total_price').eq('host_id', hostId),
         supabase.from('earnings').select('amount, net_amount, period').eq('host_id', hostId),
         supabase.from('conversations').select('id, participant_ids').contains('participant_ids', [hostId]),
       ]);
 
-      const listings = (listingsRes.data ?? []) as Pick<Listing, 'id' | 'is_active' | 'rating' | 'review_count'>[];
+      const listings = (listingsRes.data ?? []) as Pick<Listing, 'id' | 'is_active' | 'rating' | 'review_count' | 'currency'>[];
       const bookings = (bookingsRes.data ?? []) as Pick<Booking, 'id' | 'status' | 'total_price'>[];
       const earningsData = (earningsRes.data ?? []) as Pick<Earning, 'amount' | 'net_amount' | 'period'>[];
 
@@ -97,6 +98,7 @@ export function useHostPanel(hostId?: string) {
         averageRating: isNaN(avgRating) ? 0 : Number(avgRating.toFixed(2)),
         totalReviews,
         responseRate,
+        currency: listings[0]?.currency,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'İstatistikler yüklenemedi');

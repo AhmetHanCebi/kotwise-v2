@@ -19,10 +19,10 @@ export function useFavorites(userId?: string) {
     setError(null);
 
     try {
-      // Step 1: Fetch favorites with listing data (skip listing_images in nested join — 3-level depth is unreliable)
+      // Fetch favorites with listing data and images in a single join
       const { data, error: err } = await supabase
         .from('favorites')
-        .select('*, listing:listings!favorites_listing_id_fkey(*, city:cities!listings_city_id_fkey(id, name))')
+        .select('*, listing:listings!favorites_listing_id_fkey(*, listing_images(url, is_cover, order), city:cities!listings_city_id_fkey(id, name))')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -34,13 +34,16 @@ export function useFavorites(userId?: string) {
 
       const items = (data ?? []) as unknown as (Favorite & { listing: ListingWithImages })[];
 
-      // Step 2: Always fetch listing_images separately (reliable 2-level join, same as search page)
-      const listingIds = items.map(f => f.listing?.id).filter(Boolean) as string[];
-      if (listingIds.length > 0) {
+      // Fallback: if 3-level join didn't return listing_images, fetch separately
+      const missingImgIds = items
+        .filter(f => f.listing && (!f.listing.listing_images || f.listing.listing_images.length === 0))
+        .map(f => f.listing.id);
+
+      if (missingImgIds.length > 0) {
         const { data: imgData } = await supabase
           .from('listing_images')
           .select('listing_id, url, is_cover, order')
-          .in('listing_id', listingIds);
+          .in('listing_id', missingImgIds);
 
         if (imgData && imgData.length > 0) {
           const imgMap = new Map<string, typeof imgData>();
@@ -50,7 +53,7 @@ export function useFavorites(userId?: string) {
             imgMap.set(img.listing_id, arr);
           }
           for (const item of items) {
-            if (item.listing) {
+            if (item.listing && missingImgIds.includes(item.listing.id)) {
               item.listing.listing_images = imgMap.get(item.listing.id) ?? [];
             }
           }

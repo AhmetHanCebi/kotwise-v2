@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useBooking } from '@/hooks/useBooking';
 import type { BookingWithDetails } from '@/lib/database.types';
+import PageHeader from '@/components/PageHeader';
 import {
-  ArrowLeft,
   Check,
   X,
   Calendar,
@@ -27,7 +26,6 @@ export default function HostBookingsPage() {
 }
 
 function HostBookingsContent() {
-  const router = useRouter();
   const { user } = useAuth();
   const { loading, error, updateStatus, fetchHostBookings } = useBooking(user?.id);
 
@@ -35,6 +33,7 @@ function HostBookingsContent() {
   const [fetching, setFetching] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'confirmed' | 'cancelled' | 'all'>('pending');
+  const [confirmDialog, setConfirmDialog] = useState<{ id: string; action: 'confirmed' | 'cancelled' } | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -59,12 +58,14 @@ function HostBookingsContent() {
     return hostBookings.filter((b) => b.status === statusFilter);
   }, [hostBookings, statusFilter]);
 
-  const handleAction = async (id: string, action: 'confirmed' | 'cancelled') => {
-    const message = action === 'confirmed'
-      ? 'Bu rezervasyon talebini onaylamak istediğinize emin misiniz?'
-      : 'Bu rezervasyon talebini reddetmek istediğinize emin misiniz?';
-    if (!confirm(message)) return;
+  const handleAction = (id: string, action: 'confirmed' | 'cancelled') => {
+    setConfirmDialog({ id, action });
+  };
 
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    const { id, action } = confirmDialog;
+    setConfirmDialog(null);
     setActionLoading(id);
     await updateStatus(id, action);
     setHostBookings((prev) =>
@@ -75,31 +76,20 @@ function HostBookingsContent() {
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 pt-[calc(env(safe-area-inset-top)+12px)]"
-        style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)' }}
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-1.5 rounded-full active:opacity-70"
-          style={{ color: 'var(--color-text-primary)' }}
-          aria-label="Geri"
-        >
-          <ArrowLeft size={22} />
-        </button>
-        <h1 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Gelen Talepler
-        </h1>
-        {pendingBookings.length > 0 && (
-          <span
-            className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--color-warning)', color: 'white' }}
-          >
-            {pendingBookings.length}
-          </span>
-        )}
-      </div>
+      <PageHeader
+        title="Gelen Talepler"
+        showBack
+        rightContent={
+          pendingBookings.length > 0 ? (
+            <span
+              className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--color-warning)', color: 'white' }}
+            >
+              {pendingBookings.length}
+            </span>
+          ) : undefined
+        }
+      />
 
       {/* Status Tabs */}
       <div className="flex gap-2 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide">
@@ -263,6 +253,44 @@ function HostBookingsContent() {
           </div>
         )}
       </div>
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div
+            className="w-full max-w-sm rounded-2xl p-5"
+            style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-lg)' }}
+          >
+            <p className="text-base font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+              {confirmDialog.action === 'confirmed' ? 'Rezervasyonu Onayla' : 'Rezervasyonu Reddet'}
+            </p>
+            <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>
+              {confirmDialog.action === 'confirmed'
+                ? 'Bu rezervasyon talebini onaylamak istediğinize emin misiniz?'
+                : 'Bu rezervasyon talebini reddetmek istediğinize emin misiniz?'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: 'var(--color-bg)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }}
+              >
+                Vazgeç
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{
+                  background: confirmDialog.action === 'confirmed' ? 'var(--color-success)' : 'var(--color-error)',
+                  color: 'white',
+                }}
+              >
+                {confirmDialog.action === 'confirmed' ? 'Onayla' : 'Reddet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>
