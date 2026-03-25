@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Search, SlidersHorizontal, X, MapPin, Star, Heart,
   ArrowUpDown, ChevronDown, Wifi, Wind, Tv, Car,
-  UtensilsCrossed, Waves, Loader2, Home, Map, Clock,
+  UtensilsCrossed, Waves, Loader2, Home, Map, Clock, ShieldCheck,
 } from 'lucide-react';
 import { useListings, type ListingFilters } from '@/hooks/useListings';
 import ErrorRetry from '@/components/ErrorRetry';
@@ -714,16 +714,27 @@ function ListingCard({
             </div>
           )}
         </div>
-        <div className="mt-2 flex items-baseline gap-1">
-          <span
-            className="text-base font-bold"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            {formatCurrency(listing.price_per_month, listing.currency)}
-          </span>
-          <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-            /ay
-          </span>
+        <div className="mt-2 flex items-center gap-2">
+          <div className="flex items-baseline gap-1">
+            <span
+              className="text-base font-bold"
+              style={{ color: 'var(--color-primary)' }}
+            >
+              {formatCurrency(listing.price_per_month, listing.currency)}
+            </span>
+            <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+              /ay
+            </span>
+          </div>
+          {listing.is_verified && (
+            <div
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+              style={{ background: 'color-mix(in srgb, var(--color-success) 15%, transparent)', color: 'var(--color-success)' }}
+            >
+              <ShieldCheck size={10} />
+              Doğrulanmış
+            </div>
+          )}
         </div>
       </div>
     </Link>

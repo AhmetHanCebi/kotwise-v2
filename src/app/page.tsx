@@ -169,6 +169,15 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
               Mobilyalı
             </span>
           )}
+          {listing.is_verified && (
+            <div
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+              style={{ background: 'color-mix(in srgb, var(--color-success) 15%, transparent)', color: 'var(--color-success)' }}
+            >
+              <ShieldCheck size={10} />
+              Doğrulanmış
+            </div>
+          )}
         </div>
       </div>
     </Link>
