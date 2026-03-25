@@ -8,7 +8,11 @@ import {
 } from 'lucide-react';
 import { useListings } from '@/hooks/useListings';
 import { useCities } from '@/hooks/useCities';
-import ListingMap from '@/components/ListingMap';
+import dynamic from 'next/dynamic';
+const ListingMap = dynamic(() => import('@/components/ListingMap'), {
+  ssr: false,
+  loading: () => <div className="h-full animate-pulse bg-gray-100 dark:bg-gray-800" />,
+});
 import type { Listing } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
 import { formatCurrency } from '@/lib/currency-utils';

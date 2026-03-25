@@ -12,7 +12,11 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
-import ListingMap from '@/components/ListingMap';
+import dynamic from 'next/dynamic';
+const ListingMap = dynamic(() => import('@/components/ListingMap'), {
+  ssr: false,
+  loading: () => <div className="h-[200px] animate-pulse bg-gray-100 dark:bg-gray-800 rounded-xl" />,
+});
 import type { ListingWithDetails, ReviewInsert } from '@/lib/database.types';
 import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, getCoverImage, getRoomPlaceholder } from '@/lib/image-utils';
 import { formatCurrency } from '@/lib/currency-utils';
