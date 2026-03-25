@@ -237,16 +237,23 @@ function CreateEventContent() {
         </div>
 
         {/* Location */}
-        <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-          <MapPin size={18} style={{ color: 'var(--color-success)' }} />
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Konum (opsiyonel)"
-            className="flex-1 text-sm outline-none bg-transparent"
-            style={{ color: 'var(--color-text-primary)' }}
-          />
+        <div className="p-3 rounded-xl" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+          <div className="flex items-center gap-3">
+            <MapPin size={18} style={{ color: 'var(--color-success)' }} />
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Konum adı, ör: Starbucks Alexanderplatz, Berlin"
+              className="flex-1 text-sm outline-none bg-transparent"
+              style={{ color: 'var(--color-text-primary)' }}
+            />
+          </div>
+          {location && (
+            <p className="text-[11px] mt-1.5 ml-8" style={{ color: 'var(--color-text-muted)' }}>
+              Google Maps&apos;te aranabilir bir konum adı girin
+            </p>
+          )}
         </div>
 
         {/* Description */}

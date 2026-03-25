@@ -273,7 +273,8 @@ export function useMessages(userId?: string) {
         .limit(20);
 
       return (data ?? []) as Profile[];
-    } catch {
+    } catch (err) {
+      console.error('Profil arama hatası:', err);
       return [];
     }
   }, [userId]);
@@ -303,7 +304,8 @@ export function useMessages(userId?: string) {
         .limit(10);
 
       return (profiles ?? []) as Profile[];
-    } catch {
+    } catch (err) {
+      console.error('Son iletişimler yüklenemedi:', err);
       return [];
     }
   }, [userId]);

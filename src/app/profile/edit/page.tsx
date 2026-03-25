@@ -310,7 +310,7 @@ function EditProfileContent() {
             icon={<Globe size={16} />}
             allowCustom
           />
-          <Field label="Telefon" value={form.phone} onChange={(v) => setForm((p) => ({ ...p, phone: v }))} type="tel" />
+          <PhoneField value={form.phone} onChange={(v) => setForm((p) => ({ ...p, phone: v }))} />
 
           {/* Bio */}
           <div>
@@ -401,6 +401,81 @@ function Field({
           color: 'var(--color-text-primary)',
         }}
       />
+    </div>
+  );
+}
+
+const COUNTRY_CODES = [
+  { code: '+90', flag: '🇹🇷', country: 'Türkiye' },
+  { code: '+49', flag: '🇩🇪', country: 'Almanya' },
+  { code: '+33', flag: '🇫🇷', country: 'Fransa' },
+  { code: '+34', flag: '🇪🇸', country: 'İspanya' },
+  { code: '+39', flag: '🇮🇹', country: 'İtalya' },
+  { code: '+31', flag: '🇳🇱', country: 'Hollanda' },
+  { code: '+44', flag: '🇬🇧', country: 'İngiltere' },
+  { code: '+1', flag: '🇺🇸', country: 'ABD' },
+  { code: '+43', flag: '🇦🇹', country: 'Avusturya' },
+  { code: '+32', flag: '🇧🇪', country: 'Belçika' },
+  { code: '+48', flag: '🇵🇱', country: 'Polonya' },
+  { code: '+420', flag: '🇨🇿', country: 'Çekya' },
+  { code: '+46', flag: '🇸🇪', country: 'İsveç' },
+  { code: '+47', flag: '🇳🇴', country: 'Norveç' },
+  { code: '+45', flag: '🇩🇰', country: 'Danimarka' },
+  { code: '+351', flag: '🇵🇹', country: 'Portekiz' },
+];
+
+function PhoneField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  // Parse existing value to detect country code
+  const detected = COUNTRY_CODES.find((c) => value.startsWith(c.code));
+  const selectedCode = detected?.code ?? '+90';
+  const localNumber = detected ? value.slice(detected.code.length).trim() : value.replace(/^\+?\d{1,3}\s*/, '');
+
+  const handleCodeChange = (newCode: string) => {
+    onChange(`${newCode} ${localNumber}`);
+  };
+
+  const handleNumberChange = (num: string) => {
+    onChange(`${selectedCode} ${num}`);
+  };
+
+  return (
+    <div>
+      <label
+        className="block text-xs font-semibold mb-1.5 px-1"
+        style={{ color: 'var(--color-text-secondary)' }}
+      >
+        Telefon
+      </label>
+      <div className="flex gap-2">
+        <select
+          value={selectedCode}
+          onChange={(e) => handleCodeChange(e.target.value)}
+          className="px-2 py-2.5 rounded-xl text-sm outline-none w-[100px] shrink-0"
+          style={{
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-primary)',
+          }}
+        >
+          {COUNTRY_CODES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.flag} {c.code}
+            </option>
+          ))}
+        </select>
+        <input
+          type="tel"
+          value={localNumber}
+          onChange={(e) => handleNumberChange(e.target.value)}
+          placeholder="5XX XXX XX XX"
+          className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
+          style={{
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-primary)',
+          }}
+        />
+      </div>
     </div>
   );
 }

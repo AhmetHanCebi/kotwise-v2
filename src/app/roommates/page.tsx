@@ -60,10 +60,55 @@ function calculateAge(birthDate: string | null | undefined): number | null {
   return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
 }
 
-function matchPercentage(myInterests: string[], theirInterests: string[]): number {
-  if (!myInterests?.length || !theirInterests?.length) return 0;
-  const common = myInterests.filter((i) => theirInterests.includes(i));
-  return Math.min(99, Math.floor((common.length / Math.max(myInterests.length, theirInterests.length)) * 100));
+interface MatchInput {
+  interests?: string[];
+  sleep_schedule?: string | null;
+  cleanliness?: string | null;
+  smoking?: boolean | null;
+  exchange_city?: string | null;
+}
+
+function matchPercentage(my: MatchInput, their: MatchInput): number {
+  let score = 0;
+  let maxScore = 0;
+
+  // Interest similarity (weight: 50)
+  const myInterests = my.interests ?? [];
+  const theirInterests = their.interests ?? [];
+  if (myInterests.length > 0 && theirInterests.length > 0) {
+    const common = myInterests.filter((i) => theirInterests.includes(i));
+    score += (common.length / Math.max(myInterests.length, theirInterests.length)) * 50;
+    maxScore += 50;
+  }
+
+  // Sleep schedule match (weight: 20)
+  if (my.sleep_schedule && their.sleep_schedule) {
+    score += my.sleep_schedule === their.sleep_schedule ? 20 : 5;
+    maxScore += 20;
+  }
+
+  // Cleanliness match (weight: 15)
+  if (my.cleanliness && their.cleanliness) {
+    score += my.cleanliness === their.cleanliness ? 15 : 5;
+    maxScore += 15;
+  }
+
+  // Smoking preference (weight: 15)
+  if (my.smoking !== null && my.smoking !== undefined && their.smoking !== null && their.smoking !== undefined) {
+    score += my.smoking === their.smoking ? 15 : 0;
+    maxScore += 15;
+  }
+
+  // Same exchange city bonus
+  if (my.exchange_city && their.exchange_city && my.exchange_city === their.exchange_city) {
+    score += 10;
+    maxScore += 10;
+  }
+
+  // If we have no data to compare, give a base score of 50
+  if (maxScore === 0) return 50;
+
+  return Math.min(99, Math.max(10, Math.round((score / maxScore) * 100)));
 }
 
 export default function RoommatesPageWrapper() {
@@ -77,7 +122,7 @@ export default function RoommatesPageWrapper() {
 function RoommatesPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
-  const { profiles, loading, fetchProfiles, like, skip } = useRoommates(user?.id);
+  const { profiles, myProfile, loading, fetchProfiles, fetchMyProfile, like, skip } = useRoommates(user?.id);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expandBio, setExpandBio] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -92,8 +137,11 @@ function RoommatesPage() {
   const [dragX, setDragX] = useState(0);
 
   useEffect(() => {
-    if (user?.id) fetchProfiles();
-  }, [user?.id, fetchProfiles]);
+    if (user?.id) {
+      fetchProfiles();
+      fetchMyProfile();
+    }
+  }, [user?.id, fetchProfiles, fetchMyProfile]);
 
   const currentProfile = profiles[currentIndex] ?? null;
 
@@ -140,9 +188,21 @@ function RoommatesPage() {
     }
   };
 
-  const match = currentProfile
-    ? matchPercentage(profile?.interests ?? [], currentProfile.interests ?? [])
-    : 0;
+  const myMatchInput: MatchInput = {
+    interests: myProfile?.interests?.length ? myProfile.interests : (profile?.interests ?? []),
+    sleep_schedule: myProfile?.sleep_schedule,
+    cleanliness: myProfile?.cleanliness,
+    smoking: myProfile?.smoking,
+    exchange_city: myProfile?.exchange_city,
+  };
+  const theirMatchInput: MatchInput = currentProfile ? {
+    interests: currentProfile.interests ?? [],
+    sleep_schedule: currentProfile.sleep_schedule,
+    cleanliness: currentProfile.cleanliness,
+    smoking: currentProfile.smoking,
+    exchange_city: currentProfile.exchange_city,
+  } : { interests: [] };
+  const match = currentProfile ? matchPercentage(myMatchInput, theirMatchInput) : 0;
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
@@ -260,9 +320,9 @@ function RoommatesPage() {
                 {/* Match badge */}
                 <div
                   className="absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-bold"
-                  style={{ background: match > 0 ? 'var(--color-success)' : 'var(--color-text-muted)', color: '#fff' }}
+                  style={{ background: match >= 60 ? 'var(--color-success)' : match >= 30 ? 'var(--color-warning)' : 'var(--color-text-muted)', color: '#fff' }}
                 >
-                  {match > 0 ? `%${match} Uyum` : 'Uyum bilgisi yok'}
+                  {`%${match} Uyum`}
                 </div>
 
                 {/* Swipe indicators */}

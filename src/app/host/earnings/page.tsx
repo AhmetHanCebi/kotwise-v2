@@ -13,6 +13,7 @@ import {
   BarChart3,
   Minus,
 } from 'lucide-react';
+import { formatPrice, currencySymbol as getCurrencySymbol } from '@/lib/currency-utils';
 
 export default function EarningsPage() {
   return (
@@ -57,8 +58,7 @@ function EarningsContent() {
     return 'EUR';
   }, [earnings]);
 
-  const CURRENCY_SYMBOLS: Record<string, string> = { TRY: '₺', EUR: '€', USD: '$', GBP: '£' };
-  const currencySymbol = CURRENCY_SYMBOLS[currencyCode] ?? currencyCode;
+  const symbol = getCurrencySymbol(currencyCode);
 
   // Filter earnings by selected period
   const filteredEarnings = useMemo(() => {
@@ -137,12 +137,12 @@ function EarningsContent() {
                 </div>
               </div>
               <p className="text-3xl font-bold mb-1" style={{ color: 'white' }}>
-                {(period === 'monthly' ? (stats?.monthlyEarnings ?? 0) : totalNet).toLocaleString('tr-TR')} {currencySymbol}
+                {formatPrice(period === 'monthly' ? (stats?.monthlyEarnings ?? 0) : totalNet)} {symbol}
               </p>
               <div className="flex items-center gap-1">
                 <TrendingUp size={14} style={{ color: '#4ADE80' }} />
                 <span className="text-xs" style={{ color: '#4ADE80' }}>
-                  Toplam: {totalNet.toLocaleString('tr-TR')} {currencySymbol}
+                  Toplam: {formatPrice(totalNet)} {symbol}
                 </span>
               </div>
             </div>
@@ -166,23 +166,29 @@ function EarningsContent() {
                   </p>
                 </div>
               ) : (
-                <div className="flex items-end justify-between gap-2 h-32">
-                  {periodGroups.map(([label, value]) => (
-                    <div key={label} className="flex-1 flex flex-col items-center gap-1">
-                      <div className="w-full flex flex-col items-center justify-end h-24">
-                        <div
-                          className="w-full max-w-[32px] rounded-t-md transition-all"
-                          style={{
-                            height: `${Math.max((value / maxEarning) * 100, 4)}%`,
-                            background: 'var(--gradient-primary)',
-                          }}
-                        />
+                <div className="flex items-end justify-between gap-2 h-40">
+                  {periodGroups.map(([label, value]) => {
+                    const pct = Math.max((value / maxEarning) * 100, 4);
+                    return (
+                      <div key={label} className="flex-1 flex flex-col items-center gap-1">
+                        <span className="text-[9px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                          {value > 0 ? formatPrice(value) : '0'}
+                        </span>
+                        <div className="w-full flex flex-col items-center justify-end h-28">
+                          <div
+                            className="w-full max-w-[32px] rounded-t-md transition-all"
+                            style={{
+                              height: `${pct}%`,
+                              background: 'var(--gradient-primary)',
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                          {label.split('-')[1] ?? label}
+                        </span>
                       </div>
-                      <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-                        {label.split('-')[1] ?? label}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -196,10 +202,10 @@ function EarningsContent() {
                 Detaylar
               </p>
               <div className="flex flex-col gap-2.5">
-                <DetailRow label="Brüt Kazanç" value={`${totalGross.toLocaleString('tr-TR')} ${currencySymbol}`} icon={<DollarSign size={14} />} />
-                <DetailRow label="Komisyon" value={`-${totalCommission.toLocaleString('tr-TR')} ${currencySymbol}`} icon={<Minus size={14} />} negative />
+                <DetailRow label="Brüt Kazanç" value={`${formatPrice(totalGross)} ${symbol}`} icon={<DollarSign size={14} />} />
+                <DetailRow label="Komisyon" value={`-${formatPrice(totalCommission)} ${symbol}`} icon={<Minus size={14} />} negative />
                 <div className="h-px" style={{ background: 'var(--color-border)' }} />
-                <DetailRow label="Net Kazanç" value={`${totalNet.toLocaleString('tr-TR')} ${currencySymbol}`} icon={<TrendingUp size={14} />} bold />
+                <DetailRow label="Net Kazanç" value={`${formatPrice(totalNet)} ${symbol}`} icon={<TrendingUp size={14} />} bold />
               </div>
             </div>
 
@@ -228,7 +234,7 @@ function EarningsContent() {
                         </p>
                       </div>
                       <span className="text-sm font-bold" style={{ color: 'var(--color-success)' }}>
-                        +{Number(e.net_amount).toLocaleString('tr-TR')} {currencySymbol}
+                        +{formatPrice(Number(e.net_amount))} {symbol}
                       </span>
                     </div>
                   ))}

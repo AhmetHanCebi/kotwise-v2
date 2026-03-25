@@ -50,40 +50,32 @@ export function usePosts(userId?: string) {
         return;
       }
 
-      // Check likes for current user
+      // Fetch likes, comments, and user's own likes in parallel
       let likedPostIds: Set<string> = new Set();
-      if (userId && data?.length) {
-        const { data: likes } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .eq('user_id', userId)
-          .in('post_id', data.map(p => p.id));
-        likedPostIds = new Set((likes ?? []).map(l => l.post_id));
-      }
-
-      // Fetch comment counts for these posts
       let commentCounts: Record<string, number> = {};
+      let likeCounts: Record<string, number> = {};
+
       if (data?.length) {
-        const { data: comments } = await supabase
-          .from('post_comments')
-          .select('post_id')
-          .in('post_id', data.map(p => p.id));
-        if (comments) {
-          for (const c of comments) {
+        const postIds = data.map(p => p.id);
+
+        const [userLikesRes, commentsRes, allLikesRes] = await Promise.all([
+          userId
+            ? supabase.from('post_likes').select('post_id').eq('user_id', userId).in('post_id', postIds)
+            : Promise.resolve({ data: [] }),
+          supabase.from('post_comments').select('post_id').in('post_id', postIds),
+          supabase.from('post_likes').select('post_id').in('post_id', postIds),
+        ]);
+
+        likedPostIds = new Set((userLikesRes.data ?? []).map(l => l.post_id));
+
+        if (commentsRes.data) {
+          for (const c of commentsRes.data) {
             commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1;
           }
         }
-      }
 
-      // Fetch like counts for these posts
-      let likeCounts: Record<string, number> = {};
-      if (data?.length) {
-        const { data: likes } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .in('post_id', data.map(p => p.id));
-        if (likes) {
-          for (const l of likes) {
+        if (allLikesRes.data) {
+          for (const l of allLikesRes.data) {
             likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1;
           }
         }

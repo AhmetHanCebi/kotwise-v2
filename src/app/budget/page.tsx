@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBudget } from '@/hooks/useBudget';
 import BottomNav from '@/components/BottomNav';
+import { currencyLabel } from '@/lib/currency-utils';
 import {
   ArrowLeft,
   Calculator,
@@ -39,6 +40,14 @@ const defaultAmounts: Record<CategoryKey, number> = {
 
 const DEFAULT_CURRENCY = 'EUR';
 
+function loadUserCurrency(): string {
+  try {
+    const stored = localStorage.getItem('kotwise_currency');
+    if (stored) return JSON.parse(stored) as string;
+  } catch { /* ignore */ }
+  return DEFAULT_CURRENCY;
+}
+
 export default function BudgetPage() {
   const router = useRouter();
   const { cities, loading: loadingCities, fetchCities } = useBudget();
@@ -47,10 +56,18 @@ export default function BudgetPage() {
   const [citySearch, setCitySearch] = useState('');
   const [duration, setDuration] = useState(5);
   const [amounts, setAmounts] = useState<Record<CategoryKey, number>>(defaultAmounts);
+  const [userCurrency, setUserCurrency] = useState(DEFAULT_CURRENCY);
+
+  useEffect(() => {
+    setUserCurrency(loadUserCurrency());
+  }, []);
 
   useEffect(() => {
     fetchCities();
   }, [fetchCities]);
+
+  // Display currency: prefer city currency when a city is selected, else use user preference
+  const displayCurr = selectedCity?.currency ?? userCurrency;
 
   const filteredCities = useMemo(() => {
     if (!citySearch.trim()) return cities;
@@ -172,7 +189,7 @@ export default function BudgetPage() {
                     </span>
                   </div>
                   <span className="text-sm font-bold" style={{ color: cat.color }}>
-                    {amounts[cat.key]} {selectedCity?.currency ?? DEFAULT_CURRENCY}
+                    {amounts[cat.key]} {currencyLabel(displayCurr)}
                   </span>
                 </div>
                 <input
@@ -197,13 +214,13 @@ export default function BudgetPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Aylık Toplam</span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {selectedCity?.currency ?? DEFAULT_CURRENCY}</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {currencyLabel(displayCurr)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {duration} Aylık Toplam
             </span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {selectedCity?.currency ?? DEFAULT_CURRENCY}</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {currencyLabel(displayCurr)}</span>
           </div>
         </div>
 
@@ -221,7 +238,7 @@ export default function BudgetPage() {
                 Şehir Ort. Kira
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {cityAvgRent} {selectedCity?.currency ?? DEFAULT_CURRENCY}
+                {cityAvgRent} {currencyLabel(displayCurr)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -229,7 +246,7 @@ export default function BudgetPage() {
                 Sizin Bütçeniz
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                {amounts.rent} {selectedCity?.currency ?? DEFAULT_CURRENCY}
+                {amounts.rent} {currencyLabel(displayCurr)}
               </span>
             </div>
             {comparison !== null && (
@@ -238,14 +255,14 @@ export default function BudgetPage() {
                   <>
                     <TrendingUp size={14} style={{ color: 'var(--color-error)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-error)' }}>
-                      Ortalamadan {comparison} {selectedCity?.currency ?? DEFAULT_CURRENCY} yüksek
+                      Ortalamadan {comparison} {currencyLabel(displayCurr)} yüksek
                     </span>
                   </>
                 ) : comparison < 0 ? (
                   <>
                     <TrendingDown size={14} style={{ color: 'var(--color-success)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                      Ortalamadan {Math.abs(comparison)} {selectedCity?.currency ?? DEFAULT_CURRENCY} düşük
+                      Ortalamadan {Math.abs(comparison)} {currencyLabel(displayCurr)} düşük
                     </span>
                   </>
                 ) : (
@@ -338,7 +355,7 @@ export default function BudgetPage() {
                     </div>
                     {city.avg_rent && (
                       <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                        Ort. {city.avg_rent} {city.currency ?? DEFAULT_CURRENCY}
+                        Ort. {city.avg_rent} {currencyLabel(city.currency ?? DEFAULT_CURRENCY)}
                       </span>
                     )}
                   </button>

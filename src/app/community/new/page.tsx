@@ -229,7 +229,7 @@ function NewPostContent() {
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Konum ekle"
+              placeholder="Konum ekle, ör: Kreuzberg, Berlin"
               className="flex-1 text-sm outline-none bg-transparent"
               style={{ color: 'var(--color-text-primary)' }}
             />

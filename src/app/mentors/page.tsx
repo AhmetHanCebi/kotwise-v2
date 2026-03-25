@@ -20,6 +20,12 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 
+const LANGUAGE_OPTIONS = [
+  'Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'İspanyolca',
+  'İtalyanca', 'Portekizce', 'Hollandaca', 'Rusça', 'Arapça',
+  'Çince', 'Japonca', 'Korece', 'Lehçe', 'Çekçe', 'İsveççe',
+];
+
 const EXPERTISE_OPTIONS = [
   'Konaklama', 'Ulaşım', 'Vize/Belgeler', 'Üniversite',
   'Dil', 'Kültür', 'Bütçe', 'Sosyal Hayat',
@@ -37,7 +43,8 @@ export default function MentorsPage() {
   const [applyForm, setApplyForm] = useState({
     cityId: '',
     bio: '',
-    languages: '',
+    languages: [] as string[],
+    customLang: '',
     expertise: [] as string[],
   });
 
@@ -279,14 +286,63 @@ export default function MentorsPage() {
               {/* Languages */}
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Diller</label>
-                <input
-                  type="text"
-                  placeholder="Türkçe, İngilizce, Almanca..."
-                  value={applyForm.languages}
-                  onChange={(e) => setApplyForm(p => ({ ...p, languages: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
-                />
+                <div className="flex flex-wrap gap-2">
+                  {LANGUAGE_OPTIONS.map(lang => {
+                    const selected = applyForm.languages.includes(lang);
+                    return (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setApplyForm(p => ({
+                          ...p,
+                          languages: selected ? p.languages.filter(l => l !== lang) : [...p.languages, lang],
+                        }))}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium"
+                        style={{
+                          background: selected ? 'var(--color-info)' : 'var(--color-bg)',
+                          color: selected ? 'white' : 'var(--color-text-secondary)',
+                          border: `1px solid ${selected ? 'var(--color-info)' : 'var(--color-border)'}`,
+                        }}
+                      >
+                        {selected && <Check size={12} />}
+                        {lang}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Custom language input */}
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    placeholder="Diğer dil ekle..."
+                    value={applyForm.customLang}
+                    onChange={(e) => setApplyForm(p => ({ ...p, customLang: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const val = applyForm.customLang.trim();
+                        if (val && !applyForm.languages.includes(val)) {
+                          setApplyForm(p => ({ ...p, languages: [...p.languages, val], customLang: '' }));
+                        }
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 rounded-xl text-xs outline-none"
+                    style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = applyForm.customLang.trim();
+                      if (val && !applyForm.languages.includes(val)) {
+                        setApplyForm(p => ({ ...p, languages: [...p.languages, val], customLang: '' }));
+                      }
+                    }}
+                    className="px-3 py-2 rounded-xl text-xs font-semibold"
+                    style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', color: 'var(--color-primary)' }}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
               </div>
 
               {/* Expertise */}
@@ -340,7 +396,7 @@ export default function MentorsPage() {
                   const result = await apply({
                     user_id: user.id,
                     city_id: applyForm.cityId,
-                    languages: applyForm.languages.split(',').map(l => l.trim()).filter(Boolean),
+                    languages: applyForm.languages,
                     expertise: applyForm.expertise,
                     bio: applyForm.bio || null,
                   });

@@ -19,8 +19,7 @@ export function useFavorites(userId?: string) {
     setError(null);
 
     try {
-      // Step 1: Fetch favorites with listing data (without nested listing_images join
-      // which fails silently in double-nested Supabase embeds)
+      // Step 1: Fetch favorites with listing data (skip listing_images in nested join — 3-level depth is unreliable)
       const { data, error: err } = await supabase
         .from('favorites')
         .select('*, listing:listings!favorites_listing_id_fkey(*, city:cities!listings_city_id_fkey(id, name))')
@@ -35,22 +34,20 @@ export function useFavorites(userId?: string) {
 
       const items = (data ?? []) as unknown as (Favorite & { listing: ListingWithImages })[];
 
-      // Step 2: Fetch listing_images via listings join (direct listing_images query
-      // may fail silently due to RLS policies)
+      // Step 2: Always fetch listing_images separately (reliable 2-level join, same as search page)
       const listingIds = items.map(f => f.listing?.id).filter(Boolean) as string[];
       if (listingIds.length > 0) {
-        const { data: listingsWithImgs } = await supabase
-          .from('listings')
-          .select('id, listing_images:listing_images!listing_images_listing_id_fkey(listing_id, url, is_cover, order)')
-          .in('id', listingIds);
+        const { data: imgData } = await supabase
+          .from('listing_images')
+          .select('listing_id, url, is_cover, order')
+          .in('listing_id', listingIds);
 
-        if (listingsWithImgs && listingsWithImgs.length > 0) {
-          const imgMap = new Map<string, { listing_id: string; url: string; is_cover: boolean; order: number }[]>();
-          for (const l of listingsWithImgs) {
-            const imgs = (l as unknown as { id: string; listing_images: { listing_id: string; url: string; is_cover: boolean; order: number }[] }).listing_images;
-            if (imgs && imgs.length > 0) {
-              imgMap.set(l.id, imgs);
-            }
+        if (imgData && imgData.length > 0) {
+          const imgMap = new Map<string, typeof imgData>();
+          for (const img of imgData) {
+            const arr = imgMap.get(img.listing_id) ?? [];
+            arr.push(img);
+            imgMap.set(img.listing_id, arr);
           }
           for (const item of items) {
             if (item.listing) {

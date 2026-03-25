@@ -57,8 +57,8 @@ export default function RoommateProfilePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { user, profile: myProfile } = useAuth();
-  const { like, getProfileById } = useRoommates(user?.id);
+  const { user, profile: authProfile } = useAuth();
+  const { like, getProfileById, myProfile: myRoommateProfile, fetchMyProfile } = useRoommates(user?.id);
   const [profileData, setProfileData] = useState<RoommateProfileWithUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [matchNotif, setMatchNotif] = useState(false);
@@ -66,12 +66,15 @@ export default function RoommateProfilePage({
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const data = await getProfileById(id);
+      const [data] = await Promise.all([
+        getProfileById(id),
+        fetchMyProfile(),
+      ]);
       setProfileData(data);
       setLoading(false);
     }
     load();
-  }, [id, getProfileById]);
+  }, [id, getProfileById, fetchMyProfile]);
 
   const handleLike = useCallback(async () => {
     if (!user) {
@@ -109,9 +112,11 @@ export default function RoommateProfilePage({
   }
 
   const p = profileData;
-  const myInterests = myProfile?.interests ?? [];
-  const match = matchPercentage(myInterests, p.interests ?? []);
+  const myInterests = myRoommateProfile?.interests?.length ? myRoommateProfile.interests : (authProfile?.interests ?? []);
+  const theirInterests = p.interests ?? [];
+  const match = matchPercentage(myInterests, theirInterests);
   const hasMyInterests = myInterests.length > 0;
+  const hasTheirInterests = theirInterests.length > 0;
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
@@ -158,7 +163,7 @@ export default function RoommateProfilePage({
           className="absolute bottom-6 right-4 px-4 py-2 rounded-2xl"
           style={{ background: match > 0 ? 'var(--color-success)' : 'var(--color-text-muted)', boxShadow: 'var(--shadow-md)' }}
         >
-          <span className="text-sm font-bold text-white">{match > 0 ? `%${match} Uyum` : hasMyInterests ? 'Ortak ilgi alanı yok' : 'Profilini tamamla'}</span>
+          <span className="text-sm font-bold text-white">{match > 0 ? `%${match} Uyum` : !hasMyInterests ? 'Profilini tamamla' : !hasTheirInterests ? 'Henüz ilgi alanı belirtmemiş' : 'Farklı ilgi alanları'}</span>
         </div>
       </div>
 
@@ -223,13 +228,13 @@ export default function RoommateProfilePage({
                   key={interest}
                   className="px-3 py-1.5 rounded-full text-xs font-medium"
                   style={{
-                    background: (myProfile?.interests ?? []).includes(interest)
+                    background: myInterests.includes(interest)
                       ? 'color-mix(in srgb, var(--color-success) 12%, transparent)'
                       : 'var(--color-bg)',
-                    color: (myProfile?.interests ?? []).includes(interest)
+                    color: myInterests.includes(interest)
                       ? 'var(--color-success)'
                       : 'var(--color-text-secondary)',
-                    border: `1px solid ${(myProfile?.interests ?? []).includes(interest) ? 'color-mix(in srgb, var(--color-success) 25%, transparent)' : 'var(--color-border)'}`,
+                    border: `1px solid ${myInterests.includes(interest) ? 'color-mix(in srgb, var(--color-success) 25%, transparent)' : 'var(--color-border)'}`,
                   }}
                 >
                   {INTEREST_EMOJIS[interest] ?? ''} {INTEREST_TR[interest] ?? interest.charAt(0).toUpperCase() + interest.slice(1)}

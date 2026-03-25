@@ -59,10 +59,18 @@ export function useMentors() {
       }
 
       // Update profile is_mentor flag
-      await supabase
+      const { error: profileErr } = await supabase
         .from('profiles')
         .update({ is_mentor: true })
         .eq('id', input.user_id);
+
+      if (profileErr) {
+        console.error('Failed to update is_mentor flag:', profileErr.message);
+        // Rollback: delete the mentor_profiles entry
+        await supabase.from('mentor_profiles').delete().eq('id', data.id);
+        setError(profileErr.message);
+        return { error: 'Profil güncellenemedi, lütfen tekrar deneyin.' };
+      }
 
       return { data: data as MentorProfile };
     } catch (err) {

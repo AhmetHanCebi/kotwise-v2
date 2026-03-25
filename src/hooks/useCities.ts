@@ -63,10 +63,17 @@ export function useCities() {
         return null;
       }
 
+      if (neighborhoodsRes.error) {
+        console.error('Mahalle verileri yüklenemedi:', neighborhoodsRes.error.message);
+      }
+      if (faqsRes.error) {
+        console.error('SSS verileri yüklenemedi:', faqsRes.error.message);
+      }
+
       const result: CityWithDetails = {
         ...(cityRes.data as City),
-        neighborhoods: (neighborhoodsRes.data ?? []) as Neighborhood[],
-        faqs: (faqsRes.data ?? []) as CityFaq[],
+        neighborhoods: neighborhoodsRes.error ? [] : (neighborhoodsRes.data ?? []) as Neighborhood[],
+        faqs: faqsRes.error ? [] : (faqsRes.data ?? []) as CityFaq[],
       };
 
       setCity(result);
