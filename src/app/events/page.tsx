@@ -92,7 +92,7 @@ export default function EventsPage() {
   }, {});
 
   return (
-    <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
+    <div className="flex flex-col min-h-dvh page-enter" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
       <header
         className="glass-effect sticky top-0 z-40 px-4 pt-[env(safe-area-inset-top)]"

@@ -468,7 +468,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="flex-1 flex flex-col min-h-dvh pb-20"
+      className="flex-1 flex flex-col min-h-dvh pb-20 page-enter"
       style={{ background: 'var(--color-bg)' }}
       {...pullHandlers}
     >

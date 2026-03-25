@@ -196,7 +196,7 @@ export default function ListingDetailPage({
   return (
     <div
       ref={containerRef}
-      className="min-h-dvh flex flex-col max-w-[430px] mx-auto relative overflow-y-auto"
+      className="min-h-dvh flex flex-col max-w-[430px] mx-auto relative overflow-y-auto page-enter"
       style={{ background: 'var(--color-bg)' }}
     >
       {/* Glass Header on scroll */}

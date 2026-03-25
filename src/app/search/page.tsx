@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import type { RoomType, Listing } from '@/lib/database.types';
 import { getCoverImage as getCoverImg, handleListingImageError } from '@/lib/image-utils';
 import BottomNav from '@/components/BottomNav';
+import BottomSheet from '@/components/BottomSheet';
 
 import { formatCurrency } from '@/lib/currency-utils';
 import { ROOM_TYPE_LABELS } from '@/lib/constants';
@@ -195,7 +196,7 @@ function SearchContent() {
 
   return (
     <div
-      className="min-h-dvh flex flex-col max-w-[430px] mx-auto relative"
+      className="min-h-dvh flex flex-col max-w-[430px] mx-auto relative page-enter"
       style={{ background: 'var(--color-bg)' }}
     >
       {/* Search Header */}
@@ -336,107 +337,103 @@ function SearchContent() {
         </div>
       )}
 
-      {/* Expandable Filter Panel */}
-      {showFilters && (
-        <div
-          className="z-30 px-4 py-4 animate-fade-in-up"
-          style={{
-            background: 'var(--color-bg-card)',
-            borderBottom: '1px solid var(--color-border)',
-          }}
-        >
-          {/* Price Range */}
-          <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-            Fiyat Aralığı
-          </p>
-          <div className="flex items-center gap-2 mb-4">
-            <input
-              type="number"
-              placeholder="Min"
-              value={priceRange.min}
-              onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))}
-              className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                background: 'var(--color-bg)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-            <span style={{ color: 'var(--color-text-muted)' }}>—</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={priceRange.max}
-              onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))}
-              className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                background: 'var(--color-bg)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-          </div>
+      {/* Filter Bottom Sheet */}
+      <BottomSheet
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        title="Filtreler"
+      >
+        {/* Price Range */}
+        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+          Fiyat Aralığı
+        </p>
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            type="number"
+            placeholder="Min"
+            value={priceRange.min}
+            onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))}
+            className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+            style={{
+              background: 'var(--color-bg)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          />
+          <span style={{ color: 'var(--color-text-muted)' }}>--</span>
+          <input
+            type="number"
+            placeholder="Max"
+            value={priceRange.max}
+            onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))}
+            className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+            style={{
+              background: 'var(--color-bg)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          />
+        </div>
 
-          {/* Room Type Grid */}
-          <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-            Oda Tipi
-          </p>
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {ROOM_TYPES.map((rt) => (
+        {/* Room Type Grid */}
+        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+          Oda Tipi
+        </p>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {ROOM_TYPES.map((rt) => (
+            <button
+              key={rt.value}
+              onClick={() => handleRoomTypeToggle(rt.value)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              style={{
+                background: filters.room_type === rt.value ? 'var(--color-primary)' : 'var(--color-bg)',
+                color: filters.room_type === rt.value ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
+                border: `1px solid ${filters.room_type === rt.value ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              }}
+            >
+              {rt.icon}
+              {rt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Amenities */}
+        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+          Olanaklar
+        </p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {AMENITIES.map((am) => {
+            const selected = filters.amenities?.includes(am.key);
+            return (
               <button
-                key={rt.value}
-                onClick={() => handleRoomTypeToggle(rt.value)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                key={am.key}
+                onClick={() => handleAmenityToggle(am.key)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
                 style={{
-                  background: filters.room_type === rt.value ? 'var(--color-primary)' : 'var(--color-bg)',
-                  color: filters.room_type === rt.value ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
-                  border: `1px solid ${filters.room_type === rt.value ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: selected ? 'var(--color-secondary)' : 'var(--color-bg)',
+                  color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
+                  border: `1px solid ${selected ? 'var(--color-secondary)' : 'var(--color-border)'}`,
                 }}
               >
-                {rt.icon}
-                {rt.label}
+                {am.icon}
+                {am.label}
               </button>
-            ))}
-          </div>
-
-          {/* Amenities */}
-          <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-            Olanaklar
-          </p>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {AMENITIES.map((am) => {
-              const selected = filters.amenities?.includes(am.key);
-              return (
-                <button
-                  key={am.key}
-                  onClick={() => handleAmenityToggle(am.key)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
-                  style={{
-                    background: selected ? 'var(--color-secondary)' : 'var(--color-bg)',
-                    color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
-                    border: `1px solid ${selected ? 'var(--color-secondary)' : 'var(--color-border)'}`,
-                  }}
-                >
-                  {am.icon}
-                  {am.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Apply */}
-          <button
-            onClick={handleFilterApply}
-            className="w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{
-              background: 'var(--gradient-primary)',
-              color: 'var(--color-text-inverse)',
-            }}
-          >
-            {totalCount} ilan göster
-          </button>
+            );
+          })}
         </div>
-      )}
+
+        {/* Apply */}
+        <button
+          onClick={handleFilterApply}
+          className="w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+          style={{
+            background: 'var(--gradient-primary)',
+            color: 'var(--color-text-inverse)',
+          }}
+        >
+          Uygula ({totalCount} ilan)
+        </button>
+      </BottomSheet>
 
       {/* Results Count */}
       <div className="px-4 py-3">

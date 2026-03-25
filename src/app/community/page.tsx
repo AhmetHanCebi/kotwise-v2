@@ -150,7 +150,7 @@ function CommunityPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }} {...pullHandlers}>
+    <div className="flex flex-col min-h-dvh page-enter" style={{ background: 'var(--color-bg)' }} {...pullHandlers}>
       {refreshing && (
         <div className="flex justify-center py-3">
           <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--color-primary)' }} />

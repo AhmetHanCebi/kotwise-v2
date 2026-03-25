@@ -86,7 +86,7 @@ function ProfileContent() {
   }
 
   return (
-    <div className="flex flex-col flex-1 pb-20" style={{ background: 'var(--color-bg)' }}>
+    <div className="flex flex-col flex-1 pb-20 page-enter" style={{ background: 'var(--color-bg)' }}>
       {/* Dark Gradient Header */}
       <div
         className="px-5 pt-[calc(env(safe-area-inset-top)+24px)] pb-8 relative"
