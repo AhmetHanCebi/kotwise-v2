@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -14,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
+import { supabase } from '@/lib/supabase';
 
 const sections = [
   {
@@ -26,6 +28,8 @@ const sections = [
         description: 'Doğrulanmış konaklama ilanlarını keşfet',
         color: '#F26522',
         bg: 'rgba(242,101,34,0.08)',
+        countKey: 'listings',
+        countSuffix: 'ilan',
       },
       {
         href: '/favorites',
@@ -34,6 +38,8 @@ const sections = [
         description: 'Beğendiğin ilanları incele',
         color: '#EF4444',
         bg: 'rgba(239,68,68,0.08)',
+        countKey: null,
+        countSuffix: '',
       },
     ],
   },
@@ -47,6 +53,8 @@ const sections = [
         description: 'Yaklaşan buluşma ve etkinliklere katıl',
         color: '#8B5CF6',
         bg: 'rgba(139,92,246,0.08)',
+        countKey: 'events',
+        countSuffix: 'etkinlik',
       },
       {
         href: '/roommates',
@@ -55,6 +63,8 @@ const sections = [
         description: 'Uyumlu oda arkadaşlarını bul',
         color: '#6366F1',
         bg: 'rgba(99,102,241,0.08)',
+        countKey: 'roommate_profiles',
+        countSuffix: 'profil',
       },
       {
         href: '/mentors',
@@ -63,6 +73,8 @@ const sections = [
         description: 'Deneyimli öğrencilerden rehberlik al',
         color: '#0EA5E9',
         bg: 'rgba(14,165,233,0.08)',
+        countKey: 'mentors',
+        countSuffix: 'mentor',
       },
       {
         href: '/community',
@@ -71,6 +83,8 @@ const sections = [
         description: 'Paylaşımları oku, soru sor',
         color: '#22C55E',
         bg: 'rgba(34,197,94,0.08)',
+        countKey: 'posts',
+        countSuffix: 'paylaşım',
       },
     ],
   },
@@ -84,6 +98,8 @@ const sections = [
         description: 'Mahalleler, ulaşım, yaşam maliyeti',
         color: '#F59E0B',
         bg: 'rgba(245,158,11,0.08)',
+        countKey: null,
+        countSuffix: '',
       },
       {
         href: '/budget',
@@ -92,6 +108,8 @@ const sections = [
         description: 'Erasmus harcamalarını planla',
         color: '#F26522',
         bg: 'rgba(242,101,34,0.08)',
+        countKey: null,
+        countSuffix: '',
       },
       {
         href: '/host',
@@ -100,12 +118,40 @@ const sections = [
         description: 'Odanı paylaş, gelir elde et',
         color: '#10B981',
         bg: 'rgba(16,185,129,0.08)',
+        countKey: null,
+        countSuffix: '',
       },
     ],
   },
 ];
 
 export default function ExplorePage() {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [listings, events, posts, roommates, mentors] = await Promise.all([
+          supabase.from('listings').select('id', { count: 'exact', head: true }).eq('is_active', true),
+          supabase.from('events').select('id', { count: 'exact', head: true }),
+          supabase.from('posts').select('id', { count: 'exact', head: true }),
+          supabase.from('roommate_profiles').select('id', { count: 'exact', head: true }),
+          supabase.from('mentors').select('id', { count: 'exact', head: true }),
+        ]);
+        setCounts({
+          listings: listings.count ?? 0,
+          events: events.count ?? 0,
+          posts: posts.count ?? 0,
+          roommate_profiles: roommates.count ?? 0,
+          mentors: mentors.count ?? 0,
+        });
+      } catch {
+        // Counts are optional — fail silently
+      }
+    };
+    fetchCounts();
+  }, []);
+
   return (
     <div
       className="flex-1 flex flex-col min-h-dvh pb-20"
@@ -165,29 +211,48 @@ export default function ExplorePage() {
           <div className="flex flex-col gap-2">
             {section.items.map((item) => {
               const Icon = item.icon;
+              const count = item.countKey ? counts[item.countKey] : null;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3.5 p-3.5 rounded-2xl transition-transform active:scale-[0.98]"
+                  className="flex items-center gap-3.5 p-3.5 rounded-2xl transition-all duration-200 active:scale-[0.98] hover:scale-[1.02] hover:shadow-lg overflow-hidden relative"
                   style={{
                     background: 'var(--color-bg-card)',
                     boxShadow: 'var(--shadow-card)',
                   }}
                 >
+                  {/* Gradient accent strip on left side */}
                   <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+                    style={{ background: item.color }}
+                  />
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ml-1"
                     style={{ background: item.bg }}
                   >
                     <Icon size={22} style={{ color: item.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p
-                      className="text-sm font-semibold"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      {item.label}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
+                        {item.label}
+                      </p>
+                      {count != null && count > 0 && (
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{
+                            background: item.bg,
+                            color: item.color,
+                          }}
+                        >
+                          {count} {item.countSuffix}
+                        </span>
+                      )}
+                    </div>
                     <p
                       className="text-xs"
                       style={{ color: 'var(--color-text-secondary)' }}

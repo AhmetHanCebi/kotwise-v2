@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Loader2,
   Image as ImageIcon,
+  X,
 } from 'lucide-react';
 
 
@@ -58,6 +59,7 @@ function CommunityPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>(FALLBACK_HASHTAGS);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch trending hashtags from RPC
@@ -283,8 +285,9 @@ function CommunityPage() {
                   {post.images.slice(0, 4).map((img, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-square bg-gray-100 overflow-hidden"
+                      className="relative aspect-square bg-gray-100 overflow-hidden cursor-pointer"
                       style={post.images.length === 1 ? { aspectRatio: '16/9' } : undefined}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFullscreenImage(img); }}
                     >
                       <img
                         src={img}
@@ -367,6 +370,27 @@ function CommunityPage() {
         {/* Infinite scroll trigger */}
         <div ref={observerRef} className="h-4" />
       </div>
+
+      {/* Fullscreen image lightbox */}
+      {fullscreenImage && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white p-2"
+            onClick={() => setFullscreenImage(null)}
+            aria-label="Kapat"
+          >
+            <X size={28} />
+          </button>
+          <img
+            src={fullscreenImage}
+            alt=""
+            className="max-w-full max-h-[85vh] object-contain"
+          />
+        </div>
+      )}
 
       {/* New Post FAB */}
       <button

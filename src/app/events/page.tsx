@@ -57,6 +57,20 @@ function formatDay(dateStr: string): string {
   return days[d.getDay()];
 }
 
+function isToday(dateStr: string): boolean {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}
+
+function isPast(dateStr: string): boolean {
+  const d = new Date(dateStr);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  d.setHours(0, 0, 0, 0);
+  return d < now;
+}
+
 export default function EventsPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -192,11 +206,13 @@ export default function EventsPage() {
               <Link
                 key={ev.id}
                 href={`/events/${ev.id}`}
-                className="rounded-2xl overflow-hidden text-left animate-fade-in-up block"
+                className="rounded-2xl overflow-hidden text-left animate-fade-in-up block transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
                 style={{
                   background: 'var(--color-bg-card)',
                   boxShadow: 'var(--shadow-card)',
                   animationDelay: `${i * 60}ms`,
+                  opacity: isPast(ev.date) ? 0.55 : 1,
+                  filter: isPast(ev.date) ? 'grayscale(0.4)' : 'none',
                 }}
               >
                 {/* Cover */}
@@ -220,12 +236,22 @@ export default function EventsPage() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3
-                        className="text-sm font-semibold truncate"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {ev.title}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3
+                          className="text-sm font-semibold truncate"
+                          style={{ color: 'var(--color-text-primary)' }}
+                        >
+                          {ev.title}
+                        </h3>
+                        {isToday(ev.date) && (
+                          <span
+                            className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{ background: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
+                          >
+                            Bug&#252;n
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
                         <CalendarDays size={12} />
                         {formatDay(ev.date)}, {ev.time?.substring(0, 5) ?? ev.time}
@@ -280,6 +306,14 @@ export default function EventsPage() {
                   <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                     {formatDay(date)}
                   </span>
+                  {isToday(date) && (
+                    <span
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
+                    >
+                      Bug&#252;n
+                    </span>
+                  )}
                   <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -287,8 +321,13 @@ export default function EventsPage() {
                     <Link
                       key={ev.id}
                       href={`/events/${ev.id}`}
-                      className="flex items-center gap-3 p-3 rounded-xl text-left block"
-                      style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}
+                      className="flex items-center gap-3 p-3 rounded-xl text-left block transition-all duration-200 hover:scale-[1.01] hover:shadow-md"
+                      style={{
+                        background: 'var(--color-bg-card)',
+                        boxShadow: 'var(--shadow-sm)',
+                        opacity: isPast(ev.date) ? 0.55 : 1,
+                        filter: isPast(ev.date) ? 'grayscale(0.4)' : 'none',
+                      }}
                     >
                       <div
                         className="w-1 h-10 rounded-full"

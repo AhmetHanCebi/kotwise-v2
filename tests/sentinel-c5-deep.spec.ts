@@ -1,615 +1,402 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 const BASE = 'http://localhost:3336';
+const ssDir = 'tests/screenshots';
 
-async function login(page: Page) {
+async function login(page) {
   await page.goto(`${BASE}/login`);
+  await page.waitForLoadState('networkidle');
   await page.fill('input[type="email"]', 'deniz@kotwise.com');
   await page.fill('input[type="password"]', 'KotwiseTest2026!');
-  await page.getByRole('button', { name: 'Giriş Yap', exact: true }).click();
-  await page.waitForTimeout(3000);
+  await page.click('button[type="submit"]');
+  await page.waitForURL('**/');
+  await page.waitForLoadState('networkidle');
 }
 
-async function screenshot(page: Page, name: string) {
-  await page.screenshot({ path: `tests/screenshots/sentinel-c5-${name}.png`, fullPage: true });
-}
+// ====== REGRESYON KONTROL ======
 
-// =====================================================
-// BÖLÜM 1: SVG PLACEHOLDER RE-CHECK (4 döngüdür devam eden bug)
-// =====================================================
-
-test('C5-01: favorites - thumbnail placeholder re-check', async ({ page }) => {
+test('C5-01: Fiyat regresyon - 7 sayfa', async ({ page }) => {
   await login(page);
-  await page.goto(`${BASE}/favorites`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '01-favorites');
+  const results: any[] = [];
 
-  const images = page.locator('img');
-  const count = await images.count();
-  let svgPlaceholders = 0;
-  let realPhotos = 0;
-  let brokenImages = 0;
-
-  for (let i = 0; i < count; i++) {
-    const src = await images.nth(i).getAttribute('src') || '';
-    const naturalWidth = await images.nth(i).evaluate((el: HTMLImageElement) => el.naturalWidth);
-    if (src.startsWith('data:image/svg+xml')) {
-      svgPlaceholders++;
-    } else if (src && naturalWidth > 0) {
-      realPhotos++;
-    } else {
-      brokenImages++;
-    }
+  for (const [name, path] of [
+    ['homepage', '/'],
+    ['favorites', '/favorites'],
+    ['compare', '/compare'],
+    ['booking', '/booking'],
+    ['profile-bookings', '/profile/bookings'],
+    ['search-map', '/search/map']
+  ]) {
+    await page.goto(`${BASE}${path}`);
+    await page.waitForLoadState('networkidle');
+    const text = await page.textContent('body') || '';
+    const prices = text.match(/[\d.]+\s*[₺]/g) || [];
+    const has100x = prices.some(p => parseInt(p.replace(/\./g, '')) > 5000);
+    results.push({ page: name, prices: prices.slice(0, 4), has100x });
   }
 
-  console.log(`FAVORITES: ${count} imgs, ${svgPlaceholders} SVG placeholder, ${realPhotos} real, ${brokenImages} broken`);
-});
-
-test('C5-02: compare - thumbnail placeholder re-check', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/compare`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '02-compare');
-
-  const images = page.locator('img');
-  const count = await images.count();
-  let svgPlaceholders = 0;
-  for (let i = 0; i < count; i++) {
-    const src = await images.nth(i).getAttribute('src') || '';
-    if (src.startsWith('data:image/svg+xml')) svgPlaceholders++;
-  }
-  console.log(`COMPARE: ${count} imgs, ${svgPlaceholders} SVG placeholder`);
-});
-
-test('C5-03: booking - thumbnail placeholder re-check', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/booking`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '03-booking');
-
-  const images = page.locator('img');
-  const count = await images.count();
-  let svgPlaceholders = 0;
-  for (let i = 0; i < count; i++) {
-    const src = await images.nth(i).getAttribute('src') || '';
-    if (src.startsWith('data:image/svg+xml')) svgPlaceholders++;
-  }
-  console.log(`BOOKING: ${count} imgs, ${svgPlaceholders} SVG placeholder`);
-});
-
-test('C5-04: profile-bookings - thumbnail placeholder re-check', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/profile/bookings`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '04-profile-bookings');
-
-  const images = page.locator('img');
-  const count = await images.count();
-  let svgPlaceholders = 0;
-  for (let i = 0; i < count; i++) {
-    const src = await images.nth(i).getAttribute('src') || '';
-    if (src.startsWith('data:image/svg+xml')) svgPlaceholders++;
-  }
-  console.log(`PROFILE-BOOKINGS: ${count} imgs, ${svgPlaceholders} SVG placeholder`);
-});
-
-// =====================================================
-// BÖLÜM 2: DAHA ÖNCE TEST EDİLMEMİŞ DETAY SAYFALARI
-// =====================================================
-
-test('C5-05: community detail page /community/[id]', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/community`);
-  await page.waitForTimeout(1500);
-
-  const postLinks = page.locator('a[href*="/community/"]').first();
-  if (await postLinks.isVisible()) {
-    await postLinks.click();
-    await page.waitForTimeout(2000);
-    await screenshot(page, '05-community-detail');
-
-    const url = page.url();
-    console.log(`COMMUNITY DETAIL URL: ${url}`);
-
-    const bodyText = await page.locator('body').innerText();
-    const hasContent = bodyText.length > 100;
-    const hasLikeButton = await page.locator('button').filter({ hasText: /beğen|like/i }).count() > 0 ||
-                          await page.locator('[aria-label*="like"], [aria-label*="beğen"]').count() > 0;
-    const hasCommentSection = bodyText.includes('Yorum') || bodyText.includes('yorum') || bodyText.includes('comment');
-    const hasError = bodyText.includes('Error') || bodyText.includes('404') || bodyText.includes('Hata');
-
-    console.log(`COMMUNITY DETAIL: content=${hasContent}, like=${hasLikeButton}, comments=${hasCommentSection}, error=${hasError}`);
-  } else {
-    console.log('COMMUNITY: No post links found, checking direct URL');
-    await page.goto(`${BASE}/community/1`);
-    await page.waitForTimeout(2000);
-    await screenshot(page, '05-community-detail-direct');
-    const bodyText = await page.locator('body').innerText();
-    console.log(`COMMUNITY DETAIL (direct): ${bodyText.substring(0, 200)}`);
-  }
-});
-
-test('C5-06: events detail page /events/[id]', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/events`);
-  await page.waitForTimeout(1500);
-
-  const eventLinks = page.locator('a[href*="/events/"]').first();
-  if (await eventLinks.isVisible()) {
-    await eventLinks.click();
-    await page.waitForTimeout(2000);
-    await screenshot(page, '06-events-detail');
-
-    const url = page.url();
-    console.log(`EVENTS DETAIL URL: ${url}`);
-
-    const bodyText = await page.locator('body').innerText();
-    const hasDate = /\d{1,2}[\./]\d{1,2}[\./]\d{2,4}/.test(bodyText) || bodyText.includes('2026');
-    const hasLocation = bodyText.includes('Konum') || bodyText.includes('konum') || bodyText.includes('Barcelona') || bodyText.includes('Berlin');
-    const hasJoinButton = await page.locator('button').filter({ hasText: /katıl|join|kayıt/i }).count() > 0;
-    const hasOrganizer = bodyText.includes('Organizatör') || bodyText.includes('organizatör') || bodyText.includes('düzenleyen');
-    const hasError = bodyText.includes('Error') || bodyText.includes('404') || bodyText.includes('Hata');
-
-    console.log(`EVENTS DETAIL: date=${hasDate}, location=${hasLocation}, join=${hasJoinButton}, organizer=${hasOrganizer}, error=${hasError}`);
-  } else {
-    console.log('EVENTS: No event links found');
-    await page.goto(`${BASE}/events/1`);
-    await page.waitForTimeout(2000);
-    await screenshot(page, '06-events-detail-direct');
-  }
-});
-
-test('C5-07: mentors detail page /mentors/[id]', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/mentors`);
-  await page.waitForTimeout(1500);
-
-  const mentorLinks = page.locator('a[href*="/mentors/"]').first();
-  if (await mentorLinks.isVisible()) {
-    await mentorLinks.click();
-    await page.waitForTimeout(2000);
-    await screenshot(page, '07-mentors-detail');
-
-    const url = page.url();
-    console.log(`MENTORS DETAIL URL: ${url}`);
-
-    const bodyText = await page.locator('body').innerText();
-    const hasProfile = bodyText.includes('Maria') || bodyText.includes('Carlos');
-    const hasExpertise = bodyText.includes('Uzmanlık') || bodyText.includes('uzmanlık') || bodyText.includes('expertise');
-    const hasMessageButton = await page.locator('button').filter({ hasText: /mesaj|message/i }).count() > 0;
-    const hasError = bodyText.includes('Error') || bodyText.includes('404') || bodyText.includes('Hata');
-
-    console.log(`MENTORS DETAIL: profile=${hasProfile}, expertise=${hasExpertise}, message=${hasMessageButton}, error=${hasError}`);
-  } else {
-    console.log('MENTORS: No mentor links found');
-    await page.goto(`${BASE}/mentors/1`);
-    await page.waitForTimeout(2000);
-    await screenshot(page, '07-mentors-detail-direct');
-  }
-});
-
-test('C5-08: roommates detail page /roommates/[id]', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/roommates`);
-  await page.waitForTimeout(1500);
-  await screenshot(page, '08-roommates-main');
-
-  const roommateLinks = page.locator('a[href*="/roommates/"]').first();
-  if (await roommateLinks.isVisible()) {
-    await roommateLinks.click();
-    await page.waitForTimeout(2000);
-    await screenshot(page, '08-roommates-detail');
-    const url = page.url();
-    console.log(`ROOMMATES DETAIL URL: ${url}`);
-    const bodyText = await page.locator('body').innerText();
-    console.log(`ROOMMATES DETAIL: ${bodyText.substring(0, 300)}`);
-  } else {
-    await page.goto(`${BASE}/roommates/1`);
-    await page.waitForTimeout(2000);
-    await screenshot(page, '08-roommates-detail-direct');
-    const bodyText = await page.locator('body').innerText();
-    const hasError = bodyText.includes('Error') || bodyText.includes('404');
-    console.log(`ROOMMATES DETAIL (direct): error=${hasError}, content=${bodyText.substring(0, 200)}`);
-  }
-});
-
-test('C5-09: city chat page /city/[id]/chat', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/city`);
-  await page.waitForTimeout(1500);
-
-  const cityLinks = page.locator('a[href*="/city/"]').first();
-  if (await cityLinks.isVisible()) {
-    await cityLinks.click();
-    await page.waitForTimeout(1500);
-
-    const chatLink = page.locator('a[href*="/chat"]').first();
-    if (await chatLink.isVisible()) {
-      await chatLink.click();
-      await page.waitForTimeout(2000);
-      await screenshot(page, '09-city-chat');
-      const url = page.url();
-      console.log(`CITY CHAT URL: ${url}`);
-      const bodyText = await page.locator('body').innerText();
-      const hasInput = await page.locator('input, textarea').count();
-      console.log(`CITY CHAT: inputs=${hasInput}, content=${bodyText.substring(0, 300)}`);
-    } else {
-      const cityUrl = page.url();
-      const cityId = cityUrl.split('/city/')[1]?.split('/')[0] || '1';
-      await page.goto(`${BASE}/city/${cityId}/chat`);
-      await page.waitForTimeout(2000);
-      await screenshot(page, '09-city-chat-direct');
-      const bodyText = await page.locator('body').innerText();
-      console.log(`CITY CHAT (direct): ${bodyText.substring(0, 300)}`);
-    }
-  }
-});
-
-test('C5-10: booking success page /booking/success', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/booking/success`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '10-booking-success');
-
-  const bodyText = await page.locator('body').innerText();
-  const hasSuccess = bodyText.includes('Başarılı') || bodyText.includes('başarı') || bodyText.includes('success') || bodyText.includes('Tebrik') || bodyText.includes('Onay');
-  const hasError = bodyText.includes('Error') || bodyText.includes('404') || bodyText.includes('Hata');
-  const hasNextSteps = bodyText.includes('mesaj') || bodyText.includes('profi') || bodyText.includes('anasayfa');
-  console.log(`BOOKING SUCCESS: success=${hasSuccess}, error=${hasError}, nextSteps=${hasNextSteps}`);
-  console.log(`BOOKING SUCCESS TEXT: ${bodyText.substring(0, 500)}`);
-});
-
-// =====================================================
-// BÖLÜM 3: FORM SUBMIT FLOW'LARI
-// =====================================================
-
-test('C5-11: listing-new form validation deep test', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/listing/new`);
-  await page.waitForTimeout(1500);
-
-  const continueBtn = page.locator('button').filter({ hasText: /devam|ileri|next|continue/i }).first();
-  if (await continueBtn.isVisible()) {
-    await continueBtn.click();
-    await page.waitForTimeout(1000);
-    await screenshot(page, '11-listing-new-validation');
-
-    const bodyText = await page.locator('body').innerText();
-    const validationErrors = bodyText.match(/(gerekli|zorunlu|required|hata|error)/gi) || [];
-    console.log(`LISTING-NEW VALIDATION: ${validationErrors.length} error messages found: ${validationErrors.join(', ')}`);
-  }
-
-  const titleInput = page.locator('input').first();
-  if (await titleInput.isVisible()) {
-    await titleInput.fill('Test İlan Başlığı');
-  }
-
-  await screenshot(page, '11-listing-new-filled');
-});
-
-test('C5-12: community-new post creation flow', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/community/new`);
-  await page.waitForTimeout(1500);
-
-  const textarea = page.locator('textarea').first();
-  if (await textarea.isVisible()) {
-    await textarea.fill('Bu bir test gönderisidir. Erasmus deneyimlerim harika geçiyor! #TestPost');
-    await page.waitForTimeout(500);
-    await screenshot(page, '12-community-new-filled');
-
-    const hashtagButtons = page.locator('button, span').filter({ hasText: /#/ });
-    const hashtagCount = await hashtagButtons.count();
-    console.log(`COMMUNITY-NEW: ${hashtagCount} hashtag buttons found`);
-
-    const submitBtn = page.locator('button').filter({ hasText: /paylaş|gönder|share|post/i }).first();
-    if (await submitBtn.isVisible()) {
-      console.log('COMMUNITY-NEW: Paylaş button found and visible');
-    }
-  }
-});
-
-test('C5-13: events-new event creation flow', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/events/new`);
-  await page.waitForTimeout(1500);
-
-  const nameInput = page.locator('input[type="text"]').first();
-  if (await nameInput.isVisible()) {
-    await nameInput.fill('Test Etkinliği - Kahve Buluşması');
-  }
-
-  const inputs = page.locator('input, textarea, select');
-  const inputCount = await inputs.count();
-  const buttons = page.locator('button');
-  const buttonCount = await buttons.count();
-
-  console.log(`EVENTS-NEW: ${inputCount} inputs, ${buttonCount} buttons`);
-
-  await screenshot(page, '13-events-new-filled');
-
-  const datePickers = page.locator('input[type="date"], input[type="datetime-local"], input[placeholder*="tarih"], input[placeholder*="dd"]');
-  const datePickerCount = await datePickers.count();
-  console.log(`EVENTS-NEW: ${datePickerCount} date pickers found`);
-});
-
-// =====================================================
-// BÖLÜM 4: NAVIGATION FLOW TEST
-// =====================================================
-
-test('C5-14: search → listing detail → booking flow', async ({ page }) => {
-  await login(page);
   await page.goto(`${BASE}/search`);
-  await page.waitForTimeout(2000);
+  await page.waitForLoadState('networkidle');
+  const link = await page.$('a[href*="/listing/"]');
+  if (link) {
+    const href = await link.getAttribute('href');
+    await page.goto(`${BASE}${href}`);
+    await page.waitForLoadState('networkidle');
+    const text = await page.textContent('body') || '';
+    const prices = text.match(/[\d.]+\s*[₺]/g) || [];
+    results.push({ page: 'listing-detail', prices: prices.slice(0, 4) });
+  }
 
-  const listingLink = page.locator('a[href*="/listing/"]').first();
-  if (await listingLink.isVisible()) {
-    await listingLink.click();
-    await page.waitForTimeout(2000);
-    await screenshot(page, '14-flow-listing-detail');
-
-    const listingUrl = page.url();
-    console.log(`FLOW: Listing URL = ${listingUrl}`);
-
-    const reserveBtn = page.locator('button').filter({ hasText: /rezervasyon|book|kirala/i }).first();
-    const hasReserveBtn = await reserveBtn.isVisible().catch(() => false);
-    console.log(`FLOW: Reserve button visible = ${hasReserveBtn}`);
-
-    if (hasReserveBtn) {
-      await reserveBtn.click();
-      await page.waitForTimeout(2000);
-      await screenshot(page, '14-flow-after-reserve-click');
-      const afterUrl = page.url();
-      console.log(`FLOW: After reserve click URL = ${afterUrl}`);
-      const bodyText = await page.locator('body').innerText();
-      const hasPayment = bodyText.includes('Stripe') || bodyText.includes('ödeme') || bodyText.includes('payment') || bodyText.includes('kart');
-      console.log(`FLOW: Payment/Stripe visible = ${hasPayment}`);
-    }
+  console.log('PRICE_RESULTS:', JSON.stringify(results));
+  for (const r of results) {
+    if (r.has100x) console.log('100x_BUG: ' + r.page + ' => ' + JSON.stringify(r.prices));
   }
 });
 
-test('C5-15: search filters deep interaction', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/search`);
-  await page.waitForTimeout(2000);
-
-  const initialLinks = await page.locator('a[href*="/listing/"]').count();
-  console.log(`SEARCH: ${initialLinks} listing links initially`);
-
-  const selectElements = page.locator('select');
-  const selectCount = await selectElements.count();
-  for (let i = 0; i < selectCount; i++) {
-    const options = await selectElements.nth(i).locator('option').allInnerTexts();
-    console.log(`SEARCH SELECT ${i}: options = ${options.join(', ')}`);
-  }
-
-  const sliders = page.locator('input[type="range"]');
-  const sliderCount = await sliders.count();
-  console.log(`SEARCH: ${sliderCount} range sliders`);
-
-  await screenshot(page, '15-search-filters');
-});
-
-// =====================================================
-// BÖLÜM 5: EDGE CASES & DETAY SAYFALAR
-// =====================================================
-
-test('C5-16: register page check', async ({ page }) => {
-  await page.goto(`${BASE}/register`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '16-register');
-
-  const bodyText = await page.locator('body').innerText();
-  const inputs = await page.locator('input').count();
-  const hasEmail = await page.locator('input[type="email"]').count();
-  const hasPassword = await page.locator('input[type="password"]').count();
-  const hasSubmit = await page.locator('button[type="submit"]').count();
-  console.log(`REGISTER: ${inputs} inputs, email=${hasEmail}, password=${hasPassword}, submit=${hasSubmit}`);
-  console.log(`REGISTER TEXT: ${bodyText.substring(0, 300)}`);
-});
-
-test('C5-17: forgot-password flow', async ({ page }) => {
-  await page.goto(`${BASE}/forgot-password`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '17-forgot-password');
-
-  const bodyText = await page.locator('body').innerText();
-  const emailInput = page.locator('input[type="email"]');
-  if (await emailInput.isVisible()) {
-    await emailInput.fill('deniz@kotwise.com');
-    await screenshot(page, '17-forgot-password-filled');
-    console.log('FORGOT-PASSWORD: Email input present');
-  }
-  console.log(`FORGOT-PASSWORD TEXT: ${bodyText.substring(0, 300)}`);
-});
-
-test('C5-18: host-earnings page deep check', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/host/earnings`);
-  await page.waitForTimeout(2000);
-  await screenshot(page, '18-host-earnings');
-
-  const bodyText = await page.locator('body').innerText();
-  const hasEarnings = bodyText.includes('Kazanç') || bodyText.includes('kazanç') || bodyText.includes('earnings');
-  const hasGraph = await page.locator('canvas, svg, [class*="chart"], [class*="graph"]').count();
-  const hasCurrency = /[\d.,]+\s*(₺|TL|EUR|€)/.test(bodyText) || /(₺|TL|EUR|€)\s*[\d.,]+/.test(bodyText);
-  console.log(`HOST-EARNINGS: earnings=${hasEarnings}, graph=${hasGraph}, currency=${hasCurrency}`);
-  console.log(`HOST-EARNINGS TEXT: ${bodyText.substring(0, 500)}`);
-});
-
-// =====================================================
-// BÖLÜM 6: PLACEHOLDER TARAMASI
-// =====================================================
-
-test('C5-19: placeholder scan on new pages', async ({ page }) => {
+test('C5-02: Thumbnail foto kontrol - 5 sayfa', async ({ page }) => {
   await login(page);
 
-  const pagesToScan = [
-    { name: 'booking-success', path: '/booking/success' },
-    { name: 'host-earnings', path: '/host/earnings' },
-    { name: 'community', path: '/community' },
-    { name: 'events', path: '/events' },
-    { name: 'roommates', path: '/roommates' },
-    { name: 'mentors', path: '/mentors' },
-    { name: 'search-map', path: '/search/map' },
-    { name: 'budget', path: '/budget' },
-  ];
+  for (const [name, path] of [
+    ['favorites', '/favorites'],
+    ['compare', '/compare'],
+    ['booking', '/booking'],
+    ['profile-bookings', '/profile/bookings'],
+    ['search', '/search']
+  ]) {
+    await page.goto(`${BASE}${path}`);
+    await page.waitForLoadState('networkidle');
+    await page.screenshot({ path: `${ssDir}/sentinel-c5-${name}.png`, fullPage: true });
 
-  for (const p of pagesToScan) {
-    await page.goto(`${BASE}${p.path}`);
-    await page.waitForTimeout(1500);
+    const imgs = await page.$$eval('img', els => ({
+      total: els.length,
+      svg: els.filter(e => e.src.startsWith('data:image/svg')).length,
+      real: els.filter(e => e.src.includes('unsplash')).length
+    }));
 
-    const bodyText = await page.locator('body').innerText();
-    const hasYakinda = /yakında|coming soon/i.test(bodyText);
-    const hasPlaceholder = /placeholder|lorem ipsum|todo/i.test(bodyText);
-    const stuckLoading = bodyText.includes('Yükleniyor') && bodyText.length < 200;
-
-    if (hasYakinda || hasPlaceholder || stuckLoading) {
-      console.log(`⚠️ ${p.name}: yakinda=${hasYakinda}, placeholder=${hasPlaceholder}, stuckLoading=${stuckLoading}`);
-    } else {
-      console.log(`✅ ${p.name}: clean`);
-    }
+    console.log('PHOTO_' + name + ': ' + JSON.stringify(imgs));
   }
 });
 
-// =====================================================
-// BÖLÜM 7: REGRESYON KONTROLLERI
-// =====================================================
-
-test('C5-20: regression check - notifications', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/notifications`);
-  await page.waitForTimeout(3000);
-  await screenshot(page, '20-notifications-regression');
-
-  const bodyText = await page.locator('body').innerText();
-  const stuckLoading = bodyText.includes('Yükleniyor') && !bodyText.includes('beğeni') && !bodyText.includes('mesaj');
-  const hasNotifications = bodyText.includes('beğeni') || bodyText.includes('mesaj') || bodyText.includes('etkinlik');
-  console.log(`NOTIFICATIONS REGRESSION: stuck=${stuckLoading}, hasContent=${hasNotifications}`);
-});
-
-test('C5-21: regression check - messages chat input', async ({ page }) => {
-  await login(page);
-  await page.goto(`${BASE}/messages`);
-  await page.waitForTimeout(1500);
-
-  const convLink = page.locator('a[href*="/messages/"]').first();
-  if (await convLink.isVisible()) {
-    await convLink.click();
-    await page.waitForTimeout(2000);
-    await screenshot(page, '21-messages-detail-regression');
-
-    const hasInput = await page.locator('input[placeholder*="Mesaj"], input[placeholder*="mesaj"], textarea[placeholder*="Mesaj"]').count();
-    const hasSendBtn = await page.locator('button[aria-label*="Gönder"], button[aria-label*="gönder"]').count();
-    console.log(`MESSAGES REGRESSION: chatInput=${hasInput}, sendBtn=${hasSendBtn}`);
-  }
-});
-
-test('C5-22: regression check - map zoom level', async ({ page }) => {
+test('C5-03: Harita zoom + marker', async ({ page }) => {
   await login(page);
   await page.goto(`${BASE}/search/map`);
-  await page.waitForTimeout(3000);
-  await screenshot(page, '22-map-zoom-regression');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(2000);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-map.png`, fullPage: true });
 
-  const tiles = await page.locator('img[src*="tile.openstreetmap"]').all();
-  let zoomLevels: string[] = [];
-  for (const tile of tiles) {
-    const src = await tile.getAttribute('src') || '';
-    const match = src.match(/\/(\d+)\/\d+\/\d+\.png/);
-    if (match) zoomLevels.push(match[1]);
-  }
-  const uniqueZooms = [...new Set(zoomLevels)];
-  console.log(`MAP REGRESSION: zoom levels = ${uniqueZooms.join(', ')}`);
-
-  const bodyText = await page.locator('body').innerText();
-  const prices = bodyText.match(/[\d.,]+\s*(₺|TL)/g) || [];
-  console.log(`MAP REGRESSION: prices found = ${prices.slice(0, 5).join(', ')}`);
+  const tiles = await page.$$eval('img[src*="tile.openstreetmap"]', els => els.map(e => e.src));
+  const zooms = tiles.map(t => { const m = t.match(/\/(\d+)\/\d+\/\d+/); return m ? parseInt(m[1]) : 0; });
+  const maxZoom = Math.max(...zooms, 0);
+  console.log('MAP: zoom=' + maxZoom + ', tiles=' + tiles.length);
+  expect(maxZoom).toBeGreaterThanOrEqual(10);
 });
 
-test('C5-23: regression check - profile bookings price', async ({ page }) => {
+// ====== FORM DOLDURMA ======
+
+test('C5-04: listing-new validasyon + form', async ({ page }) => {
   await login(page);
-  await page.goto(`${BASE}/profile/bookings`);
+  await page.goto(`${BASE}/listing/new`);
+  await page.waitForLoadState('networkidle');
+
+  const btn = await page.$('button:has-text("Devam"), button:has-text("Ileri"), button[type="submit"]');
+  if (btn) await btn.click();
+  await page.waitForTimeout(500);
+
+  const body = await page.textContent('body') || '';
+  const validation = body.includes('gerekli') || body.includes('zorunlu');
+  const comboboxes = await page.$$('[role="combobox"], input[aria-autocomplete]');
+
+  console.log('LISTING_NEW: validation=' + validation + ', comboboxes=' + comboboxes.length);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-listing-new.png`, fullPage: true });
+});
+
+test('C5-05: profile-edit alanlar', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/profile/edit`);
+  await page.waitForLoadState('networkidle');
+
+  const inputs = await page.$$('input, textarea');
+  const comboboxes = await page.$$('[role="combobox"], input[aria-autocomplete]');
+  const tags = await page.$$('[class*="tag"], [class*="chip"], [class*="badge"]');
+  const body = await page.textContent('body') || '';
+
+  console.log('PROFILE_EDIT: inputs=' + inputs.length + ', comboboxes=' + comboboxes.length + ', tags=' + tags.length + ', hasName=' + body.includes('Deniz'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-profile-edit.png`, fullPage: true });
+});
+
+test('C5-06: events-new form', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/events/new`);
+  await page.waitForLoadState('networkidle');
+
+  const inputs = await page.$$('input, textarea, select');
+  const buttons = await page.$$('button');
+  console.log('EVENTS_NEW: inputs=' + inputs.length + ', buttons=' + buttons.length);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-events-new.png`, fullPage: true });
+});
+
+// ====== FiLTRE ETKiLESiM ======
+
+test('C5-07: events filtre', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/events`);
+  await page.waitForLoadState('networkidle');
+
+  const filterBtns = await page.$$eval('button', btns => btns.map(b => b.textContent?.trim()).filter(t => t && t.length < 20));
+  console.log('EVENTS: filters=' + JSON.stringify(filterBtns.slice(0, 15)));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-events.png`, fullPage: true });
+});
+
+test('C5-08: search ilanlar', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/search`);
+  await page.waitForLoadState('networkidle');
+
+  const listings = await page.$$('a[href*="/listing/"]');
+  const imgs = await page.$$eval('img', els => ({
+    total: els.length,
+    svg: els.filter(e => e.src.startsWith('data:image/svg')).length,
+    real: els.filter(e => e.src.includes('unsplash')).length
+  }));
+
+  console.log('SEARCH: listings=' + listings.length + ', imgs=' + JSON.stringify(imgs));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-search-main.png`, fullPage: true });
+});
+
+test('C5-09: settings toggle', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/settings`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  const toggles = await page.$$('[role="switch"], input[type="checkbox"]');
+  console.log('SETTINGS: toggles=' + toggles.length + ', TRY=' + body.includes('TRY'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-settings.png`, fullPage: true });
+});
+
+test('C5-10: budget slider + TRY', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/budget`);
+  await page.waitForLoadState('networkidle');
+
+  const sliders = await page.$$('input[type="range"]');
+  const body = await page.textContent('body') || '';
+  console.log('BUDGET: sliders=' + sliders.length + ', TL=' + body.includes('\u20BA') + ', EUR=' + body.includes('\u20AC'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-budget.png`, fullPage: true });
+});
+
+// ====== DETAY SAYFALARI ======
+
+test('C5-11: roommates kart + detay', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/roommates`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  const uyumMatch = body.match(/%(\d+)\s*Uyum/);
+  const photo = await page.$$eval('img', els => els.some(e => e.src.includes('unsplash')));
+
+  console.log('ROOMMATES: uyum=' + (uyumMatch ? uyumMatch[0] : 'none') + ', photo=' + photo);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-roommates.png`, fullPage: true });
+});
+
+test('C5-12: mentors sayi + filtre', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/mentors`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  const msgBtns = await page.$$('button:has-text("Mesaj")');
+  const names = body.match(/(Maria|Carlos|Fatma|Emre|Anna|Lena|Lucas)/g) || [];
+
+  console.log('MENTORS: msgBtns=' + msgBtns.length + ', names=' + JSON.stringify([...new Set(names)]));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-mentors.png`, fullPage: true });
+});
+
+test('C5-13: notifications regresyon', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/notifications`);
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(2000);
 
-  const bodyText = await page.locator('body').innerText();
-  const prices = bodyText.match(/[\d.,]+\s*(₺|TL)/g) || [];
-  console.log(`PROFILE-BOOKINGS PRICES: ${prices.join(', ')}`);
+  const body = await page.textContent('body') || '';
+  const stuck = body.includes('Y\u00FCkleniyor') && !body.includes('Coffee');
+  const hasNotifs = body.includes('Coffee') || body.includes('be\u011Feni');
 
-  const highPrices = prices.filter(p => {
-    const num = parseFloat(p.replace(/[^\d.,]/g, '').replace(',', '.'));
-    return num > 10000;
-  });
-  if (highPrices.length > 0) {
-    console.log(`⚠️ PROFILE-BOOKINGS: Possible 100x price error: ${highPrices.join(', ')}`);
-  } else {
-    console.log(`✅ PROFILE-BOOKINGS: Prices look correct`);
-  }
+  console.log('NOTIFICATIONS: stuck=' + stuck + ', hasNotifs=' + hasNotifs);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-notifications.png`, fullPage: true });
+  expect(stuck).toBe(false);
 });
 
-// =====================================================
-// BÖLÜM 8: CONSOLE ERROR CHECK
-// =====================================================
+// ====== PLACEHOLDER + CONSOLE ERROR ======
 
-test('C5-24: console errors scan on key pages', async ({ page }) => {
-  const errors: { page: string; error: string }[] = [];
+test('C5-14: placeholder tarama - 18 sayfa', async ({ page }) => {
+  await login(page);
+  const paths = ['/', '/search', '/favorites', '/compare', '/booking', '/profile/bookings',
+    '/messages', '/community', '/events', '/roommates', '/mentors', '/budget', '/host/earnings',
+    '/notifications', '/settings', '/search/map', '/host/bookings', '/host/calendar'];
 
+  const found: string[] = [];
+  for (const p of paths) {
+    await page.goto(`${BASE}${p}`);
+    await page.waitForLoadState('networkidle');
+    const text = (await page.textContent('body') || '').toLowerCase();
+    if (text.includes('yakinda') || text.includes('coming soon') || text.includes('lorem ipsum') ||
+        text.includes('{currencysymbol}') || text.includes('{price}')) {
+      found.push(p);
+    }
+  }
+
+  console.log('PLACEHOLDER: found=' + (found.length > 0 ? JSON.stringify(found) : 'NONE'));
+  expect(found.length).toBe(0);
+});
+
+test('C5-15: console error tarama - 10 sayfa', async ({ page }) => {
+  await login(page);
+  const errors: string[] = [];
   page.on('console', msg => {
-    if (msg.type() === 'error') {
-      errors.push({ page: page.url(), error: msg.text().substring(0, 200) });
+    if (msg.type() === 'error' && !msg.text().includes('favicon')) {
+      errors.push(msg.text().substring(0, 80));
     }
   });
 
-  await login(page);
-
-  const pagesToCheck = [
-    '/favorites', '/compare', '/booking', '/profile/bookings',
-    '/search/map', '/notifications', '/messages', '/community',
-    '/events', '/roommates', '/mentors', '/host/earnings'
-  ];
-
-  for (const path of pagesToCheck) {
-    await page.goto(`${BASE}${path}`);
-    await page.waitForTimeout(1500);
+  for (const p of ['/favorites', '/compare', '/booking', '/notifications', '/messages',
+    '/community', '/events', '/roommates', '/mentors', '/host/earnings']) {
+    await page.goto(`${BASE}${p}`);
+    await page.waitForLoadState('networkidle');
   }
 
-  console.log(`CONSOLE ERRORS: ${errors.length} total`);
-  for (const e of errors.slice(0, 10)) {
-    console.log(`  ERROR on ${e.page}: ${e.error}`);
+  console.log('CONSOLE_ERRORS: ' + errors.length + ', ' + JSON.stringify(errors.slice(0, 3)));
+});
+
+// ====== EDGE CASE ======
+
+test('C5-16: host-earnings template var', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/host/earnings`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  const hasTemplate = body.includes('{currencySymbol}') || body.includes('{currency}');
+  console.log('HOST_EARNINGS: template=' + hasTemplate + ', lira=' + body.includes('\u20BA'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-host-earnings.png`, fullPage: true });
+  expect(hasTemplate).toBe(false);
+});
+
+test('C5-17: messages chat detay', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/messages`);
+  await page.waitForLoadState('networkidle');
+
+  const convos = await page.$$('a[href*="/messages/"]');
+  if (convos.length > 0) {
+    await convos[0].click();
+    await page.waitForLoadState('networkidle');
+    const hasInput = await page.$('input[placeholder*="Mesaj"], textarea[placeholder*="Mesaj"]');
+    console.log('MESSAGES: convos=' + convos.length + ', chatInput=' + !!hasInput);
+    await page.screenshot({ path: `${ssDir}/sentinel-c5-messages-chat.png`, fullPage: true });
   }
 });
 
-// =====================================================
-// BÖLÜM 9: ACCESSIBILITY CHECK
-// =====================================================
-
-test('C5-25: accessibility - buttons without labels', async ({ page }) => {
+test('C5-18: community-new hashtag', async ({ page }) => {
   await login(page);
+  await page.goto(`${BASE}/community/new`);
+  await page.waitForLoadState('networkidle');
 
-  const pagesToCheck = [
-    { name: 'events', path: '/events' },
-    { name: 'roommates', path: '/roommates' },
-    { name: 'search', path: '/search' },
-  ];
+  const hashtags = await page.$$eval('button', btns => btns.filter(b => (b.textContent || '').includes('#')).length);
+  const shareBtn = await page.$('button:has-text("Payla")');
+  console.log('COMMUNITY_NEW: hashtags=' + hashtags + ', share=' + !!shareBtn);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-community-new.png`, fullPage: true });
+});
 
-  for (const p of pagesToCheck) {
-    await page.goto(`${BASE}${p.path}`);
-    await page.waitForTimeout(1500);
+test('C5-19: listing-detail carousel + ozellikler', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/search`);
+  await page.waitForLoadState('networkidle');
 
-    const buttons = page.locator('button');
-    const btnCount = await buttons.count();
-    let unlabeledCount = 0;
+  const link = await page.$('a[href*="/listing/"]');
+  if (!link) return;
+  const href = await link.getAttribute('href');
+  await page.goto(`${BASE}${href}`);
+  await page.waitForLoadState('networkidle');
 
-    for (let i = 0; i < btnCount; i++) {
-      const btn = buttons.nth(i);
-      const text = (await btn.innerText().catch(() => '')).trim();
-      const ariaLabel = await btn.getAttribute('aria-label') || '';
-      const title = await btn.getAttribute('title') || '';
+  const body = await page.textContent('body') || '';
+  const imgs = await page.$$eval('img', els => ({
+    total: els.length,
+    real: els.filter(e => e.src.includes('unsplash')).length,
+    svg: els.filter(e => e.src.startsWith('data:image/svg')).length
+  }));
 
-      if (!text && !ariaLabel && !title) {
-        unlabeledCount++;
-      }
-    }
+  console.log('LISTING_DETAIL: imgs=' + JSON.stringify(imgs) + ', carousel=' + body.includes('1/') + ', superhost=' + body.includes('SUPERHOST') + ', rezervasyon=' + body.includes('Rezervasyon'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-listing-detail.png`, fullPage: true });
+});
 
-    console.log(`A11Y ${p.name}: ${btnCount} buttons, ${unlabeledCount} unlabeled`);
+test('C5-20: BottomNav + homepage features', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  const navLinks = await page.$$eval('a', els => els.map(e => e.getAttribute('href')).filter(h => h));
+  const hasRoommate = navLinks.some(h => h!.includes('/roommates'));
+  const hasHost = navLinks.some(h => h!.includes('/host'));
+
+  console.log('HOMEPAGE: roommate=' + body.includes('Oda Arkada') + ', host=' + body.includes('Ev Sahibi') + ', roommateLink=' + hasRoommate + ', hostLink=' + hasHost);
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-homepage.png`, fullPage: true });
+});
+
+test('C5-21: empty state - host-bookings', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/host/bookings`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  console.log('HOST_BOOKINGS: empty=' + body.includes('talep yok') + ', tabs=' + body.includes('Bekleyen'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-host-bookings.png`, fullPage: true });
+});
+
+test('C5-22: city-detail tabs', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/city`);
+  await page.waitForLoadState('networkidle');
+
+  const cityLink = await page.$('a[href*="/city/"]');
+  if (cityLink) {
+    const href = await cityLink.getAttribute('href');
+    await page.goto(`${BASE}${href}`);
+    await page.waitForLoadState('networkidle');
+    await page.screenshot({ path: `${ssDir}/sentinel-c5-city-detail.png`, fullPage: true });
+    const body = await page.textContent('body') || '';
+    console.log('CITY_DETAIL: bilgi=' + body.includes('Bilgi') + ', mahalleler=' + body.includes('Mahalleler'));
   }
+});
+
+test('C5-23: host-calendar', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/host/calendar`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  console.log('HOST_CALENDAR: legend=' + (body.includes('M\u00FCsait') || body.includes('Dolu')) + ', year=' + body.includes('2026'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-host-calendar.png`, fullPage: true });
+});
+
+test('C5-24: register sayfasi', async ({ page }) => {
+  await page.goto(`${BASE}/register`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  const inputs = await page.$$('input');
+  console.log('REGISTER: inputs=' + inputs.length + ', google=' + body.includes('Google') + ', apple=' + body.includes('Apple'));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-register.png`, fullPage: true });
+});
+
+test('C5-25: host-apply form', async ({ page }) => {
+  await login(page);
+  await page.goto(`${BASE}/host/apply`);
+  await page.waitForLoadState('networkidle');
+
+  const body = await page.textContent('body') || '';
+  console.log('HOST_APPLY: upload=' + body.includes('Y\u00FCkle') + ', steps=' + (body.includes('1/4') || body.includes('Kimlik')));
+  await page.screenshot({ path: `${ssDir}/sentinel-c5-host-apply.png`, fullPage: true });
 });
