@@ -762,6 +762,49 @@ export default function ListingDetailPage({
             </div>
           </div>
         )}
+
+        {/* Related Tags */}
+        {(() => {
+          const tags: { label: string; query: string }[] = [];
+          if (listing.city?.name) tags.push({ label: listing.city.name, query: listing.city.name });
+          if (listing.neighborhood?.name) tags.push({ label: listing.neighborhood.name, query: listing.neighborhood.name });
+          if (listing.room_type) tags.push({ label: ROOM_TYPE_LABELS[listing.room_type] ?? listing.room_type, query: ROOM_TYPE_LABELS[listing.room_type] ?? listing.room_type });
+          if (listing.is_furnished) tags.push({ label: 'Eşyalı', query: 'Eşyalı' });
+          if (listing.amenities?.length) {
+            listing.amenities.forEach((am) => {
+              const label = AMENITY_LABELS[am];
+              if (label) {
+                const displayLabel = am === 'wifi' ? 'WiFi dahil' : label;
+                tags.push({ label: displayLabel, query: displayLabel });
+              }
+            });
+          }
+          if (listing.university_name) tags.push({ label: listing.university_name, query: listing.university_name });
+          if (tags.length === 0) return null;
+          return (
+            <div className="mt-6">
+              <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
+                İlgili Etiketler
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Link
+                    key={tag.label}
+                    href={`/search?q=${encodeURIComponent(tag.query)}`}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors hover:opacity-80"
+                    style={{
+                      background: 'var(--color-bg)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    {tag.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Share Toast */}

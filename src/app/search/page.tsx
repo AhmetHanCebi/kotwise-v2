@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   Search, SlidersHorizontal, X, MapPin, Star, Heart,
   ArrowUpDown, ChevronDown, Wifi, Wind, Tv, Car,
-  UtensilsCrossed, Waves, Loader2, Home, Map,
+  UtensilsCrossed, Waves, Loader2, Home, Map, Clock,
 } from 'lucide-react';
 import { useListings, type ListingFilters } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -50,6 +50,22 @@ function getCoverImage(listing: ListingWithImages): string {
 
 const PAGE_SIZE = 10;
 
+const RECENT_KEY = 'kotwise_recent_searches';
+const getRecent = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]') as string[]; }
+  catch { return []; }
+};
+const addRecent = (q: string) => {
+  const list = getRecent().filter(s => s !== q);
+  list.unshift(q);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 5)));
+};
+const removeRecent = (q: string) => {
+  const list = getRecent().filter(s => s !== q);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+};
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -60,6 +76,8 @@ function SearchContent() {
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
@@ -101,6 +119,11 @@ function SearchContent() {
     [search]
   );
 
+  // Load recent searches from localStorage
+  useEffect(() => {
+    setRecentSearches(getRecent());
+  }, []);
+
   useEffect(() => {
     setPage(1);
     setHasMore(true);
@@ -137,13 +160,19 @@ function SearchContent() {
     return () => observer.disconnect();
   }, [loadMore, listings.length, hasMore, loading]);
 
-  const handleSearch = () => {
-    const updated = { ...filters, search: query || undefined };
+  const handleSearch = (searchQuery?: string) => {
+    const q = searchQuery ?? query;
+    const updated = { ...filters, search: q || undefined };
     setFilters(updated);
     setPage(1);
     setHasMore(true);
     doSearch({ ...updated, page: 1 });
     syncFiltersToUrl(updated);
+    if (q && q.trim()) {
+      addRecent(q.trim());
+      setRecentSearches(getRecent());
+    }
+    setSearchFocused(false);
   };
 
   const handleFilterApply = () => {
@@ -221,6 +250,8 @@ function SearchContent() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => { setTimeout(() => setSearchFocused(false), 200); }}
             placeholder="Şehir, üniversite veya mahalle ara..."
             className="flex-1 bg-transparent text-sm outline-none"
             style={{ color: 'var(--color-text-primary)' }}
@@ -242,6 +273,47 @@ function SearchContent() {
             </button>
           )}
         </div>
+
+        {/* Recent Searches */}
+        {searchFocused && !query && recentSearches.length > 0 && (
+          <div className="mt-2 animate-fade-in">
+            <p className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 px-1 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
+              <Clock size={11} />
+              Son Aramalar
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {recentSearches.map((term) => (
+                <button
+                  key={term}
+                  className="flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-xs font-medium transition-colors"
+                  style={{
+                    background: 'var(--color-bg)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setQuery(term);
+                    handleSearch(term);
+                  }}
+                >
+                  {term}
+                  <span
+                    className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-gray-200"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeRecent(term);
+                      setRecentSearches(getRecent());
+                    }}
+                  >
+                    <X size={10} style={{ color: 'var(--color-text-muted)' }} />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Filter Chips Row */}
         <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">

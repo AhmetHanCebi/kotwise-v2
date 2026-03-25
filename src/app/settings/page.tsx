@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
@@ -70,16 +70,38 @@ function SettingsContent() {
     try { localStorage.setItem(`kotwise_${key}`, JSON.stringify(value)); } catch { /* ignore */ }
   };
 
+  // Track which toggle just saved (for "Kaydedildi" fade feedback)
+  const [savedField, setSavedField] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<string | null>(null);
+
+  const showSavedFeedback = useCallback((field: string) => {
+    setSavedField(field);
+    setErrorField(null);
+    const timer = setTimeout(() => setSavedField(null), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showErrorFeedback = useCallback((field: string) => {
+    setErrorField(field);
+    setSavedField(null);
+    const timer = setTimeout(() => setErrorField(null), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Save all settings to profile.settings JSONB column
-  const saveSettingsToProfile = async (settings: SettingsData) => {
-    if (!user) return;
+  const saveSettingsToProfile = async (settings: SettingsData, field?: string): Promise<boolean> => {
+    if (!user) return false;
     try {
-      await supabase
+      const { error } = await supabase
         .from('profiles')
         .update({ settings } as Record<string, unknown>)
         .eq('id', user.id);
+      if (error) throw error;
+      if (field) showSavedFeedback(field);
+      return true;
     } catch {
-      // Silently fail — localStorage is the fallback
+      if (field) showErrorFeedback(field);
+      return false;
     }
   };
 
@@ -140,7 +162,7 @@ function SettingsContent() {
       const next = { ...prev, [key]: !prev[key] };
       saveSetting('notifs', next);
       const settings = { ...getCurrentSettings(), notifs: next };
-      saveSettingsToProfile(settings);
+      saveSettingsToProfile(settings, `notif_${key}`);
       return next;
     });
   };
@@ -271,11 +293,14 @@ function SettingsContent() {
             icon={<Moon size={18} style={{ color: '#6366F1' }} />}
             label="Karanlık Tema"
             value={darkMode}
+            fieldId="darkMode"
+            savedField={savedField}
+            errorField={errorField}
             onChange={() => {
               const next = !darkMode;
               setDarkMode(next);
               saveSetting('darkMode', next);
-              saveSettingsToProfile({ ...getCurrentSettings(), darkMode: next });
+              saveSettingsToProfile({ ...getCurrentSettings(), darkMode: next }, 'darkMode');
               // Apply dark mode to document
               if (next) {
                 document.documentElement.classList.add('dark');
@@ -284,7 +309,6 @@ function SettingsContent() {
                 document.documentElement.classList.remove('dark');
                 document.documentElement.setAttribute('data-theme', 'light');
               }
-              toast('Tema tercihiniz kaydedildi', 'success');
             }}
           />
         </div>
@@ -297,6 +321,9 @@ function SettingsContent() {
             label="Mesajlar"
             value={notifs.messages}
             onChange={() => toggleNotif('messages')}
+            fieldId="notif_messages"
+            savedField={savedField}
+            errorField={errorField}
             border
           />
           <ToggleRow
@@ -304,6 +331,9 @@ function SettingsContent() {
             label="Rezervasyonlar"
             value={notifs.bookings}
             onChange={() => toggleNotif('bookings')}
+            fieldId="notif_bookings"
+            savedField={savedField}
+            errorField={errorField}
             border
           />
           <ToggleRow
@@ -311,6 +341,9 @@ function SettingsContent() {
             label="Etkinlikler"
             value={notifs.events}
             onChange={() => toggleNotif('events')}
+            fieldId="notif_events"
+            savedField={savedField}
+            errorField={errorField}
             border
           />
           <ToggleRow
@@ -318,6 +351,9 @@ function SettingsContent() {
             label="Promosyonlar"
             value={notifs.promotions}
             onChange={() => toggleNotif('promotions')}
+            fieldId="notif_promotions"
+            savedField={savedField}
+            errorField={errorField}
           />
         </div>
 
@@ -328,14 +364,20 @@ function SettingsContent() {
             icon={<Eye size={18} style={{ color: '#06B6D4' }} />}
             label="Profili Herkese Göster"
             value={privacyPublicProfile}
-            onChange={() => { const next = !privacyPublicProfile; setPrivacyPublicProfile(next); saveSetting('privacyPublicProfile', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyPublicProfile: next }); toast('Ayarlarınız kaydedildi', 'success'); }}
+            onChange={() => { const next = !privacyPublicProfile; setPrivacyPublicProfile(next); saveSetting('privacyPublicProfile', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyPublicProfile: next }, 'privacyPublicProfile'); }}
+            fieldId="privacyPublicProfile"
+            savedField={savedField}
+            errorField={errorField}
             border
           />
           <ToggleRow
             icon={<Shield size={18} style={{ color: '#22C55E' }} />}
             label="Çevrimiçi Durumu Göster"
             value={privacyOnlineStatus}
-            onChange={() => { const next = !privacyOnlineStatus; setPrivacyOnlineStatus(next); saveSetting('privacyOnlineStatus', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyOnlineStatus: next }); toast('Ayarlarınız kaydedildi', 'success'); }}
+            onChange={() => { const next = !privacyOnlineStatus; setPrivacyOnlineStatus(next); saveSetting('privacyOnlineStatus', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyOnlineStatus: next }, 'privacyOnlineStatus'); }}
+            fieldId="privacyOnlineStatus"
+            savedField={savedField}
+            errorField={errorField}
           />
         </div>
 
@@ -458,13 +500,22 @@ function ToggleRow({
   value,
   onChange,
   border,
+  fieldId,
+  savedField,
+  errorField,
 }: {
   icon: React.ReactNode;
   label: string;
   value: boolean;
   onChange: () => void;
   border?: boolean;
+  fieldId?: string;
+  savedField?: string | null;
+  errorField?: string | null;
 }) {
+  const isSaved = fieldId != null && savedField === fieldId;
+  const isError = fieldId != null && errorField === fieldId;
+
   return (
     <div
       className="flex items-center justify-between px-4 py-3"
@@ -475,11 +526,33 @@ function ToggleRow({
         <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
           {label}
         </span>
+        {isSaved && (
+          <span
+            className="text-[11px] font-medium animate-fade-in-up"
+            style={{ color: 'var(--color-success)', animation: 'fadeInOut 1.5s ease-in-out forwards' }}
+          >
+            Kaydedildi
+          </span>
+        )}
+        {isError && (
+          <span
+            className="text-[11px] font-medium animate-fade-in-up"
+            style={{ color: 'var(--color-error)' }}
+          >
+            Hata!
+          </span>
+        )}
       </div>
       <button
         onClick={onChange}
         className="w-11 h-6 rounded-full relative transition-colors"
-        style={{ background: value ? 'var(--color-primary)' : 'var(--color-border)' }}
+        style={{
+          background: isError
+            ? 'var(--color-error)'
+            : value
+              ? 'var(--color-primary)'
+              : 'var(--color-border)',
+        }}
       >
         <span
           className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
