@@ -66,8 +66,15 @@ export default function RegisterPage() {
 
   const validateStep2 = useCallback(() => {
     if (!university.trim()) return 'Üniversite gerekli';
+    if (startDate && endDate) {
+      if (endDate <= startDate) return 'Bitiş tarihi başlangıçtan sonra olmalı';
+    }
+    if (startDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (startDate < today) return 'Başlangıç tarihi geçmişte olamaz';
+    }
     return null;
-  }, [university]);
+  }, [university, startDate, endDate]);
 
   const handleNext = useCallback(async () => {
     setError(null);
@@ -93,24 +100,33 @@ export default function RegisterPage() {
       // Upload avatar if selected
       let avatarUrl: string | null = null;
       if (avatarFile && result.data && typeof result.data === 'object' && result.data !== null && 'user' in (result.data as Record<string, unknown>) && (result.data as Record<string, unknown>).user) {
-        const uploadResult = await upload(avatarFile, 'avatars', ((result.data as Record<string, unknown>).user as { id: string }).id);
-        if (uploadResult.data) {
-          avatarUrl = uploadResult.data.url;
+        try {
+          const uploadResult = await upload(avatarFile, 'avatars', ((result.data as Record<string, unknown>).user as { id: string }).id);
+          if (uploadResult.data) {
+            avatarUrl = uploadResult.data.url;
+          }
+        } catch {
+          // Avatar upload failed but registration can continue
+          toast('Profil fotoğrafı yüklenemedi, daha sonra tekrar deneyebilirsiniz', 'error');
         }
       }
 
       // Update profile with additional info
-      await updateProfile({
-        full_name: fullName,
-        university,
-        major: major || null,
-        exchange_university: exchangeUni || null,
-        exchange_start: startDate || null,
-        exchange_end: endDate || null,
-        budget: budget ? Number(budget) : null,
-        interests: selectedInterests,
-        ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-      });
+      try {
+        await updateProfile({
+          full_name: fullName,
+          university,
+          major: major || null,
+          exchange_university: exchangeUni || null,
+          exchange_start: startDate || null,
+          exchange_end: endDate || null,
+          budget: budget ? Number(budget) : null,
+          interests: selectedInterests,
+          ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+        });
+      } catch {
+        toast('Profil bilgileri kaydedilemedi, daha sonra düzenleyebilirsiniz', 'error');
+      }
 
       setLoading(false);
       router.push('/');

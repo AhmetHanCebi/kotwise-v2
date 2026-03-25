@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMentors } from '@/hooks/useMentors';
 import { useCities } from '@/hooks/useCities';
 import BottomNav from '@/components/BottomNav';
+import Link from 'next/link';
 import {
   MessageCircle,
   MapPin,
@@ -58,7 +59,7 @@ export default function MentorsPage() {
       router.push('/login');
       return;
     }
-    router.push(`/messages?to=${mentorUserId}`);
+    router.push(`/messages/new?to=${mentorUserId}`);
   };
 
   return (
@@ -144,9 +145,10 @@ export default function MentorsPage() {
         )}
 
         {mentors.map((mentor, i) => (
-          <div
+          <Link
             key={mentor.id}
-            className="rounded-2xl p-4 animate-fade-in-up"
+            href={`/mentors/${mentor.id}`}
+            className="rounded-2xl p-4 animate-fade-in-up block"
             style={{
               background: 'var(--color-bg-card)',
               boxShadow: 'var(--shadow-card)',
@@ -160,7 +162,7 @@ export default function MentorsPage() {
                 style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
               >
                 {mentor.user?.avatar_url ? (
-                  <img src={mentor.user.avatar_url} alt={mentor.user?.full_name ?? 'Mentor'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }} />
+                  <img src={mentor.user.avatar_url} alt={mentor.user?.full_name ?? 'Mentor'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.user?.full_name ?? 'Mentor')}&background=F26522&color=fff&size=200`; }} />
                 ) : (
                   (mentor.user?.full_name?.[0] ?? '?')
                 )}
@@ -215,7 +217,7 @@ export default function MentorsPage() {
 
             {/* Message button */}
             <button
-              onClick={() => handleMessage(mentor.user_id)}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMessage(mentor.user_id); }}
               className="w-full mt-3 h-10 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-[0.98]"
               style={{
                 background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)',
@@ -225,7 +227,7 @@ export default function MentorsPage() {
               <MessageCircle size={16} />
               Mesaj Gönder
             </button>
-          </div>
+          </Link>
         ))}
       </div>
 

@@ -161,7 +161,7 @@ function HostDashboardContent() {
                 style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}
               >
                 {b.user?.avatar_url ? (
-                  <img src={b.user.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }} />
+                  <img src={b.user.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(b.user?.full_name ?? 'Misafir')}&background=F26522&color=fff&size=200`; }} />
                 ) : (
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0"

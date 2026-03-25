@@ -105,14 +105,15 @@ export default function EventsPage() {
           {/* View toggle */}
           <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ background: 'var(--color-bg)' }}>
             {[
-              { mode: 'list' as ViewMode, icon: List },
-              { mode: 'map' as ViewMode, icon: Map },
-              { mode: 'calendar' as ViewMode, icon: Calendar },
-            ].map(({ mode, icon: Icon }) => (
+              { mode: 'list' as ViewMode, icon: List, label: 'Liste görünümü' },
+              { mode: 'map' as ViewMode, icon: Map, label: 'Harita görünümü' },
+              { mode: 'calendar' as ViewMode, icon: Calendar, label: 'Takvim görünümü' },
+            ].map(({ mode, icon: Icon, label }) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 className="p-1.5 rounded-md transition-all"
+                aria-label={label}
                 style={{
                   background: viewMode === mode ? 'var(--color-bg-card)' : 'transparent',
                   color: viewMode === mode ? 'var(--color-primary)' : 'var(--color-text-muted)',
@@ -123,6 +124,24 @@ export default function EventsPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* City filter tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+          {cities.map((city) => (
+            <button
+              key={city.id}
+              onClick={() => setActiveCityId(city.id)}
+              className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+              style={{
+                background: activeCityId === city.id ? 'var(--color-primary)' : 'var(--color-bg-card)',
+                color: activeCityId === city.id ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+                border: `1px solid ${activeCityId === city.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              }}
+            >
+              {city.name}
+            </button>
+          ))}
         </div>
 
         {/* Category chips */}
@@ -226,7 +245,7 @@ export default function EventsPage() {
                         style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
                       >
                         {ev.organizer?.avatar_url ? (
-                          <img src={ev.organizer.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }} />
+                          <img src={ev.organizer.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(ev.organizer?.full_name ?? 'Organizatör')}&background=F26522&color=fff&size=200`; }} />
                         ) : (
                           (ev.organizer?.full_name?.[0] ?? '?')
                         )}
@@ -283,7 +302,7 @@ export default function EventsPage() {
                           {ev.time?.substring(0, 5) ?? ev.time} {ev.location_name ? `- ${ev.location_name}` : ''}
                         </p>
                       </div>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--color-primary)14', color: 'var(--color-primary)' }}>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--color-primary) 14%, transparent)', color: 'var(--color-primary)' }}>
                         {ev.participant_count}
                       </span>
                     </Link>

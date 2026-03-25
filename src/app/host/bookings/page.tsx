@@ -15,6 +15,7 @@ import {
   Loader2,
   Clock,
 } from 'lucide-react';
+import BottomNav from '@/components/BottomNav';
 
 export default function HostBookingsPage() {
   return (
@@ -27,7 +28,7 @@ export default function HostBookingsPage() {
 function HostBookingsContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { loading, updateStatus, fetchHostBookings } = useBooking(user?.id);
+  const { loading, error, updateStatus, fetchHostBookings } = useBooking(user?.id);
 
   const [hostBookings, setHostBookings] = useState<BookingWithDetails[]>([]);
   const [fetching, setFetching] = useState(true);
@@ -58,6 +59,11 @@ function HostBookingsContent() {
   }, [hostBookings, statusFilter]);
 
   const handleAction = async (id: string, action: 'confirmed' | 'cancelled') => {
+    const message = action === 'confirmed'
+      ? 'Bu rezervasyon talebini onaylamak istediğinize emin misiniz?'
+      : 'Bu rezervasyon talebini reddetmek istediğinize emin misiniz?';
+    if (!confirm(message)) return;
+
     setActionLoading(id);
     await updateStatus(id, action);
     setHostBookings((prev) =>
@@ -119,6 +125,16 @@ function HostBookingsContent() {
           </button>
         ))}
       </div>
+
+      {/* Error */}
+      {error && (
+        <div
+          className="mx-4 mt-2 px-4 py-3 rounded-xl text-sm"
+          style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--color-error)' }}
+        >
+          {error}
+        </div>
+      )}
 
       {/* List */}
       <div className="flex-1 px-4 py-3">
@@ -246,6 +262,8 @@ function HostBookingsContent() {
           </div>
         )}
       </div>
+
+      <BottomNav />
     </div>
   );
 }

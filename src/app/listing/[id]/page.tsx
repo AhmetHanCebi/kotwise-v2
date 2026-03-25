@@ -66,6 +66,7 @@ export default function ListingDetailPage({
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [shareToast, setShareToast] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -89,13 +90,22 @@ export default function ListingDetailPage({
   }, []);
 
   const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({
-        title: listing?.title,
-        url: window.location.href,
-      });
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: listing?.title,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        setShareToast(true);
+        setTimeout(() => setShareToast(false), 2000);
+      }
+    } catch (err) {
+      // User cancelled share or clipboard failed — ignore AbortError from share dialog
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('Share failed:', err);
+      }
     }
   };
 
@@ -165,7 +175,7 @@ export default function ListingDetailPage({
       <div
         className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 flex items-center justify-between px-4 pt-[calc(8px+env(safe-area-inset-top))] pb-2 transition-all duration-300"
         style={{
-          background: scrolled ? 'rgba(255,255,255,0.92)' : 'transparent',
+          background: scrolled ? 'var(--color-bg-card-translucent, var(--color-bg-card))' : 'transparent',
           backdropFilter: scrolled ? 'blur(16px)' : 'none',
           WebkitBackdropFilter: scrolled ? 'blur(16px)' : 'none',
           borderBottom: scrolled ? '1px solid var(--color-border)' : '1px solid transparent',
@@ -373,7 +383,7 @@ export default function ListingDetailPage({
             </div>
           </div>
           <button
-            onClick={() => router.push('/messages/new')}
+            onClick={() => router.push(`/messages/new?to=${listing.host_id}`)}
             className="px-3 py-2 rounded-xl text-xs font-semibold shrink-0"
             style={{
               background: 'var(--color-secondary)',
@@ -494,7 +504,9 @@ export default function ListingDetailPage({
                 </span>
               )}
             </h2>
-            {user && (
+            {user &&
+              user.id !== listing.host_id &&
+              !listing.reviews?.some((r) => r.user_id === user.id) && (
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
                 className="text-xs font-semibold px-3 py-1.5 rounded-full"
@@ -642,6 +654,16 @@ export default function ListingDetailPage({
           </div>
         )}
       </div>
+
+      {/* Share Toast */}
+      {shareToast && (
+        <div
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl text-sm font-medium animate-fade-in-up"
+          style={{ background: 'var(--color-secondary)', color: 'var(--color-text-inverse)', boxShadow: 'var(--shadow-card)' }}
+        >
+          Link kopyalandı!
+        </div>
+      )}
 
       {/* Sticky Bottom Bar */}
       <div

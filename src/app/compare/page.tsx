@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -104,10 +104,26 @@ function CompareContent() {
   const { favorites } = useFavorites(user?.id);
 
   const typedFavorites = favorites as FavoriteWithListing[];
-  const compareListings = typedFavorites
+  const allListings = typedFavorites
     .filter((f) => f.listing)
-    .map((f) => f.listing)
-    .slice(0, 4);
+    .map((f) => f.listing);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Auto-select first 4 if no manual selection
+  const compareListings = selectedIds.length >= 2
+    ? allListings.filter((l) => selectedIds.includes(l.id))
+    : allListings.slice(0, 4);
+
+  const toggleSelection = (listingId: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(listingId)) {
+        return prev.filter((id) => id !== listingId);
+      }
+      if (prev.length >= 4) return prev; // Max 4
+      return [...prev, listingId];
+    });
+  };
 
   /* Find winner for each row */
   const getWinner = (row: CompareRow): number | null => {
@@ -211,6 +227,34 @@ function CompareContent() {
           </span>
         </div>
       </div>
+
+      {/* Selection UI - show when there are more than 2 favorites */}
+      {allListings.length > 2 && (
+        <div className="px-4 pt-3">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: 'var(--color-text-muted)' }}>
+            Karşılaştırılacak ilanları seçin (2-4)
+          </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {allListings.map((listing) => {
+              const isSelected = selectedIds.includes(listing.id);
+              return (
+                <button
+                  key={listing.id}
+                  onClick={() => toggleSelection(listing.id)}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all truncate max-w-[180px]"
+                  style={{
+                    background: isSelected ? 'var(--color-primary)' : 'var(--color-bg-card)',
+                    color: isSelected ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+                    border: `1px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  }}
+                >
+                  {listing.title}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Horizontal Listing Cards */}
       <div className="px-4 py-4">

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
+import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationType } from '@/lib/database.types';
@@ -18,6 +19,8 @@ import {
   Bell,
   CheckCheck,
   Loader2,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
 
 const notifIconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: string }> = {
@@ -54,10 +57,21 @@ export default function NotificationsPage() {
 function NotificationsContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { notifications, unreadCount, loading, markRead, markAllRead } =
+  const { notifications, unreadCount, loading, error, fetchNotifications, markRead, markAllRead } =
     useNotifications(user?.id);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [markingAll, setMarkingAll] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+
+  // Safety timeout: if loading takes more than 8 seconds, show error state
+  useEffect(() => {
+    if (!loading) {
+      setTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setTimedOut(true), 8000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const filtered = useMemo(() => {
     if (filter === 'unread') return notifications.filter((n) => !n.is_read);
@@ -178,14 +192,38 @@ function NotificationsContent() {
       </div>
 
       {/* Notification List */}
-      <div className="flex-1 px-4 py-3">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
+      <div className="flex-1 px-4 py-3 pb-24">
+        {(error || timedOut) ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(239,68,68,0.08)' }}
+            >
+              <AlertCircle size={28} style={{ color: 'var(--color-error)' }} />
+            </div>
+            <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+              Bildirimler yüklenemedi
+            </p>
+            <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+              {error || 'Bağlantı zaman aşımına uğradı'}
+            </p>
+            <button
+              onClick={() => { setTimedOut(false); fetchNotifications(); }}
+              className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold"
+              style={{ background: 'var(--color-primary)', color: 'white' }}
+            >
+              <RefreshCw size={14} />
+              Tekrar Dene
+            </button>
+          </div>
+        ) : loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2
               size={28}
               className="animate-spin"
               style={{ color: 'var(--color-primary)' }}
             />
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Yükleniyor...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -266,6 +304,8 @@ function NotificationsContent() {
           </div>
         )}
       </div>
+
+      <BottomNav />
     </div>
   );
 }

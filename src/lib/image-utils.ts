@@ -13,7 +13,7 @@ const ROOM_PLACEHOLDERS = [
 
 /** Neutral fallback when an image fails to load — subtle camera icon, no text */
 const makePlaceholderSvg = (w: number, h: number) =>
-  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="%23f3f4f6"/><g transform="translate(${w / 2 - 16},${h / 2 - 16})"><path d="M6 6h4l2-3h8l2 3h4a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2z" fill="none" stroke="%239ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="none" stroke="%239ca3af" stroke-width="1.5"/></g></svg>`)}`;
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="#f3f4f6"/><g transform="translate(${w / 2 - 16},${h / 2 - 16})"><path d="M6 6h4l2-3h8l2 3h4a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2z" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="none" stroke="#9ca3af" stroke-width="1.5"/></g></svg>`)}`;
 export const IMAGE_FALLBACK = makePlaceholderSvg(400, 300);
 export const IMAGE_FALLBACK_LARGE = makePlaceholderSvg(800, 600);
 export const IMAGE_FALLBACK_SMALL = makePlaceholderSvg(200, 200);
@@ -62,11 +62,12 @@ export function handleListingImageError(e: React.SyntheticEvent<HTMLImageElement
   const target = e.target as HTMLImageElement;
   // Prevent infinite loop: if already on SVG data URI fallback, stop
   if (target.src.startsWith('data:')) return;
-  // Broken unsplash URL → go straight to SVG placeholder
-  if (target.src.includes('unsplash.com')) {
+  // If already tried an Unsplash placeholder, go to SVG fallback
+  if (target.src.includes('images.unsplash.com')) {
     target.src = IMAGE_FALLBACK;
     return;
   }
+  // First try a stock room photo from Unsplash
   target.src = getRoomPlaceholder(listingId);
 }
 

@@ -32,6 +32,18 @@ const INTEREST_EMOJIS: Record<string, string> = {
   dancing: '💃', cinema: '🎬', yoga: '🧘', hiking: '🥾',
 };
 
+const INTEREST_TR: Record<string, string> = {
+  music: 'Müzik', sports: 'Spor', cooking: 'Yemek', reading: 'Okuma',
+  travel: 'Seyahat', gaming: 'Oyun', photography: 'Fotoğrafçılık', art: 'Sanat',
+  movies: 'Film', fitness: 'Fitness', technology: 'Teknoloji', dancing: 'Dans',
+  yoga: 'Yoga', hiking: 'Doğa Yürüyüşü', swimming: 'Yüzme', cycling: 'Bisiklet',
+  writing: 'Yazarlık', gardening: 'Bahçecilik',
+};
+
+const CLEANLINESS_TR: Record<string, string> = {
+  very_clean: 'Çok temiz', clean: 'Temiz', moderate: 'Orta', messy: 'Dağınık',
+};
+
 const HABIT_ICONS: Record<string, React.ElementType> = {
   early_bird: Sun,
   night_owl: Moon,
@@ -51,7 +63,7 @@ function calculateAge(birthDate: string | null | undefined): number | null {
 function matchPercentage(myInterests: string[], theirInterests: string[]): number {
   if (!myInterests?.length || !theirInterests?.length) return 0;
   const common = myInterests.filter((i) => theirInterests.includes(i));
-  return Math.min(99, Math.floor((common.length / Math.max(myInterests.length, theirInterests.length)) * 100) + 50);
+  return Math.min(99, Math.floor((common.length / Math.max(myInterests.length, theirInterests.length)) * 100));
 }
 
 export default function RoommatesPageWrapper() {
@@ -70,6 +82,7 @@ function RoommatesPage() {
   const [expandBio, setExpandBio] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [swipeDir, setSwipeDir] = useState<'left' | 'right' | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [matchNotif, setMatchNotif] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -85,8 +98,9 @@ function RoommatesPage() {
   const currentProfile = profiles[currentIndex] ?? null;
 
   const handleAction = useCallback(async (action: 'like' | 'skip') => {
-    if (!currentProfile) return;
+    if (!currentProfile || isAnimating) return;
 
+    setIsAnimating(true);
     setSwipeDir(action === 'like' ? 'right' : 'left');
 
     setTimeout(async () => {
@@ -104,8 +118,9 @@ function RoommatesPage() {
       setExpandBio(false);
       setPhotoIndex(0);
       setCurrentIndex((prev) => prev + 1);
+      setIsAnimating(false);
     }, 300);
-  }, [currentProfile, like, skip]);
+  }, [currentProfile, like, skip, isAnimating]);
 
   // Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -292,7 +307,7 @@ function RoommatesPage() {
                           color: 'var(--color-primary)',
                         }}
                       >
-                        {INTEREST_EMOJIS[interest] ?? ''} {interest}
+                        {INTEREST_EMOJIS[interest] ?? ''} {INTEREST_TR[interest] ?? interest.charAt(0).toUpperCase() + interest.slice(1)}
                       </span>
                     ))}
                   </div>
@@ -309,7 +324,7 @@ function RoommatesPage() {
                   {currentProfile.cleanliness && (
                     <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                       <Sparkles size={14} />
-                      {currentProfile.cleanliness}
+                      {CLEANLINESS_TR[currentProfile.cleanliness] ?? currentProfile.cleanliness}
                     </div>
                   )}
                   {currentProfile.smoking && (
@@ -351,10 +366,12 @@ function RoommatesPage() {
             <div className="flex items-center justify-center gap-6 mt-6">
               <button
                 onClick={() => handleAction('skip')}
+                disabled={isAnimating}
                 className="w-14 h-14 rounded-full flex items-center justify-center shadow-md transition-transform active:scale-90"
                 style={{
                   background: 'var(--color-bg-card)',
                   border: '2px solid var(--color-error)',
+                  opacity: isAnimating ? 0.5 : 1,
                 }}
                 aria-label="Geç"
               >
@@ -375,9 +392,11 @@ function RoommatesPage() {
 
               <button
                 onClick={() => handleAction('like')}
+                disabled={isAnimating}
                 className="w-14 h-14 rounded-full flex items-center justify-center shadow-md transition-transform active:scale-90"
                 style={{
                   background: 'var(--gradient-primary)',
+                  opacity: isAnimating ? 0.5 : 1,
                 }}
                 aria-label="Beğen"
               >

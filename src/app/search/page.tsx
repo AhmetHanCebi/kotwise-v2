@@ -227,7 +227,6 @@ function SearchContent() {
             <button
               key={rt.value}
               onClick={() => {
-                handleRoomTypeToggle(rt.value);
                 const updated = {
                   ...filters,
                   room_type: filters.room_type === rt.value ? undefined : rt.value,

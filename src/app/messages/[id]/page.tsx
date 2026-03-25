@@ -142,12 +142,16 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   const handleSend = async () => {
     if (!text.trim() || sending) return;
     setSending(true);
-    await send({
+    const result = await send({
       conversation_id: conversationId,
       content: text.trim(),
       type: 'text',
     });
-    setText('');
+    if (result && 'error' in result && result.error) {
+      toast('Mesaj gönderilemedi. Lütfen tekrar deneyin.', 'error');
+    } else {
+      setText('');
+    }
     setSending(false);
     inputRef.current?.focus();
   };
@@ -371,7 +375,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
 
       {/* Input Area */}
       <div
-        className="px-3 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)]"
+        className="px-3 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)] flex-shrink-0"
         style={{
           background: 'var(--color-bg-card)',
           borderTop: '1px solid var(--color-border)',
@@ -455,25 +459,26 @@ function ChatContent({ conversationId }: { conversationId: string }) {
             </div>
           </div>
 
-          {text.trim() && (
-            <button
-              onClick={handleSend}
-              disabled={sending}
-              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
-              style={{ background: 'var(--gradient-primary)' }}
-              aria-label="Gönder"
-            >
-              {sending ? (
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                  style={{ color: 'var(--color-text-inverse)' }}
-                />
-              ) : (
-                <Send size={18} style={{ color: 'var(--color-text-inverse)' }} />
-              )}
-            </button>
-          )}
+          <button
+            onClick={handleSend}
+            disabled={sending || !text.trim()}
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 active:scale-95 transition-all"
+            style={{
+              background: 'var(--gradient-primary)',
+              opacity: text.trim() ? 1 : 0.4,
+            }}
+            aria-label="Gönder"
+          >
+            {sending ? (
+              <Loader2
+                size={18}
+                className="animate-spin"
+                style={{ color: 'var(--color-text-inverse)' }}
+              />
+            ) : (
+              <Send size={18} style={{ color: 'var(--color-text-inverse)' }} />
+            )}
+          </button>
         </div>
       </div>
     </div>

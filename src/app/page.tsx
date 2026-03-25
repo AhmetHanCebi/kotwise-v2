@@ -19,6 +19,9 @@ import {
   Globe,
   ArrowRight,
   Loader2,
+  Calculator,
+  DoorOpen,
+  UserSearch,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCities } from '@/hooks/useCities';
@@ -565,6 +568,75 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* ========== QUICK ACTIONS ========== */}
+      <section className="mt-4 px-5 flex flex-col gap-2.5">
+        <Link
+          href="/budget"
+          className="flex items-center gap-3 p-4 rounded-2xl transition-transform active:scale-[0.98]"
+          style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+        >
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(242,101,34,0.08)' }}
+          >
+            <Calculator size={22} style={{ color: 'var(--color-primary)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              Bütçe Planlayıcı
+            </p>
+            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+              Erasmus harcamalarını hesapla ve karşılaştır
+            </p>
+          </div>
+          <ChevronRight size={18} style={{ color: 'var(--color-text-muted)' }} />
+        </Link>
+
+        <Link
+          href="/host"
+          className="flex items-center gap-3 p-4 rounded-2xl transition-transform active:scale-[0.98]"
+          style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+        >
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(34,197,94,0.08)' }}
+          >
+            <DoorOpen size={22} style={{ color: 'var(--color-success)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              Ev Sahibi Ol
+            </p>
+            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+              Odanı paylaş, gelir elde et
+            </p>
+          </div>
+          <ChevronRight size={18} style={{ color: 'var(--color-text-muted)' }} />
+        </Link>
+
+        <Link
+          href="/roommates"
+          className="flex items-center gap-3 p-4 rounded-2xl transition-transform active:scale-[0.98]"
+          style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+        >
+          <div
+            className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(99,102,241,0.08)' }}
+          >
+            <UserSearch size={22} style={{ color: '#6366F1' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              Oda Arkadaşı Bul
+            </p>
+            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+              Şehrindeki uyumlu oda arkadaşlarını keşfet
+            </p>
+          </div>
+          <ChevronRight size={18} style={{ color: 'var(--color-text-muted)' }} />
+        </Link>
+      </section>
+
       {/* ========== LISTINGS SECTION ========== */}
       <section className="mt-6 px-5">
         <SectionHeader title="Bu Şehirdeki İlanlar" href="/search" />
@@ -595,6 +667,31 @@ export default function HomePage() {
             {events.map((e) => <EventCard key={e.id} event={e} />)}
           </div>
         )}
+      </section>
+
+      {/* ========== MENTORS SECTION ========== */}
+      <section className="mt-6 px-5">
+        <Link
+          href="/mentors"
+          className="flex items-center gap-4 p-4 rounded-2xl transition-transform active:scale-[0.98]"
+          style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
+        >
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
+          >
+            <Users size={24} style={{ color: 'var(--color-primary)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              Mentor Bul
+            </h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+              Deneyimli öğrencilerden rehberlik al
+            </p>
+          </div>
+          <ChevronRight size={20} style={{ color: 'var(--color-text-muted)' }} />
+        </Link>
       </section>
 
       {/* ========== POSTS SECTION ========== */}

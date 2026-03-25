@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
+import { formatPrice, currencyLabel } from '@/lib/currency-utils';
 import AuthGuard from '@/components/AuthGuard';
 import type { BookingWithDetails } from '@/lib/database.types';
 
@@ -123,7 +124,7 @@ function BookingSuccess() {
           className="text-2xl font-bold text-center mb-2 animate-fade-in-up"
           style={{ color: 'var(--color-text-primary)', animationDelay: '0.1s' }}
         >
-          Rezervasyon Onaylandı!
+          Rezervasyon Talebiniz Alındı!
         </h1>
         <p
           className="text-sm text-center mb-6 animate-fade-in-up"
@@ -193,7 +194,7 @@ function BookingSuccess() {
                   Toplam
                 </span>
                 <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {booking.total_price.toLocaleString('tr-TR')} {booking.listing?.currency ?? 'TL'}
+                  {formatPrice(booking.total_price)} {currencyLabel(booking.listing?.currency)}
                 </span>
               </div>
             </div>

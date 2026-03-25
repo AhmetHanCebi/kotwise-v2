@@ -29,7 +29,7 @@ import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, IMAGE_FALLBACK_SMALL } from '@/li
 
 const CURRENCY_LABELS: Record<string, string> = {
   TRY: '₺',
-  EUR: '₺',
+  EUR: '€',
   USD: '$',
   GBP: '£',
 };
@@ -521,7 +521,19 @@ export default function CityDetailPage({
       </div>
 
       {/* CTA */}
-      <div className="px-4 pb-6">
+      <div className="px-4 pb-6 flex flex-col gap-3">
+        <button
+          onClick={() => router.push(`/city/${id}/chat`)}
+          className="w-full h-12 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-[0.98]"
+          style={{
+            background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
+            color: 'var(--color-primary)',
+            border: '1.5px solid var(--color-primary)',
+          }}
+        >
+          <Users size={18} />
+          Şehir Sohbetine Katıl
+        </button>
         <button
           onClick={() => router.push(`/search?city=${id}`)}
           className="w-full h-12 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-[0.98]"

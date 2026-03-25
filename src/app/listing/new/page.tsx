@@ -167,13 +167,35 @@ function NewListingForm() {
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
+  // Cleanup object URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => {
+        if (img.preview && img.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(img.preview);
+        }
+      });
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
   /* Image handling */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const remaining = 10 - images.length;
     const toAdd = files.slice(0, remaining);
 
-    const newImages: UploadedImage[] = toAdd.map((file) => ({
+    // Filter out files larger than 5MB
+    const validFiles = toAdd.filter((file) => {
+      if (file.size > MAX_FILE_SIZE) {
+        setErrors((p) => ({ ...p, images: `"${file.name}" dosyası 5MB sınırını aşıyor` }));
+        return false;
+      }
+      return true;
+    });
+
+    const newImages: UploadedImage[] = validFiles.map((file) => ({
       file,
       url: '',
       preview: URL.createObjectURL(file),
@@ -184,7 +206,13 @@ function NewListingForm() {
   };
 
   const removeImage = (idx: number) => {
-    setImages((p) => p.filter((_, i) => i !== idx));
+    setImages((p) => {
+      const removed = p[idx];
+      if (removed?.preview && removed.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(removed.preview);
+      }
+      return p.filter((_, i) => i !== idx);
+    });
   };
 
   const handleDragStart = (idx: number) => setDragIdx(idx);
@@ -221,14 +249,16 @@ function NewListingForm() {
       }
 
       // 2. Create listing
+      const selectedCity = cities.find((c) => c.id === form.city);
       const input: ListingInsert = {
         host_id: user.id,
-        city_id: form.city, // In production, this would be selected from a dropdown of cities
+        city_id: form.city,
+        neighborhood_id: form.neighborhood || null,
         title: form.title,
         description: form.description || null,
         address: form.address || null,
         price_per_month: Number(form.price),
-        currency: 'TL',
+        currency: selectedCity?.currency ?? 'EUR',
         room_type: form.roomType,
         max_guests: Number(form.maxGuests) || 1,
         is_furnished: form.isFurnished,
@@ -348,7 +378,7 @@ function NewListingForm() {
           />
         )}
         {step === 4 && (
-          <Step4 form={form} images={images} />
+          <Step4 form={form} images={images} cities={cities} neighborhoods={neighborhoods} />
         )}
       </div>
 
@@ -565,7 +595,7 @@ function Step2({
 
       {/* Price */}
       <InputField
-        label="Aylık Kira (TL) *"
+        label="Aylık Kira *"
         placeholder="Örn: 8500"
         value={form.price}
         onChange={(v) => updateForm('price', v)}
@@ -784,7 +814,11 @@ function Step3({
   );
 }
 
-function Step4({ form, images }: { form: FormData; images: UploadedImage[] }) {
+function Step4({ form, images, cities, neighborhoods }: { form: FormData; images: UploadedImage[]; cities: import('@/lib/database.types').City[]; neighborhoods: Neighborhood[] }) {
+  const cityName = cities.find((c) => c.id === form.city)?.name;
+  const neighborhoodName = neighborhoods.find((n) => n.id === form.neighborhood)?.name;
+  const selectedCity = cities.find((c) => c.id === form.city);
+  const currencyLabel = selectedCity?.currency ?? 'EUR';
   return (
     <div className="flex flex-col gap-5 animate-fade-in-up">
       <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
@@ -829,12 +863,12 @@ function Step4({ form, images }: { form: FormData; images: UploadedImage[] }) {
           <div className="flex items-center gap-1 mt-1">
             <MapPin size={12} style={{ color: 'var(--color-text-muted)' }} />
             <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              {form.city || 'Şehir'}{form.neighborhood ? `, ${form.neighborhood}` : ''}
+              {cityName || 'Şehir'}{neighborhoodName ? `, ${neighborhoodName}` : ''}
             </span>
           </div>
           <div className="mt-3 flex items-baseline gap-1">
             <span className="text-xl font-bold" style={{ color: 'var(--color-primary)' }}>
-              {form.price ? Number(form.price).toLocaleString('tr-TR') : '0'} TL
+              {form.price ? Number(form.price).toLocaleString('tr-TR') : '0'} {currencyLabel}
             </span>
             <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>/ay</span>
           </div>

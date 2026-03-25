@@ -67,13 +67,18 @@ export default function ListingMap({ listings, center, zoom, selectedId, onSelec
           (mapInstanceRef.current as { remove: () => void }).remove();
         }
 
-        const defaultCenter = center ?? { lat: 48.8566, lng: 2.3522 };
-        let mapCenter: [number, number] = [defaultCenter.lat, defaultCenter.lng];
+        const fallbackCenter = { lat: 48.8566, lng: 2.3522 }; // Paris
+        let mapCenter: [number, number];
 
-        if (mappable.length > 0) {
+        if (center) {
+          // Explicit center provided (e.g. selected city) — respect it
+          mapCenter = [center.lat, center.lng];
+        } else if (mappable.length > 0) {
           const avgLat = mappable.reduce((s, l) => s + l.lat!, 0) / mappable.length;
           const avgLng = mappable.reduce((s, l) => s + l.lng!, 0) / mappable.length;
           mapCenter = [avgLat, avgLng];
+        } else {
+          mapCenter = [fallbackCenter.lat, fallbackCenter.lng];
         }
 
         const defaultZoom = zoom ?? (singlePin ? 15 : 13);
@@ -119,7 +124,7 @@ export default function ListingMap({ listings, center, zoom, selectedId, onSelec
           }
         });
 
-        if (mappable.length > 1) {
+        if (!center && mappable.length > 1) {
           const bounds = L.latLngBounds(mappable.map((l) => [l.lat!, l.lng!]));
           map.fitBounds(bounds, { padding: [40, 40] });
         }

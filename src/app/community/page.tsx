@@ -55,6 +55,7 @@ function CommunityPage() {
   const { cities, selectedCityId, fetchCities } = useCities();
   const [activeCityId, setActiveCityId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>(FALLBACK_HASHTAGS);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,30 +92,36 @@ function CommunityPage() {
   useEffect(() => {
     if (activeCityId) {
       setPage(1);
+      setHasMore(true);
       fetchFeed(activeCityId, 1, 20, undefined, hashtagParam ?? undefined);
     }
   }, [activeCityId, fetchFeed, hashtagParam]);
 
   const loadMore = useCallback(() => {
-    if (activeCityId && !loading) {
+    if (activeCityId && !loading && hasMore) {
+      const prevCount = posts.length;
       const nextPage = page + 1;
       setPage(nextPage);
       fetchFeed(activeCityId, nextPage, 20, undefined, hashtagParam ?? undefined);
+      // If current page returned fewer than 20 posts, we've reached the end
+      if (prevCount > 0 && prevCount % 20 !== 0) {
+        setHasMore(false);
+      }
     }
-  }, [activeCityId, page, loading, fetchFeed]);
+  }, [activeCityId, page, loading, fetchFeed, hasMore, posts.length, hashtagParam]);
 
   useEffect(() => {
     const el = observerRef.current;
-    if (!el) return;
+    if (!el || !hasMore) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && posts.length > 0) loadMore();
+        if (entries[0].isIntersecting && posts.length > 0 && hasMore) loadMore();
       },
       { threshold: 0.5 }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore, posts.length]);
+  }, [loadMore, posts.length, hasMore]);
 
   const handleLike = async (postId: string) => {
     if (!user) {

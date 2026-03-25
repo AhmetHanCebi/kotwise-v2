@@ -1,7 +1,6 @@
 /**
  * Shared currency formatting utilities.
- * Prices in the database are stored in minor units (cents/kuruş).
- * All display functions divide by 100 to show the correct amount.
+ * Prices in the database are stored in major units (e.g. 14000 TL, 800 EUR).
  */
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -30,18 +29,17 @@ export function currencyLabel(code: string | null | undefined): string {
   return CURRENCY_CODES[code] ?? code;
 }
 
-/** Convert minor units (cents) to major units and format for display */
-export function formatPrice(priceInMinor: number, locale = 'tr-TR'): string {
-  const major = priceInMinor / 100;
-  return major.toLocaleString(locale, { maximumFractionDigits: 0 });
+/** Format price for display (prices are stored in major units) */
+export function formatPrice(price: number, locale = 'tr-TR'): string {
+  return price.toLocaleString(locale, { maximumFractionDigits: 0 });
 }
 
-/** Full price display: "320 €/ay" */
+/** Full price display: "14.000 ₺/ay" */
 export function displayPrice(
-  priceInMinor: number,
+  price: number,
   currencyCode?: string | null,
   suffix = '/ay',
   locale = 'tr-TR',
 ): string {
-  return `${formatPrice(priceInMinor, locale)} ${currencySymbol(currencyCode)}${suffix}`;
+  return `${formatPrice(price, locale)} ${currencySymbol(currencyCode)}${suffix}`;
 }

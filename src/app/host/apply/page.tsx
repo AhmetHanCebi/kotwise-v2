@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,8 @@ import {
   CheckCircle,
   MapPin,
 } from 'lucide-react';
+import { useToast } from '@/components/Toast';
+import { supabase } from '@/lib/supabase';
 
 const steps = [
   { key: 'identity', title: 'Kimlik Doğrulama', icon: FileCheck },
@@ -39,6 +41,30 @@ function HostApplyContent() {
   const { user } = useAuth();
   const { submitApplication, loading } = useHostPanel(user?.id);
   const { upload, uploading } = useStorage();
+  const { toast } = useToast();
+  const [existingApplication, setExistingApplication] = useState(false);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(true);
+
+  // Check for existing application on load
+  useEffect(() => {
+    if (!user?.id) return;
+    const checkExisting = async () => {
+      try {
+        const { data } = await supabase
+          .from('host_applications')
+          .select('id, status')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (data) {
+          setExistingApplication(true);
+        }
+      } catch {
+        // Continue with application flow
+      }
+      setCheckingDuplicate(false);
+    };
+    checkExisting();
+  }, [user?.id]);
 
   const [step, setStep] = useState(0);
   const [idDocUrl, setIdDocUrl] = useState<string | null>(null);
@@ -83,17 +109,57 @@ function HostApplyContent() {
 
   const handleSubmit = async () => {
     if (!user) return;
-    const result = await submitApplication({
-      user_id: user.id,
-      id_document_url: idDocUrl,
-      address,
-      rooms: Number(rooms),
-      notes: notes || null,
-    });
-    if (!('error' in result)) {
-      setSubmitted(true);
+    try {
+      const result = await submitApplication({
+        user_id: user.id,
+        id_document_url: idDocUrl,
+        address,
+        rooms: Number(rooms),
+        notes: notes || null,
+      });
+      if (result && 'error' in result && result.error) {
+        toast('Başvuru gönderilemedi, lütfen tekrar deneyin', 'error');
+      } else {
+        setSubmitted(true);
+      }
+    } catch {
+      toast('Başvuru sırasında bir hata oluştu', 'error');
     }
   };
+
+  if (checkingDuplicate) {
+    return (
+      <div className="flex items-center justify-center min-h-dvh" style={{ background: 'var(--color-bg)' }}>
+        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+      </div>
+    );
+  }
+
+  if (existingApplication) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-dvh px-6 gap-4" style={{ background: 'var(--color-bg)' }}>
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(245,158,11,0.1)' }}
+        >
+          <CheckCircle size={40} style={{ color: 'var(--color-warning)' }} />
+        </div>
+        <h2 className="text-xl font-bold text-center" style={{ color: 'var(--color-text-primary)' }}>
+          Başvurunuz Zaten Mevcut
+        </h2>
+        <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
+          Daha önce ev sahibi başvurusu yapmışsınız. Başvurunuz incelenmektedir.
+        </p>
+        <button
+          onClick={() => router.push('/profile')}
+          className="px-6 py-3 rounded-full text-sm font-semibold mt-4"
+          style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+        >
+          Profile Dön
+        </button>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

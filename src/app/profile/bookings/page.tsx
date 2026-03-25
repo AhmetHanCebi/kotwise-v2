@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { IMAGE_FALLBACK_SMALL, getCoverImage, handleListingImageError } from '@/lib/image-utils';
 import { formatPrice, currencyLabel } from '@/lib/currency-utils';
+import { useToast } from '@/components/Toast';
 
 type FilterTab = 'active' | 'past' | 'cancelled';
 
@@ -46,6 +47,7 @@ function BookingsContent() {
   const router = useRouter();
   const { user } = useAuth();
   const { bookings, loading, fetchUserBookings, cancel } = useBooking(user?.id);
+  const { toast } = useToast();
   const [filter, setFilter] = useState<FilterTab>('active');
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [confirmingCancel, setConfirmingCancel] = useState<string | null>(null);
@@ -72,7 +74,12 @@ function BookingsContent() {
     }
     setCancelling(id);
     setConfirmingCancel(null);
-    await cancel(id);
+    try {
+      await cancel(id);
+      toast('Rezervasyon iptal edildi', 'success');
+    } catch {
+      toast('İptal işlemi sırasında bir hata oluştu', 'error');
+    }
     setCancelling(null);
     fetchUserBookings();
   };

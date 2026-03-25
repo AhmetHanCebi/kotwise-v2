@@ -6,6 +6,7 @@ import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
 import { useCities } from '@/hooks/useCities';
+import { supabase } from '@/lib/supabase';
 import {
   ArrowLeft,
   Send,
@@ -37,7 +38,12 @@ function CityChatContent({ cityId }: { cityId: string }) {
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [onlineCount, setOnlineCount] = useState(0);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Fetch city info
   useEffect(() => {
@@ -59,9 +65,11 @@ function CityChatContent({ cityId }: { cityId: string }) {
         if ('data' in result && result.data) {
           setConversationId(result.data.id);
           await fetchMessages(result.data.id);
+        } else {
+          setInitError('Sohbet başlatılamadı. Lütfen daha sonra tekrar deneyin.');
         }
       } catch {
-        // Conversation may already exist — handled by createConversation
+        setInitError('Sohbet başlatılırken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
       } finally {
         setInitializing(false);
       }
@@ -69,6 +77,86 @@ function CityChatContent({ cityId }: { cityId: string }) {
 
     initChat();
   }, [user, cityId, city?.name, createConversation, fetchMessages]);
+
+  // Realtime subscription — re-fetch messages when a new one is inserted
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const channel = supabase
+      .channel(`city-chat:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => {
+          fetchMessages(conversationId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, fetchMessages]);
+
+  // Presence: track online users and typing indicators
+  useEffect(() => {
+    if (!conversationId || !user) return;
+
+    const channel = supabase.channel(`presence:city-chat:${conversationId}`, {
+      config: { presence: { key: user.id } },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const userIds = Object.keys(state);
+        setOnlineCount(userIds.length);
+
+        // Collect typing users (exclude self)
+        const typing: string[] = [];
+        for (const [uid, presences] of Object.entries(state)) {
+          if (uid === user.id) continue;
+          const latest = (presences as { is_typing?: boolean; name?: string }[])?.[0];
+          if (latest?.is_typing) {
+            typing.push(latest.name || uid.slice(0, 8));
+          }
+        }
+        setTypingUsers(typing);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            user_id: user.id,
+            name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            is_typing: false,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    presenceChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      presenceChannelRef.current = null;
+    };
+  }, [conversationId, user]);
+
+  // Broadcast typing status
+  const broadcastTyping = useCallback((isTyping: boolean) => {
+    if (!presenceChannelRef.current || !user) return;
+    presenceChannelRef.current.track({
+      user_id: user.id,
+      name: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+      is_typing: isTyping,
+      online_at: new Date().toISOString(),
+    });
+  }, [user]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -139,7 +227,20 @@ function CityChatContent({ cityId }: { cityId: string }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
-        {initializing || loading ? (
+        {initError ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <p className="text-sm font-medium text-center px-8" style={{ color: 'var(--color-error)' }}>
+              {initError}
+            </p>
+            <button
+              onClick={() => { setInitError(null); setInitializing(true); getCityById(cityId); }}
+              className="px-4 py-2 rounded-xl text-sm font-semibold"
+              style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
+            >
+              Tekrar Dene
+            </button>
+          </div>
+        ) : initializing || loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2
               size={28}

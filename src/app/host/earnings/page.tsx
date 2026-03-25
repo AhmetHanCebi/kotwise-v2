@@ -48,15 +48,39 @@ function EarningsContent() {
     [earnings]
   );
 
+  // Derive currency symbol from the first earning's booking listing, default to EUR
+  const currencyCode = useMemo(() => {
+    for (const e of earnings) {
+      const listing = (e.booking as unknown as { listing?: { currency?: string } })?.listing;
+      if (listing?.currency) return listing.currency;
+    }
+    return 'EUR';
+  }, [earnings]);
+
+  const CURRENCY_SYMBOLS: Record<string, string> = { TRY: '₺', EUR: '€', USD: '$', GBP: '£' };
+  const currencySymbol = CURRENCY_SYMBOLS[currencyCode] ?? currencyCode;
+
+  // Filter earnings by selected period
+  const filteredEarnings = useMemo(() => {
+    const now = new Date();
+    if (period === 'monthly') {
+      const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      return earnings.filter((e) => e.period === currentPeriod);
+    }
+    // yearly: filter by current year
+    const currentYear = String(now.getFullYear());
+    return earnings.filter((e) => (e.period ?? '').startsWith(currentYear));
+  }, [earnings, period]);
+
   // Group by period for chart mockup
   const periodGroups = useMemo(() => {
     const groups: Record<string, number> = {};
-    earnings.forEach((e) => {
+    filteredEarnings.forEach((e) => {
       const key = e.period ?? 'Belirsiz';
       groups[key] = (groups[key] ?? 0) + Number(e.net_amount);
     });
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0])).slice(-6);
-  }, [earnings]);
+  }, [filteredEarnings]);
 
   const maxEarning = Math.max(...periodGroups.map(([, v]) => v), 1);
 
@@ -113,12 +137,12 @@ function EarningsContent() {
                 </div>
               </div>
               <p className="text-3xl font-bold mb-1" style={{ color: 'white' }}>
-                {(period === 'monthly' ? (stats?.monthlyEarnings ?? 0) : totalNet).toLocaleString('tr-TR')} ₺
+                {(period === 'monthly' ? (stats?.monthlyEarnings ?? 0) : totalNet).toLocaleString('tr-TR')} {currencySymbol}
               </p>
               <div className="flex items-center gap-1">
                 <TrendingUp size={14} style={{ color: '#4ADE80' }} />
                 <span className="text-xs" style={{ color: '#4ADE80' }}>
-                  Toplam: {totalNet.toLocaleString('tr-TR')} ₺
+                  Toplam: {totalNet.toLocaleString('tr-TR')} {currencySymbol}
                 </span>
               </div>
             </div>
@@ -172,15 +196,15 @@ function EarningsContent() {
                 Detaylar
               </p>
               <div className="flex flex-col gap-2.5">
-                <DetailRow label="Brüt Kazanç" value={`${totalGross.toLocaleString('tr-TR')} ₺`} icon={<DollarSign size={14} />} />
-                <DetailRow label="Komisyon" value={`-${totalCommission.toLocaleString('tr-TR')} ₺`} icon={<Minus size={14} />} negative />
+                <DetailRow label="Brüt Kazanç" value={`${totalGross.toLocaleString('tr-TR')} {currencySymbol}`} icon={<DollarSign size={14} />} />
+                <DetailRow label="Komisyon" value={`-${totalCommission.toLocaleString('tr-TR')} {currencySymbol}`} icon={<Minus size={14} />} negative />
                 <div className="h-px" style={{ background: 'var(--color-border)' }} />
-                <DetailRow label="Net Kazanç" value={`${totalNet.toLocaleString('tr-TR')} ₺`} icon={<TrendingUp size={14} />} bold />
+                <DetailRow label="Net Kazanç" value={`${totalNet.toLocaleString('tr-TR')} {currencySymbol}`} icon={<TrendingUp size={14} />} bold />
               </div>
             </div>
 
             {/* Per-listing Breakdown */}
-            {earnings.length > 0 && (
+            {filteredEarnings.length > 0 && (
               <div
                 className="rounded-xl p-4"
                 style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}
@@ -189,7 +213,7 @@ function EarningsContent() {
                   Son İşlemler
                 </p>
                 <div className="flex flex-col gap-2">
-                  {earnings.slice(0, 10).map((e) => (
+                  {filteredEarnings.slice(0, 10).map((e) => (
                     <div
                       key={e.id}
                       className="flex items-center justify-between py-2"
@@ -204,7 +228,7 @@ function EarningsContent() {
                         </p>
                       </div>
                       <span className="text-sm font-bold" style={{ color: 'var(--color-success)' }}>
-                        +{Number(e.net_amount).toLocaleString('tr-TR')} ₺
+                        +{Number(e.net_amount).toLocaleString('tr-TR')} {currencySymbol}
                       </span>
                     </div>
                   ))}

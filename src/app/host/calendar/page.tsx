@@ -177,6 +177,7 @@ function CalendarContent() {
 
                 let bgColor = 'transparent';
                 let textColor = 'var(--color-text-primary)';
+                const isPast = dateStr < now.toISOString().split('T')[0];
 
                 if (status === 'confirmed') {
                   bgColor = 'rgba(239,68,68,0.15)';
@@ -184,8 +185,12 @@ function CalendarContent() {
                 } else if (status === 'pending') {
                   bgColor = 'rgba(245,158,11,0.15)';
                   textColor = 'var(--color-warning)';
-                } else {
+                } else if (!isPast) {
+                  // Only show green (available) for future dates without bookings
                   bgColor = 'rgba(34,197,94,0.08)';
+                } else {
+                  // Past dates without bookings get no color
+                  textColor = 'var(--color-text-muted)';
                 }
 
                 if (isSelected) {

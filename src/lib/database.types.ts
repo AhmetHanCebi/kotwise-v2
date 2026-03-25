@@ -55,6 +55,8 @@ export interface City {
   currency: string | null;
   timezone: string | null;
   image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   transport_info: Record<string, unknown>;
   cost_breakdown: Record<string, unknown>;
   tips: string[];

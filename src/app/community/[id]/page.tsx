@@ -128,6 +128,13 @@ export default function PostDetailPage({
         </button>
         <button onClick={async () => {
           if (!user) { router.push('/login'); return; }
+          if (!confirm('Bu gönderiyi bildirmek istediğinizden emin misiniz?')) return;
+          // Check for duplicate report
+          const { data: existing } = await supabase.from('reports').select('id').eq('reporter_id', user.id).eq('content_id', id).eq('content_type', 'post').maybeSingle();
+          if (existing) {
+            toast('Bu gönderiyi zaten bildirdiniz', 'info');
+            return;
+          }
           await supabase.from('reports').insert({ reporter_id: user.id, content_id: id, content_type: 'post' });
           toast('Bildirildi, incelemeye alınacak', 'success');
         }} className="p-1" aria-label="Bildir">

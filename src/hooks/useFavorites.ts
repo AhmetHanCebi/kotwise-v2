@@ -19,9 +19,11 @@ export function useFavorites(userId?: string) {
     setError(null);
 
     try {
+      // Step 1: Fetch favorites with listing data (without nested listing_images join
+      // which fails silently in double-nested Supabase embeds)
       const { data, error: err } = await supabase
         .from('favorites')
-        .select('*, listing:listings!favorites_listing_id_fkey(*, listing_images!listing_images_listing_id_fkey(url, is_cover))')
+        .select('*, listing:listings!favorites_listing_id_fkey(*, city:cities!listings_city_id_fkey(id, name))')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -32,6 +34,32 @@ export function useFavorites(userId?: string) {
       }
 
       const items = (data ?? []) as unknown as (Favorite & { listing: ListingWithImages })[];
+
+      // Step 2: Fetch listing_images via listings join (direct listing_images query
+      // may fail silently due to RLS policies)
+      const listingIds = items.map(f => f.listing?.id).filter(Boolean) as string[];
+      if (listingIds.length > 0) {
+        const { data: listingsWithImgs } = await supabase
+          .from('listings')
+          .select('id, listing_images:listing_images!listing_images_listing_id_fkey(listing_id, url, is_cover, order)')
+          .in('id', listingIds);
+
+        if (listingsWithImgs && listingsWithImgs.length > 0) {
+          const imgMap = new Map<string, { listing_id: string; url: string; is_cover: boolean; order: number }[]>();
+          for (const l of listingsWithImgs) {
+            const imgs = (l as unknown as { id: string; listing_images: { listing_id: string; url: string; is_cover: boolean; order: number }[] }).listing_images;
+            if (imgs && imgs.length > 0) {
+              imgMap.set(l.id, imgs);
+            }
+          }
+          for (const item of items) {
+            if (item.listing) {
+              item.listing.listing_images = imgMap.get(item.listing.id) ?? [];
+            }
+          }
+        }
+      }
+
       setFavorites(items);
       setFavoriteIds(new Set(items.map(f => f.listing_id)));
     } catch (e) {

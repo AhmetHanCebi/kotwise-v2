@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import AutocompleteField from '@/components/AutocompleteField';
 import { UNIVERSITIES } from '@/lib/universities';
+import { useToast } from '@/components/Toast';
 
 const CITIES = [
   'İstanbul', 'Barcelona', 'Lizbon', 'Berlin',
@@ -71,6 +72,7 @@ function EditProfileContent() {
   const router = useRouter();
   const { user, profile, updateProfile } = useAuth();
   const { upload, uploading } = useStorage();
+  const { toast } = useToast();
 
   const [form, setForm] = useState({
     full_name: '',
@@ -107,9 +109,17 @@ function EditProfileContent() {
     if (!file || !user) return;
 
     setAvatarPreview(URL.createObjectURL(file));
-    const result = await upload(file, 'avatars', user.id);
-    if (result.data) {
-      await updateProfile({ avatar_url: result.data.url });
+    try {
+      const result = await upload(file, 'avatars', user.id);
+      if (result.data) {
+        await updateProfile({ avatar_url: result.data.url });
+      } else {
+        toast('Fotoğraf yüklenemedi, lütfen tekrar deneyin', 'error');
+        setAvatarPreview(profile?.avatar_url ?? null);
+      }
+    } catch {
+      toast('Fotoğraf yüklenirken bir hata oluştu', 'error');
+      setAvatarPreview(profile?.avatar_url ?? null);
     }
   };
 
@@ -142,18 +152,23 @@ function EditProfileContent() {
     }
 
     setSaving(true);
-    await updateProfile({
-      full_name: form.full_name || null,
-      university: form.university || null,
-      major: form.major || null,
-      bio: form.bio || null,
-      home_city: form.home_city || null,
-      home_country: form.home_country || null,
-      phone: form.phone || null,
-      interests: form.interests,
-    });
-    setSaving(false);
-    router.back();
+    try {
+      await updateProfile({
+        full_name: form.full_name || null,
+        university: form.university || null,
+        major: form.major || null,
+        bio: form.bio || null,
+        home_city: form.home_city || null,
+        home_country: form.home_country || null,
+        phone: form.phone || null,
+        interests: form.interests,
+      });
+      setSaving(false);
+      router.back();
+    } catch {
+      setSaving(false);
+      toast('Profil kaydedilemedi, lütfen tekrar deneyin', 'error');
+    }
   };
 
   return (

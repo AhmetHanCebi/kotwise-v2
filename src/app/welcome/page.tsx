@@ -19,16 +19,20 @@ export default function WelcomePage() {
 
   useEffect(() => {
     async function fetchStats() {
-      const [listingsRes, citiesRes, usersRes] = await Promise.all([
-        supabase.from('listings').select('id', { count: 'exact', head: true }),
-        supabase.from('cities').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-      ]);
-      setStats([
-        { value: formatCount(listingsRes.count ?? 0), label: 'İlan' },
-        { value: formatCount(citiesRes.count ?? 0), label: 'Şehir' },
-        { value: formatCount(usersRes.count ?? 0), label: 'Kullanıcı' },
-      ]);
+      try {
+        const [listingsRes, citiesRes, usersRes] = await Promise.all([
+          supabase.from('listings').select('id', { count: 'exact', head: true }),
+          supabase.from('cities').select('id', { count: 'exact', head: true }),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        ]);
+        setStats([
+          { value: formatCount(listingsRes.count ?? 0), label: 'İlan' },
+          { value: formatCount(citiesRes.count ?? 0), label: 'Şehir' },
+          { value: formatCount(usersRes.count ?? 0), label: 'Kullanıcı' },
+        ]);
+      } catch {
+        // Keep default placeholder values on error
+      }
     }
     fetchStats();
   }, []);

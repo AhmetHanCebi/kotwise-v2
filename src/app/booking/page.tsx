@@ -11,13 +11,12 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
-import { getRoomPlaceholder } from '@/lib/image-utils';
+import { getRoomPlaceholder, getCoverImage, handleListingImageError, IMAGE_FALLBACK } from '@/lib/image-utils';
 import AuthGuard from '@/components/AuthGuard';
 import AutocompleteField from '@/components/AutocompleteField';
 import { UNIVERSITIES } from '@/lib/universities';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
-import { IMAGE_FALLBACK } from '@/lib/image-utils';
 import { formatPrice } from '@/lib/currency-utils';
 
 const CURRENCY_LABELS: Record<string, string> = {
@@ -130,9 +129,9 @@ function MyBookings() {
             {bookings.map((b) => {
               const status = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending;
               const StatusIcon = status.icon;
-              const coverImg = b.listing?.images?.find((i: { is_cover?: boolean }) => i.is_cover)?.url
-                || b.listing?.images?.[0]?.url
-                || getRoomPlaceholder(b.listing_id);
+              const coverImg = b.listing
+                ? getCoverImage(b.listing)
+                : getRoomPlaceholder(b.listing_id);
 
               return (
                 <Link
@@ -144,13 +143,13 @@ function MyBookings() {
                     border: '1px solid var(--color-border)',
                   }}
                 >
-                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
                     <img
                       src={coverImg}
                       alt=""
                       className="w-full h-full object-cover"
                       loading="lazy"
-                      onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }}
+                      onError={(e) => handleListingImageError(e, b.listing_id)}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -226,7 +225,7 @@ function BookingForm() {
     const end = new Date(checkOut);
     const diffMs = end.getTime() - start.getTime();
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    const months = Math.max(Math.ceil(diffDays / 30), 1);
+    const months = Math.max(1, Math.round(diffDays / 30.44));
     const rent = listing.price_per_month * months;
     const serviceFee = Math.round(rent * SERVICE_FEE_RATE);
     const total = rent + serviceFee;
@@ -332,9 +331,7 @@ function BookingForm() {
     );
   }
 
-  const coverImg = listing.images?.find((i) => i.is_cover)?.url
-    || listing.images?.[0]?.url
-    || getRoomPlaceholder(listing.id);
+  const coverImg = getCoverImage(listing);
 
   return (
     <div
@@ -405,8 +402,8 @@ function BookingForm() {
               border: '1px solid var(--color-border)',
             }}
           >
-            <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-              <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
+            <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+              <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => handleListingImageError(e, listing.id)} />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
@@ -562,8 +559,8 @@ function BookingForm() {
             >
               {/* Listing mini */}
               <div className="flex items-center gap-3 pb-3 mb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0">
-                  <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
+                <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                  <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => handleListingImageError(e, listing.id)} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>

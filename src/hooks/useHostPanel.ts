@@ -164,7 +164,7 @@ export function useHostPanel(hostId?: string) {
     try {
       let query = supabase
         .from('earnings')
-        .select('*, booking:bookings!earnings_booking_id_fkey(*)')
+        .select('*, booking:bookings!earnings_booking_id_fkey(*, listing:listings!bookings_listing_id_fkey(currency))')
         .eq('host_id', hostId)
         .order('created_at', { ascending: false });
 
@@ -201,7 +201,9 @@ export function useHostPanel(hostId?: string) {
         const [year, m] = month.split('-');
         const startDate = `${year}-${m}-01`;
         const endDate = new Date(Number(year), Number(m), 0).toISOString().split('T')[0];
-        query = query.gte('check_in', startDate).lte('check_in', endDate);
+        // Show bookings that overlap with this month:
+        // check_in <= endDate AND check_out >= startDate
+        query = query.lte('check_in', endDate).gte('check_out', startDate);
       }
 
       const { data, error: err } = await query.order('check_in', { ascending: true });

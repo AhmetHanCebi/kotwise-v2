@@ -192,7 +192,7 @@ export default function EventDetailPage({
               style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
             >
               {event.organizer?.avatar_url ? (
-                <img src={event.organizer.avatar_url} alt={event.organizer?.full_name ?? 'Organizatör'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }} />
+                <img src={event.organizer.avatar_url} alt={event.organizer?.full_name ?? 'Organizatör'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(event.organizer?.full_name ?? 'Organizatör')}&background=F26522&color=fff&size=200`; }} />
               ) : (
                 (event.organizer?.full_name?.[0] ?? '?')
               )}
@@ -237,7 +237,7 @@ export default function EventDetailPage({
                     style={{ background: 'var(--gradient-dark)', color: 'var(--color-text-inverse)' }}
                   >
                     {p.user?.avatar_url ? (
-                      <img src={p.user.avatar_url} alt={p.user?.full_name ?? 'Katılımcı'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }} />
+                      <img src={p.user.avatar_url} alt={p.user?.full_name ?? 'Katılımcı'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.user?.full_name ?? 'Katılımcı')}&background=F26522&color=fff&size=200`; }} />
                     ) : (
                       (p.user?.full_name?.[0] ?? '?')
                     )}
@@ -267,16 +267,20 @@ export default function EventDetailPage({
                     router.push('/login');
                     return;
                   }
-                  if (event?.is_joined && event?.organizer?.id) {
-                    router.push(`/messages/new?to=${event.organizer.id}&subject=${encodeURIComponent(event.title ?? 'Etkinlik')}`);
-                  } else {
-                    toast('Sohbete katılmak için önce etkinliğe katılın', 'info');
+                  if (!event?.is_joined) {
+                    toast('Mesaj göndermek için önce etkinliğe katılın', 'info');
+                    return;
                   }
+                  if (!event?.organizer?.id) {
+                    toast('Organizatör bilgisi bulunamadı', 'error');
+                    return;
+                  }
+                  router.push(`/messages/new?to=${event.organizer.id}&subject=${encodeURIComponent(event.title ?? 'Etkinlik')}`);
                 }}
                 className="text-xs font-medium"
                 style={{ color: 'var(--color-primary)' }}
               >
-                Sohbete Katıl
+                Organizatöre Mesaj Gönder
               </button>
             </div>
             <div className="flex items-center gap-2 py-2">

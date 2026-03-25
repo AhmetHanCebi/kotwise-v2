@@ -13,19 +13,8 @@ import type { Listing } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
 import { formatPrice } from '@/lib/currency-utils';
 
-// Well-known city center coordinates
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  'Barcelona': { lat: 41.3874, lng: 2.1686 },
-  'Istanbul': { lat: 41.0082, lng: 28.9784 },
-  'Berlin': { lat: 52.5200, lng: 13.4050 },
-  'Paris': { lat: 48.8566, lng: 2.3522 },
-  'Madrid': { lat: 40.4168, lng: -3.7038 },
-  'Rome': { lat: 41.9028, lng: 12.4964 },
-  'Lisbon': { lat: 38.7223, lng: -9.1393 },
-  'Amsterdam': { lat: 52.3676, lng: 4.9041 },
-  'Prague': { lat: 50.0755, lng: 14.4378 },
-  'Vienna': { lat: 48.2082, lng: 16.3738 },
-};
+// Fallback coordinates if DB has no data
+const DEFAULT_CENTER = { lat: 41.3874, lng: 2.1686 }; // Barcelona
 
 type ListingWithImages = Listing & {
   listing_images?: { url: string; is_cover: boolean; order: number }[];
@@ -53,11 +42,11 @@ function MapSearchContent() {
     search({ limit: 50, city_id: cityIdParam });
   }, [cityIdParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Determine center from selected city
+  // Determine center from selected city using DB coordinates
   const selectedCity = cities.find((c) => c.id === cityIdParam);
-  const cityCenter = selectedCity
-    ? CITY_COORDINATES[selectedCity.name] ?? undefined
-    : undefined;
+  const cityCenter = selectedCity?.latitude != null && selectedCity?.longitude != null
+    ? { lat: selectedCity.latitude, lng: selectedCity.longitude }
+    : DEFAULT_CENTER;
 
   const selectedListing = (listings as ListingWithImages[]).find(
     (l) => l.id === selectedId
@@ -118,7 +107,7 @@ function MapSearchContent() {
         <ListingMap
           listings={mapListings}
           center={cityCenter}
-          zoom={cityCenter ? 13 : undefined}
+          zoom={13}
           selectedId={selectedId}
           onSelect={(id) => setSelectedId(id === selectedId ? null : id)}
         />

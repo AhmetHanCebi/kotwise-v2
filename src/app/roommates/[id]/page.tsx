@@ -27,10 +27,26 @@ const INTEREST_EMOJIS: Record<string, string> = {
   dancing: '💃', cinema: '🎬', yoga: '🧘', hiking: '🥾',
 };
 
+const INTEREST_TR: Record<string, string> = {
+  music: 'Müzik', sports: 'Spor', cooking: 'Yemek', reading: 'Okuma',
+  travel: 'Seyahat', gaming: 'Oyun', photography: 'Fotoğrafçılık', art: 'Sanat',
+  movies: 'Film', fitness: 'Fitness', technology: 'Teknoloji', dancing: 'Dans',
+  yoga: 'Yoga', hiking: 'Doğa Yürüyüşü', swimming: 'Yüzme', cycling: 'Bisiklet',
+  writing: 'Yazarlık', gardening: 'Bahçecilik',
+};
+
+const CLEANLINESS_TR: Record<string, string> = {
+  very_clean: 'Çok temiz', clean: 'Temiz', moderate: 'Orta', messy: 'Dağınık',
+};
+
+const GUESTS_POLICY_TR: Record<string, string> = {
+  no_guests: 'Misafir istemez', sometimes: 'Bazen', always_welcome: 'Her zaman', rarely: 'Nadiren',
+};
+
 function matchPercentage(a: string[], b: string[]): number {
   if (!a?.length || !b?.length) return 0;
   const common = a.filter((i) => b.includes(i));
-  return Math.min(99, Math.floor((common.length / Math.max(a.length, b.length)) * 100) + 50);
+  return Math.min(99, Math.floor((common.length / Math.max(a.length, b.length)) * 100));
 }
 
 export default function RoommateProfilePage({
@@ -69,7 +85,7 @@ export default function RoommateProfilePage({
   }, [user, id, like, router]);
 
   const handleMessage = () => {
-    router.push(`/messages?to=${id}`);
+    router.push(`/messages/new?to=${id}`);
   };
 
   if (loading) {
@@ -111,7 +127,7 @@ export default function RoommateProfilePage({
       <div className="relative">
         <div className="h-72 overflow-hidden" style={{ background: 'var(--gradient-dark)' }}>
           {p.user?.avatar_url ? (
-            <img src={p.user.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=K&background=F26522&color=fff&size=200'; }} />
+            <img src={p.user.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.user?.full_name ?? '?')}&background=F26522&color=fff&size=200`; }} />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-7xl font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>
@@ -215,7 +231,7 @@ export default function RoommateProfilePage({
                     border: `1px solid ${(myProfile?.interests ?? []).includes(interest) ? 'color-mix(in srgb, var(--color-success) 25%, transparent)' : 'var(--color-border)'}`,
                   }}
                 >
-                  {INTEREST_EMOJIS[interest] ?? ''} {interest}
+                  {INTEREST_EMOJIS[interest] ?? ''} {INTEREST_TR[interest] ?? interest.charAt(0).toUpperCase() + interest.slice(1)}
                 </span>
               ))}
             </div>
@@ -243,7 +259,7 @@ export default function RoommateProfilePage({
               <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'var(--color-bg)' }}>
                 <Sparkles size={16} style={{ color: 'var(--color-success)' }} />
                 <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  {p.cleanliness}
+                  {CLEANLINESS_TR[p.cleanliness] ?? p.cleanliness}
                 </span>
               </div>
             )}
@@ -257,7 +273,7 @@ export default function RoommateProfilePage({
               <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'var(--color-bg)' }}>
                 <Users size={16} style={{ color: 'var(--color-text-muted)' }} />
                 <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  {p.guests_policy}
+                  {GUESTS_POLICY_TR[p.guests_policy] ?? p.guests_policy}
                 </span>
               </div>
             )}

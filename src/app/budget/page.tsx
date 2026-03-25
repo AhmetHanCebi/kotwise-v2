@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBudget } from '@/hooks/useBudget';
+import BottomNav from '@/components/BottomNav';
 import {
   ArrowLeft,
   Calculator,
@@ -35,6 +36,8 @@ const defaultAmounts: Record<CategoryKey, number> = {
   entertainment: 100,
   other: 50,
 };
+
+const DEFAULT_CURRENCY = 'EUR';
 
 export default function BudgetPage() {
   const router = useRouter();
@@ -83,7 +86,7 @@ export default function BudgetPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
+    <div className="flex flex-col min-h-dvh pb-20" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 py-3 pt-[calc(env(safe-area-inset-top)+12px)]"
@@ -169,7 +172,7 @@ export default function BudgetPage() {
                     </span>
                   </div>
                   <span className="text-sm font-bold" style={{ color: cat.color }}>
-                    {amounts[cat.key]} {selectedCity?.currency ?? 'TL'}
+                    {amounts[cat.key]} {selectedCity?.currency ?? DEFAULT_CURRENCY}
                   </span>
                 </div>
                 <input
@@ -194,13 +197,13 @@ export default function BudgetPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Aylık Toplam</span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {selectedCity?.currency ?? 'TL'}</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {selectedCity?.currency ?? DEFAULT_CURRENCY}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {duration} Aylık Toplam
             </span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {selectedCity?.currency ?? 'TL'}</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {selectedCity?.currency ?? DEFAULT_CURRENCY}</span>
           </div>
         </div>
 
@@ -218,7 +221,7 @@ export default function BudgetPage() {
                 Şehir Ort. Kira
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {cityAvgRent} {selectedCity?.currency ?? 'TL'}
+                {cityAvgRent} {selectedCity?.currency ?? DEFAULT_CURRENCY}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -226,7 +229,7 @@ export default function BudgetPage() {
                 Sizin Bütçeniz
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                {amounts.rent} {selectedCity?.currency ?? 'TL'}
+                {amounts.rent} {selectedCity?.currency ?? DEFAULT_CURRENCY}
               </span>
             </div>
             {comparison !== null && (
@@ -235,14 +238,14 @@ export default function BudgetPage() {
                   <>
                     <TrendingUp size={14} style={{ color: 'var(--color-error)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-error)' }}>
-                      Ortalamadan {comparison} {selectedCity?.currency ?? 'TL'} yüksek
+                      Ortalamadan {comparison} {selectedCity?.currency ?? DEFAULT_CURRENCY} yüksek
                     </span>
                   </>
                 ) : comparison < 0 ? (
                   <>
                     <TrendingDown size={14} style={{ color: 'var(--color-success)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                      Ortalamadan {Math.abs(comparison)} {selectedCity?.currency ?? 'TL'} düşük
+                      Ortalamadan {Math.abs(comparison)} {selectedCity?.currency ?? DEFAULT_CURRENCY} düşük
                     </span>
                   </>
                 ) : (
@@ -335,7 +338,7 @@ export default function BudgetPage() {
                     </div>
                     {city.avg_rent && (
                       <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                        Ort. {city.avg_rent} {city.currency ?? 'TL'}
+                        Ort. {city.avg_rent} {city.currency ?? DEFAULT_CURRENCY}
                       </span>
                     )}
                   </button>
@@ -345,6 +348,8 @@ export default function BudgetPage() {
           </div>
         </div>
       )}
+
+      <BottomNav />
     </div>
   );
 }
