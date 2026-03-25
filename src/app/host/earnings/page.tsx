@@ -49,13 +49,13 @@ function EarningsContent() {
     [earnings]
   );
 
-  // Derive currency symbol from the first earning's booking listing, default to EUR
+  // Derive currency symbol from the first earning's booking listing
   const currencyCode = useMemo(() => {
     for (const e of earnings) {
       const listing = (e.booking as unknown as { listing?: { currency?: string } })?.listing;
       if (listing?.currency) return listing.currency;
     }
-    return 'EUR';
+    return 'TRY';
   }, [earnings]);
 
   const symbol = getCurrencySymbol(currencyCode);

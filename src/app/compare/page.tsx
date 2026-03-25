@@ -12,19 +12,13 @@ import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
 import type { Listing, ListingWithImages, Favorite } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
-import { formatPrice } from '@/lib/currency-utils';
+import { formatCurrency } from '@/lib/currency-utils';
+import { ROOM_TYPE_LABELS } from '@/lib/constants';
 
 type FavoriteWithListing = Favorite & {
   listing: ListingWithImages;
 };
 
-const CURRENCY_LABELS: Record<string, string> = {
-  TRY: 'TL',
-  EUR: 'EUR',
-  USD: 'USD',
-  GBP: 'GBP',
-};
-const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
 
 interface CompareRow {
   label: string;
@@ -40,7 +34,7 @@ const COMPARE_ROWS: CompareRow[] = [
     label: 'Fiyat',
     key: 'price',
     getValue: (l) => l.price_per_month,
-    format: (v, l) => `${formatPrice(Number(v))} ${displayCurrency(l.currency ?? 'EUR')}/ay`,
+    format: (v, l) => `${formatCurrency(Number(v), l.currency)}/ay`,
     lowerIsBetter: true,
   },
   {
@@ -51,12 +45,7 @@ const COMPARE_ROWS: CompareRow[] = [
   {
     label: 'Oda Tipi',
     key: 'roomType',
-    getValue: (l) => {
-      const labels: Record<string, string> = {
-        studio: 'Stüdyo', single: 'Tek Kişilik', shared: 'Paylaşımlı', apartment: 'Daire',
-      };
-      return labels[l.room_type] || l.room_type;
-    },
+    getValue: (l) => ROOM_TYPE_LABELS[l.room_type] ?? l.room_type,
   },
   {
     label: 'Eşyalı',
@@ -282,7 +271,7 @@ function CompareContent() {
                     {listing.title}
                   </p>
                   <p className="text-[11px] font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                    {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency ?? 'EUR')}
+                    {formatCurrency(listing.price_per_month, listing.currency)}
                   </p>
                 </div>
               </Link>
@@ -380,7 +369,7 @@ function CompareContent() {
                   {listing.title}
                 </p>
                 <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                  {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency ?? 'EUR')}/ay
+                  {formatCurrency(listing.price_per_month, listing.currency)}/ay
                 </p>
               </div>
               <div

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
-import { formatPrice, currencyLabel } from '@/lib/currency-utils';
+import { formatCurrency } from '@/lib/currency-utils';
 import AuthGuard from '@/components/AuthGuard';
 import type { BookingWithDetails } from '@/lib/database.types';
 
@@ -194,7 +194,7 @@ function BookingSuccess() {
                   Toplam
                 </span>
                 <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {formatPrice(booking.total_price)} {currencyLabel(booking.listing?.currency)}
+                  {formatCurrency(booking.total_price, booking.listing?.currency)}
                 </span>
               </div>
             </div>

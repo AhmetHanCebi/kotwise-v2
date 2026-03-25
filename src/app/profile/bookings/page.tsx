@@ -17,7 +17,7 @@ import {
   CalendarCheck,
 } from 'lucide-react';
 import { IMAGE_FALLBACK_SMALL, getCoverImage, handleListingImageError } from '@/lib/image-utils';
-import { formatPrice, currencyLabel } from '@/lib/currency-utils';
+import { formatCurrency } from '@/lib/currency-utils';
 import { useToast } from '@/components/Toast';
 
 type FilterTab = 'active' | 'past' | 'cancelled';
@@ -212,7 +212,7 @@ function BookingsContent() {
                       </span>
                     </div>
                     <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                      {formatPrice(Number(booking.total_price))} {currencyLabel(booking.listing?.currency)}
+                      {formatCurrency(Number(booking.total_price), booking.listing?.currency)}
                     </span>
                   </div>
 

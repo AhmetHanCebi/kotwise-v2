@@ -11,7 +11,7 @@ import { useCities } from '@/hooks/useCities';
 import ListingMap from '@/components/ListingMap';
 import type { Listing } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
-import { formatPrice } from '@/lib/currency-utils';
+import { formatCurrency } from '@/lib/currency-utils';
 
 // Fallback coordinates if DB has no data
 const DEFAULT_CENTER = { lat: 41.3874, lng: 2.1686 }; // Barcelona
@@ -156,7 +156,7 @@ function MapSearchContent() {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                    {formatPrice(selectedListing.price_per_month)} {selectedListing.currency ?? 'EUR'}
+                    {formatCurrency(selectedListing.price_per_month, selectedListing.currency)}
                     <span className="text-[10px] font-normal" style={{ color: 'var(--color-text-muted)' }}>
                       {' '}/ay
                     </span>

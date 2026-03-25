@@ -15,22 +15,12 @@ import type { RoomType, Listing } from '@/lib/database.types';
 import { getCoverImage as getCoverImg, handleListingImageError } from '@/lib/image-utils';
 import BottomNav from '@/components/BottomNav';
 
-import { formatPrice, currencyLabel } from '@/lib/currency-utils';
+import { formatCurrency } from '@/lib/currency-utils';
+import { ROOM_TYPE_LABELS } from '@/lib/constants';
 
-const CURRENCY_LABELS: Record<string, string> = {
-  TRY: 'TL',
-  EUR: 'EUR',
-  USD: 'USD',
-  GBP: 'GBP',
-};
-const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
-
-const ROOM_TYPES: { value: RoomType; label: string; icon: React.ReactNode }[] = [
-  { value: 'studio', label: 'Stüdyo', icon: <Home size={18} /> },
-  { value: 'single', label: 'Tek Kişilik', icon: <Home size={18} /> },
-  { value: 'shared', label: 'Paylaşımlı', icon: <Home size={18} /> },
-  { value: 'apartment', label: 'Daire', icon: <Home size={18} /> },
-];
+const ROOM_TYPES: { value: RoomType; label: string; icon: React.ReactNode }[] = (
+  Object.entries(ROOM_TYPE_LABELS) as [RoomType, string][]
+).map(([value, label]) => ({ value, label, icon: <Home size={18} /> }));
 
 const SORT_OPTIONS: { value: ListingFilters['sort_by']; label: string }[] = [
   { value: 'newest', label: 'En Yeni' },
@@ -523,9 +513,7 @@ function ListingCard({
             backdropFilter: 'blur(4px)',
           }}
         >
-          {listing.room_type === 'studio' ? 'Stüdyo' :
-           listing.room_type === 'single' ? 'Tek Kişilik' :
-           listing.room_type === 'shared' ? 'Paylaşımlı' : 'Daire'}
+          {ROOM_TYPE_LABELS[listing.room_type] ?? listing.room_type}
         </div>
       </div>
 
@@ -560,7 +548,7 @@ function ListingCard({
             className="text-base font-bold"
             style={{ color: 'var(--color-primary)' }}
           >
-            {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
+            {formatCurrency(listing.price_per_month, listing.currency)}
           </span>
           <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
             /ay

@@ -16,6 +16,7 @@ import {
   Clock,
 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
+import { currencySymbol } from '@/lib/currency-utils';
 
 export default function HostBookingsPage() {
   return (
@@ -210,7 +211,7 @@ function HostBookingsContent() {
                     </span>
                   </div>
                   <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                    {booking.total_price} {booking.listing?.currency ?? 'EUR'}
+                    {booking.total_price} {currencySymbol(booking.listing?.currency)}
                   </span>
                 </div>
 

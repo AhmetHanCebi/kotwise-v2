@@ -471,7 +471,7 @@ export default function RegisterPage() {
                 className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
                 style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
               >
-                <span className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>€</span>
+                <span className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>₺</span>
                 <input
                   type="number"
                   placeholder="500"

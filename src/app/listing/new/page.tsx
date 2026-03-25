@@ -17,6 +17,8 @@ import AuthGuard from '@/components/AuthGuard';
 import AutocompleteField from '@/components/AutocompleteField';
 import { UNIVERSITIES } from '@/lib/universities';
 import type { RoomType, ListingInsert, Neighborhood } from '@/lib/database.types';
+import { currencySymbol } from '@/lib/currency-utils';
+import { ROOM_TYPE_LABELS } from '@/lib/constants';
 
 const STEPS = [
   { num: 1, title: 'Temel Bilgiler', icon: <MapPin size={18} /> },
@@ -25,12 +27,9 @@ const STEPS = [
   { num: 4, title: 'Önizleme', icon: <Eye size={18} /> },
 ];
 
-const ROOM_TYPES: { value: RoomType; label: string }[] = [
-  { value: 'studio', label: 'Stüdyo' },
-  { value: 'single', label: 'Tek Kişilik' },
-  { value: 'shared', label: 'Paylaşımlı' },
-  { value: 'apartment', label: 'Daire' },
-];
+const ROOM_TYPES: { value: RoomType; label: string }[] = Object.entries(ROOM_TYPE_LABELS).map(
+  ([value, label]) => ({ value: value as RoomType, label }),
+);
 
 const AMENITIES_LIST = [
   { key: 'wifi', label: 'WiFi', icon: <Wifi size={16} /> },
@@ -258,7 +257,7 @@ function NewListingForm() {
         description: form.description || null,
         address: form.address || null,
         price_per_month: Number(form.price),
-        currency: selectedCity?.currency ?? 'EUR',
+        currency: selectedCity?.currency ?? 'TRY',
         room_type: form.roomType,
         max_guests: Number(form.maxGuests) || 1,
         is_furnished: form.isFurnished,
@@ -818,7 +817,7 @@ function Step4({ form, images, cities, neighborhoods }: { form: FormData; images
   const cityName = cities.find((c) => c.id === form.city)?.name;
   const neighborhoodName = neighborhoods.find((n) => n.id === form.neighborhood)?.name;
   const selectedCity = cities.find((c) => c.id === form.city);
-  const currencyLabel = selectedCity?.currency ?? 'EUR';
+  const currencyCode = selectedCity?.currency ?? 'TRY';
   return (
     <div className="flex flex-col gap-5 animate-fade-in-up">
       <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
@@ -868,7 +867,7 @@ function Step4({ form, images, cities, neighborhoods }: { form: FormData; images
           </div>
           <div className="mt-3 flex items-baseline gap-1">
             <span className="text-xl font-bold" style={{ color: 'var(--color-primary)' }}>
-              {form.price ? Number(form.price).toLocaleString('tr-TR') : '0'} {currencyLabel}
+              {form.price ? Number(form.price).toLocaleString('tr-TR') : '0'} {currencySymbol(currencyCode)}
             </span>
             <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>/ay</span>
           </div>

@@ -15,15 +15,8 @@ import { useAuth } from '@/hooks/useAuth';
 import ListingMap from '@/components/ListingMap';
 import type { ListingWithDetails, ReviewInsert } from '@/lib/database.types';
 import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, getCoverImage, getRoomPlaceholder } from '@/lib/image-utils';
-import { formatPrice } from '@/lib/currency-utils';
-
-const CURRENCY_LABELS: Record<string, string> = {
-  TRY: 'TL',
-  EUR: 'EUR',
-  USD: 'USD',
-  GBP: 'GBP',
-};
-const displayCurrency = (code: string) => CURRENCY_LABELS[code] ?? code;
+import { formatCurrency } from '@/lib/currency-utils';
+import { ROOM_TYPE_LABELS } from '@/lib/constants';
 
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
   wifi: <Wifi size={18} />,
@@ -333,7 +326,7 @@ export default function ListingDetailPage({
           style={{ background: 'rgba(242,101,34,0.08)' }}
         >
           <span className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
-            {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
+            {formatCurrency(listing.price_per_month, listing.currency)}
           </span>
           <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             /ay
@@ -403,7 +396,7 @@ export default function ListingDetailPage({
           <div className="grid grid-cols-3 gap-2">
             <FeatureItem
               icon={<Home size={18} />}
-              label={listing.room_type === 'studio' ? 'Stüdyo' : listing.room_type === 'single' ? 'Tek Kişilik' : listing.room_type === 'shared' ? 'Paylaşımlı' : 'Daire'}
+              label={ROOM_TYPE_LABELS[listing.room_type] ?? listing.room_type}
             />
             <FeatureItem
               icon={<Users size={18} />}
@@ -645,7 +638,7 @@ export default function ListingDetailPage({
                         {sl.title}
                       </p>
                       <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                        {formatPrice(sl.price_per_month)} {displayCurrency(sl.currency ?? 'EUR')}/ay
+                        {formatCurrency(sl.price_per_month, sl.currency)}/ay
                       </p>
                     </div>
                   </Link>
@@ -680,7 +673,7 @@ export default function ListingDetailPage({
       >
         <div>
           <span className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
+            {formatCurrency(listing.price_per_month, listing.currency)}
           </span>
           <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>
             /ay

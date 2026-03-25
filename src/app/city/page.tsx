@@ -11,6 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useCities } from '@/hooks/useCities';
+import { formatCurrencyRaw } from '@/lib/currency-utils';
 import BottomNav from '@/components/BottomNav';
 
 export default function CityListPage() {
@@ -128,7 +129,7 @@ export default function CityListPage() {
                   </div>
                   {city.avg_rent && city.avg_rent > 0 && (
                     <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                      ~€{city.avg_rent && city.avg_rent > 1000 ? Math.round(city.avg_rent / 100) : city.avg_rent}/ay
+                      ~{formatCurrencyRaw(city.avg_rent && city.avg_rent > 1000 ? Math.round(city.avg_rent / 100) : city.avg_rent!, city.currency)}/ay
                     </p>
                   )}
                 </div>

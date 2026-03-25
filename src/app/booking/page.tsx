@@ -17,18 +17,7 @@ import AutocompleteField from '@/components/AutocompleteField';
 import { UNIVERSITIES } from '@/lib/universities';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
-import { formatPrice } from '@/lib/currency-utils';
-
-const CURRENCY_LABELS: Record<string, string> = {
-  TRY: '₺',
-  EUR: '€',
-  USD: '$',
-  GBP: '£',
-};
-const displayCurrency = (code: string | null | undefined) => {
-  if (!code) return '₺';
-  return CURRENCY_LABELS[code] ?? code;
-};
+import { formatPrice, formatCurrency, currencySymbol } from '@/lib/currency-utils';
 
 const STEPS = [
   { num: 1, title: 'Tarih', icon: <Calendar size={16} /> },
@@ -166,7 +155,7 @@ function MyBookings() {
                       </span>
                     </div>
                     <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                      {b.total_price ? formatPrice(b.total_price) : '0'} {displayCurrency(b.listing?.currency)}
+                      {b.total_price ? formatCurrency(b.total_price, b.listing?.currency) : `0 ${currencySymbol(b.listing?.currency)}`}
                     </p>
                   </div>
                 </Link>
@@ -417,7 +406,7 @@ function BookingForm() {
               </div>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}/ay
+                  {formatCurrency(listing.price_per_month, listing.currency)}/ay
                 </span>
                 {listing.rating > 0 && (
                   <div className="flex items-center gap-0.5">
@@ -478,10 +467,10 @@ function BookingForm() {
                 style={{ background: 'rgba(242,101,34,0.06)', border: '1px solid rgba(242,101,34,0.15)' }}
               >
                 <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  Tahmini: {priceCalc.months} ay x {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
+                  Tahmini: {priceCalc.months} ay x {formatCurrency(listing.price_per_month, listing.currency)}
                 </p>
                 <p className="text-lg font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                  Toplam: {formatPrice(priceCalc.total)} {displayCurrency(listing.currency)}
+                  Toplam: {formatCurrency(priceCalc.total, listing.currency)}
                 </p>
               </div>
             )}
@@ -576,10 +565,10 @@ function BookingForm() {
               <div className="flex flex-col gap-2.5">
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-secondary)' }}>
-                    Kira ({priceCalc.months} ay x {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)})
+                    Kira ({priceCalc.months} ay x {formatCurrency(listing.price_per_month, listing.currency)})
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {formatPrice(priceCalc.rent)} {displayCurrency(listing.currency)}
+                    {formatCurrency(priceCalc.rent, listing.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -587,7 +576,7 @@ function BookingForm() {
                     Hizmet bedeli (%3)
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {formatPrice(priceCalc.serviceFee)} {displayCurrency(listing.currency)}
+                    {formatCurrency(priceCalc.serviceFee, listing.currency)}
                   </span>
                 </div>
                 <div
@@ -596,7 +585,7 @@ function BookingForm() {
                 >
                   <span style={{ color: 'var(--color-text-primary)' }}>Toplam</span>
                   <span style={{ color: 'var(--color-primary)' }}>
-                    {formatPrice(priceCalc.total)} {displayCurrency(listing.currency)}
+                    {formatCurrency(priceCalc.total, listing.currency)}
                   </span>
                 </div>
               </div>
@@ -645,7 +634,7 @@ function BookingForm() {
                   Toplam Tutar
                 </span>
                 <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {formatPrice(priceCalc.total)} {displayCurrency(listing.currency)}
+                  {formatCurrency(priceCalc.total, listing.currency)}
                 </span>
               </div>
             </div>

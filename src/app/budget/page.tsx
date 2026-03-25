@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBudget } from '@/hooks/useBudget';
 import BottomNav from '@/components/BottomNav';
-import { currencyLabel } from '@/lib/currency-utils';
+import { currencySymbol } from '@/lib/currency-utils';
 import {
   ArrowLeft,
   Calculator,
@@ -38,7 +38,7 @@ const defaultAmounts: Record<CategoryKey, number> = {
   other: 50,
 };
 
-const DEFAULT_CURRENCY = 'EUR';
+const DEFAULT_CURRENCY = 'TRY';
 
 function loadUserCurrency(): string {
   try {
@@ -189,7 +189,7 @@ export default function BudgetPage() {
                     </span>
                   </div>
                   <span className="text-sm font-bold" style={{ color: cat.color }}>
-                    {amounts[cat.key]} {currencyLabel(displayCurr)}
+                    {amounts[cat.key]} {currencySymbol(displayCurr)}
                   </span>
                 </div>
                 <input
@@ -214,13 +214,13 @@ export default function BudgetPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Aylık Toplam</span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {currencyLabel(displayCurr)}</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{monthlyTotal} {currencySymbol(displayCurr)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
               {duration} Aylık Toplam
             </span>
-            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {currencyLabel(displayCurr)}</span>
+            <span className="text-xl font-bold" style={{ color: 'white' }}>{periodTotal} {currencySymbol(displayCurr)}</span>
           </div>
         </div>
 
@@ -238,7 +238,7 @@ export default function BudgetPage() {
                 Şehir Ort. Kira
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {cityAvgRent} {currencyLabel(displayCurr)}
+                {cityAvgRent} {currencySymbol(displayCurr)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -246,7 +246,7 @@ export default function BudgetPage() {
                 Sizin Bütçeniz
               </span>
               <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                {amounts.rent} {currencyLabel(displayCurr)}
+                {amounts.rent} {currencySymbol(displayCurr)}
               </span>
             </div>
             {comparison !== null && (
@@ -255,14 +255,14 @@ export default function BudgetPage() {
                   <>
                     <TrendingUp size={14} style={{ color: 'var(--color-error)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-error)' }}>
-                      Ortalamadan {comparison} {currencyLabel(displayCurr)} yüksek
+                      Ortalamadan {comparison} {currencySymbol(displayCurr)} yüksek
                     </span>
                   </>
                 ) : comparison < 0 ? (
                   <>
                     <TrendingDown size={14} style={{ color: 'var(--color-success)' }} />
                     <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                      Ortalamadan {Math.abs(comparison)} {currencyLabel(displayCurr)} düşük
+                      Ortalamadan {Math.abs(comparison)} {currencySymbol(displayCurr)} düşük
                     </span>
                   </>
                 ) : (
@@ -355,7 +355,7 @@ export default function BudgetPage() {
                     </div>
                     {city.avg_rent && (
                       <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                        Ort. {city.avg_rent} {currencyLabel(city.currency ?? DEFAULT_CURRENCY)}
+                        Ort. {city.avg_rent} {currencySymbol(city.currency ?? DEFAULT_CURRENCY)}
                       </span>
                     )}
                   </button>

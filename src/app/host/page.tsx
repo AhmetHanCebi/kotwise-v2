@@ -7,6 +7,7 @@ import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useHostPanel } from '@/hooks/useHostPanel';
 import { useBooking } from '@/hooks/useBooking';
+import { currencySymbol } from '@/lib/currency-utils';
 import {
   ArrowLeft,
   Home,
@@ -93,7 +94,7 @@ function HostDashboardContent() {
           <StatCard
             icon={<DollarSign size={18} />}
             label="Bu Ay Kazanç"
-            value={`${stats?.monthlyEarnings ?? 0} EUR`}
+            value={`${stats?.monthlyEarnings ?? 0} ₺`}
             color="#22C55E"
           />
           <StatCard
@@ -181,7 +182,7 @@ function HostDashboardContent() {
                   </p>
                 </div>
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {b.total_price} EUR
+                  {b.total_price} {currencySymbol(b.listing?.currency)}
                 </span>
               </div>
             ))}

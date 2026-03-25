@@ -34,7 +34,8 @@ import CitySelector from '@/components/CitySelector';
 import type { City, ListingWithImages, PostWithDetails } from '@/lib/database.types';
 import type { EventWithDetails } from '@/lib/database.types';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
-import { formatPrice, currencySymbol } from '@/lib/currency-utils';
+import { formatCurrency, formatCurrencyRaw, currencySymbol } from '@/lib/currency-utils';
+import { ROOM_TYPE_LABELS } from '@/lib/constants';
 
 const countryFlags: Record<string, string> = {
   ES: '🇪🇸', PT: '🇵🇹', DE: '🇩🇪', FR: '🇫🇷', IT: '🇮🇹', CZ: '🇨🇿',
@@ -122,7 +123,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
           className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg text-xs font-bold text-white"
           style={{ background: 'var(--color-primary)' }}
         >
-          {formatPrice(listing.price_per_month)} {currencySymbol(listing.currency)}/ay
+          {formatCurrency(listing.price_per_month, listing.currency)}/ay
         </div>
         {/* Rating */}
         {listing.rating > 0 && (
@@ -155,10 +156,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
             className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
           >
-            {listing.room_type === 'studio' && 'Stüdyo'}
-            {listing.room_type === 'single' && 'Tek Oda'}
-            {listing.room_type === 'shared' && 'Paylaşımlı'}
-            {listing.room_type === 'apartment' && 'Daire'}
+            {ROOM_TYPE_LABELS[listing.room_type] ?? listing.room_type}
           </span>
           {listing.is_furnished && (
             <span
@@ -548,7 +546,7 @@ export default function HomePage() {
               {city.avg_rent != null && (
                 <div className="flex flex-col items-center py-2 rounded-xl" style={{ background: 'var(--color-bg)' }}>
                   <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Ort. Kira</span>
-                  <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>€{city.avg_rent && city.avg_rent > 1000 ? Math.round(city.avg_rent / 100) : city.avg_rent}</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{formatCurrencyRaw(city.avg_rent && city.avg_rent > 1000 ? Math.round(city.avg_rent / 100) : city.avg_rent!, city.currency)}</span>
                 </div>
               )}
               {city.student_count != null && (
