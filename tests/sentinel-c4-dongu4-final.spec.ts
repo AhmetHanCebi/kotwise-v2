@@ -4,16 +4,11 @@ const BASE = 'http://localhost:3336';
 const SCREENSHOT_DIR = 'tests/screenshots';
 
 async function login(page: Page) {
-  await page.goto(`${BASE}/login`);
-  await page.waitForLoadState('networkidle');
-  const emailInput = page.locator('input[type="email"], input[name="email"]');
-  if (await emailInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await emailInput.fill('deniz@kotwise.com');
-    await page.locator('input[type="password"], input[name="password"]').fill('KotwiseTest2026!');
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('**/!(login)**', { timeout: 10000 }).catch(() => {});
-    await page.waitForLoadState('networkidle');
-  }
+  await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 15000 });
+  await page.fill('input[type="email"]', 'deniz@kotwise.com');
+  await page.fill('input[type="password"]', 'KotwiseTest2026!');
+  await page.getByRole('button', { name: 'Giriş Yap', exact: true }).click();
+  await page.waitForTimeout(3000);
 }
 
 // ==================== DEVAM EDEN BUG RE-CHECK ====================

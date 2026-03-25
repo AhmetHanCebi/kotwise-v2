@@ -8,7 +8,7 @@ async function login(page: any) {
   await page.goto(`${BASE}/login`, { waitUntil: 'networkidle', timeout: 15000 });
   await page.fill('input[type="email"]', EMAIL);
   await page.fill('input[type="password"]', PASS);
-  await page.locator('button:has-text("Giriş Yap")').click();
+  await page.getByRole('button', { name: 'Giriş Yap', exact: true }).click();
   await page.waitForTimeout(3000);
 }
 

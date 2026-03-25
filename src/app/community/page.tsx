@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
@@ -123,6 +124,15 @@ function CommunityPage() {
     return () => observer.disconnect();
   }, [loadMore, posts.length, hasMore]);
 
+  const { refreshing, handlers: pullHandlers } = usePullToRefresh({
+    onRefresh: async () => {
+      if (!activeCityId) return;
+      setPage(1);
+      setHasMore(true);
+      await fetchFeed(activeCityId, 1, 20, undefined, hashtagParam ?? undefined);
+    },
+  });
+
   const handleLike = async (postId: string) => {
     if (!user) {
       router.push('/login');
@@ -140,7 +150,12 @@ function CommunityPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
+    <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }} {...pullHandlers}>
+      {refreshing && (
+        <div className="flex justify-center py-3">
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--color-primary)' }} />
+        </div>
+      )}
       {/* Header */}
       <header
         className="glass-effect sticky top-0 z-40 px-4 pt-[env(safe-area-inset-top)] pb-0"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
@@ -68,6 +69,12 @@ function MessagesContent() {
     fetchConversations();
   }, [fetchConversations]);
 
+  const { refreshing, handlers: pullHandlers } = usePullToRefresh({
+    onRefresh: async () => {
+      await fetchConversations();
+    },
+  });
+
   const filtered = useMemo(() => {
     let list = conversations;
 
@@ -97,7 +104,12 @@ function MessagesContent() {
   }, [conversations, filter, search, user?.id]);
 
   return (
-    <div className="flex flex-col flex-1 pb-20" style={{ background: 'var(--color-bg)' }}>
+    <div className="flex flex-col flex-1 pb-20" style={{ background: 'var(--color-bg)' }} {...pullHandlers}>
+      {refreshing && (
+        <div className="flex justify-center py-3">
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--color-primary)' }} />
+        </div>
+      )}
       <PageHeader
         title="Mesajlar"
         rightContent={

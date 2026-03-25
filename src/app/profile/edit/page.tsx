@@ -146,8 +146,8 @@ function EditProfileContent() {
       setValidationError('Geçerli bir telefon numarası girin');
       return;
     }
-    if (form.bio.length > 500) {
-      setValidationError('Hakkında alanı en fazla 500 karakter olabilir');
+    if (form.bio.length > 300) {
+      setValidationError('Hakkında alanı en fazla 300 karakter olabilir');
       return;
     }
 
@@ -164,7 +164,8 @@ function EditProfileContent() {
         interests: form.interests,
       });
       setSaving(false);
-      router.back();
+      toast('Kaydedildi \u2713', 'success');
+      setTimeout(() => router.back(), 800);
     } catch {
       setSaving(false);
       toast('Profil kaydedilemedi, lütfen tekrar deneyin', 'error');
@@ -314,15 +315,26 @@ function EditProfileContent() {
 
           {/* Bio */}
           <div>
-            <label
-              className="block text-xs font-semibold mb-1.5 px-1"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Hakkında
-            </label>
+            <div className="flex items-center justify-between mb-1.5 px-1">
+              <label
+                className="text-xs font-semibold"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                Hakkında
+              </label>
+              <span
+                className="text-[11px] font-medium"
+                style={{
+                  color: form.bio.length > 300 ? 'var(--color-error)' : 'var(--color-text-muted)',
+                }}
+              >
+                {form.bio.length}/300
+              </span>
+            </div>
             <textarea
               value={form.bio}
               onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+              maxLength={300}
               rows={3}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
               style={{

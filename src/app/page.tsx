@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import Link from 'next/link';
 import {
   Bell,
@@ -436,6 +437,17 @@ export default function HomePage() {
     [getById],
   );
 
+  const { refreshing, handlers: pullHandlers } = usePullToRefresh({
+    onRefresh: async () => {
+      if (!activeCityId) return;
+      await Promise.all([
+        searchListings({ city_id: activeCityId, limit: 10, sort_by: 'newest' }),
+        fetchEvents(activeCityId, { limit: 10 }),
+        fetchFeed(activeCityId, 1, 5, undefined),
+      ]);
+    },
+  });
+
   // Loading state
   if (authLoading) {
     return (
@@ -458,7 +470,13 @@ export default function HomePage() {
     <div
       className="flex-1 flex flex-col min-h-dvh pb-20"
       style={{ background: 'var(--color-bg)' }}
+      {...pullHandlers}
     >
+      {refreshing && (
+        <div className="flex justify-center py-3">
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--color-primary)' }} />
+        </div>
+      )}
       {/* ========== TOP BAR ========== */}
       <div
         className="px-5 pt-[env(safe-area-inset-top)] pb-4"
