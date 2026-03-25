@@ -16,117 +16,119 @@ import {
 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { supabase } from '@/lib/supabase';
-
-const sections = [
-  {
-    title: 'Konaklama',
-    items: [
-      {
-        href: '/search',
-        icon: Search,
-        label: 'İlanlar',
-        description: 'Doğrulanmış konaklama ilanlarını keşfet',
-        color: '#F26522',
-        bg: 'rgba(242,101,34,0.08)',
-        countKey: 'listings',
-        countSuffix: 'ilan',
-      },
-      {
-        href: '/favorites',
-        icon: Heart,
-        label: 'Favorilerim',
-        description: 'Beğendiğin ilanları incele',
-        color: 'var(--color-error)',
-        bg: 'rgba(239,68,68,0.08)',
-        countKey: null,
-        countSuffix: '',
-      },
-    ],
-  },
-  {
-    title: 'Topluluk & Sosyal',
-    items: [
-      {
-        href: '/events',
-        icon: Calendar,
-        label: 'Etkinlikler',
-        description: 'Yaklaşan buluşma ve etkinliklere katıl',
-        color: '#8B5CF6',
-        bg: 'rgba(139,92,246,0.08)',
-        countKey: 'events',
-        countSuffix: 'etkinlik',
-      },
-      {
-        href: '/roommates',
-        icon: UserSearch,
-        label: 'Oda Arkadaşı',
-        description: 'Uyumlu oda arkadaşlarını bul',
-        color: '#6366F1',
-        bg: 'rgba(99,102,241,0.08)',
-        countKey: 'roommate_profiles',
-        countSuffix: 'profil',
-      },
-      {
-        href: '/mentors',
-        icon: GraduationCap,
-        label: 'Mentor Bul',
-        description: 'Deneyimli öğrencilerden rehberlik al',
-        color: '#0EA5E9',
-        bg: 'rgba(14,165,233,0.08)',
-        countKey: 'mentors',
-        countSuffix: 'mentor',
-      },
-      {
-        href: '/community',
-        icon: Users,
-        label: 'Topluluk',
-        description: 'Paylaşımları oku, soru sor',
-        color: '#22C55E',
-        bg: 'rgba(34,197,94,0.08)',
-        countKey: 'posts',
-        countSuffix: 'paylaşım',
-      },
-    ],
-  },
-  {
-    title: 'Araçlar & Rehber',
-    items: [
-      {
-        href: '/city',
-        icon: MapPin,
-        label: 'Şehir Rehberi',
-        description: 'Mahalleler, ulaşım, yaşam maliyeti',
-        color: '#F59E0B',
-        bg: 'rgba(245,158,11,0.08)',
-        countKey: null,
-        countSuffix: '',
-      },
-      {
-        href: '/budget',
-        icon: Calculator,
-        label: 'Bütçe Hesaplayıcı',
-        description: 'Erasmus harcamalarını planla',
-        color: '#F26522',
-        bg: 'rgba(242,101,34,0.08)',
-        countKey: null,
-        countSuffix: '',
-      },
-      {
-        href: '/host',
-        icon: Home,
-        label: 'Ev Sahibi Ol',
-        description: 'Odanı paylaş, gelir elde et',
-        color: '#10B981',
-        bg: 'rgba(16,185,129,0.08)',
-        countKey: null,
-        countSuffix: '',
-      },
-    ],
-  },
-];
+import { useI18n } from '@/lib/i18n';
 
 export default function ExplorePage() {
+  const { t } = useI18n();
   const [counts, setCounts] = useState<Record<string, number>>({});
+
+  const sections = [
+    {
+      title: t.explore.sections.accommodation,
+      items: [
+        {
+          href: '/search',
+          icon: Search,
+          label: t.explore.items.listings,
+          description: t.explore.items.listingsDesc,
+          color: '#F26522',
+          bg: 'rgba(242,101,34,0.08)',
+          countKey: 'listings',
+          countSuffix: t.explore.items.listingsCount,
+        },
+        {
+          href: '/favorites',
+          icon: Heart,
+          label: t.explore.items.favorites,
+          description: t.explore.items.favoritesDesc,
+          color: 'var(--color-error)',
+          bg: 'rgba(239,68,68,0.08)',
+          countKey: null,
+          countSuffix: '',
+        },
+      ],
+    },
+    {
+      title: t.explore.sections.community,
+      items: [
+        {
+          href: '/events',
+          icon: Calendar,
+          label: t.explore.items.events,
+          description: t.explore.items.eventsDesc,
+          color: '#8B5CF6',
+          bg: 'rgba(139,92,246,0.08)',
+          countKey: 'events',
+          countSuffix: t.explore.items.eventsCount,
+        },
+        {
+          href: '/roommates',
+          icon: UserSearch,
+          label: t.explore.items.roommates,
+          description: t.explore.items.roommatesDesc,
+          color: '#6366F1',
+          bg: 'rgba(99,102,241,0.08)',
+          countKey: 'roommate_profiles',
+          countSuffix: t.explore.items.roommatesCount,
+        },
+        {
+          href: '/mentors',
+          icon: GraduationCap,
+          label: t.explore.items.mentors,
+          description: t.explore.items.mentorsDesc,
+          color: '#0EA5E9',
+          bg: 'rgba(14,165,233,0.08)',
+          countKey: 'mentors',
+          countSuffix: t.explore.items.mentorsCount,
+        },
+        {
+          href: '/community',
+          icon: Users,
+          label: t.explore.items.community,
+          description: t.explore.items.communityDesc,
+          color: '#22C55E',
+          bg: 'rgba(34,197,94,0.08)',
+          countKey: 'posts',
+          countSuffix: t.explore.items.communityCount,
+        },
+      ],
+    },
+    {
+      title: t.explore.sections.tools,
+      items: [
+        {
+          href: '/city',
+          icon: MapPin,
+          label: t.explore.items.cityGuide,
+          description: t.explore.items.cityGuideDesc,
+          color: '#F59E0B',
+          bg: 'rgba(245,158,11,0.08)',
+          countKey: null,
+          countSuffix: '',
+        },
+        {
+          href: '/budget',
+          icon: Calculator,
+          label: t.explore.items.budget,
+          description: t.explore.items.budgetDesc,
+          color: '#F26522',
+          bg: 'rgba(242,101,34,0.08)',
+          countKey: null,
+          countSuffix: '',
+        },
+        {
+          href: '/host',
+          icon: Home,
+          label: t.explore.items.hostHome,
+          description: t.explore.items.hostHomeDesc,
+          color: '#10B981',
+          bg: 'rgba(16,185,129,0.08)',
+          countKey: null,
+          countSuffix: '',
+        },
+      ],
+    },
+  ];
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -169,13 +171,13 @@ export default function ExplorePage() {
           className="text-xl font-bold"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          Kesfet
+          {t.explore.title}
         </h1>
         <p
           className="text-sm mt-0.5"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          Tum ozelliklere buradan ulasabilirsin
+          {t.explore.subtitle}
         </p>
       </div>
 
@@ -194,7 +196,7 @@ export default function ExplorePage() {
             className="text-sm"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            Ilan, etkinlik veya yer ara...
+            {t.explore.searchPlaceholder}
           </span>
         </Link>
       </div>

@@ -26,6 +26,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
+import { useI18n, type Locale } from '@/lib/i18n';
 
 export default function SettingsPage() {
   return (
@@ -57,6 +58,7 @@ function SettingsContent() {
   const router = useRouter();
   const { user, profile, signOut, updateProfile } = useAuth();
   const { toast } = useToast();
+  const { t, locale, setLocale } = useI18n();
 
   // Load settings from localStorage as immediate fallback
   const loadSetting = <T,>(key: string, fallback: T): T => {
@@ -105,7 +107,8 @@ function SettingsContent() {
     }
   };
 
-  const [language, setLanguage] = useState(() => loadSetting('language', DEFAULT_SETTINGS.language));
+  // language state is now driven by useI18n; local state kept for profile sync
+  const [language, setLanguage] = useState(() => locale as string);
   const [currency, setCurrency] = useState(() => loadSetting('currency', DEFAULT_SETTINGS.currency));
   const [darkMode, setDarkMode] = useState(() => loadSetting('darkMode', DEFAULT_SETTINGS.darkMode));
   const [notifs, setNotifs] = useState(() => loadSetting('notifs', DEFAULT_SETTINGS.notifs));
@@ -130,7 +133,13 @@ function SettingsContent() {
 
         const s = data?.settings as SettingsData | null;
         if (s && typeof s === 'object') {
-          if (s.language) { setLanguage(s.language); saveSetting('language', s.language); }
+          if (s.language) {
+            setLanguage(s.language);
+            saveSetting('language', s.language);
+            if (s.language === 'tr' || s.language === 'en') {
+              setLocale(s.language as Locale);
+            }
+          }
           if (s.currency) { setCurrency(s.currency); saveSetting('currency', s.currency); }
           if (typeof s.darkMode === 'boolean') { setDarkMode(s.darkMode); saveSetting('darkMode', s.darkMode); }
           if (s.notifs) { setNotifs(s.notifs); saveSetting('notifs', s.notifs); }
@@ -169,7 +178,7 @@ function SettingsContent() {
 
   const handleDeleteAccount = async () => {
     if (!deletePassword.trim()) {
-      toast('Hesabınızı silmek için şifrenizi girin', 'error');
+      toast(t.settings.deletePasswordRequired, 'error');
       return;
     }
     setDeleting(true);
@@ -183,7 +192,7 @@ function SettingsContent() {
         password: deletePassword,
       });
       if (authError) {
-        toast('Şifre hatalı. Lütfen tekrar deneyin.', 'error');
+        toast(t.settings.wrongPassword, 'error');
         setDeleting(false);
         return;
       }
@@ -222,7 +231,7 @@ function SettingsContent() {
       router.replace('/login');
     } catch {
       setDeleting(false);
-      toast('Hesap silme sırasında bir hata oluştu', 'error');
+      toast(t.settings.deleteError, 'error');
     }
   };
 
@@ -245,22 +254,32 @@ function SettingsContent() {
           <ArrowLeft size={22} />
         </button>
         <h1 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Ayarlar
+          {t.settings.title}
         </h1>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {/* Hesap Section */}
-        <SectionTitle title="Hesap" />
+        <SectionTitle title={t.settings.account} />
         <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
             <div className="flex items-center gap-3">
               <Globe size={18} style={{ color: 'var(--color-info)' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Dil</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.settings.language}</span>
             </div>
             <select
               value={language}
-              onChange={(e) => { setLanguage(e.target.value); saveSetting('language', e.target.value); saveSettingsToProfile({ ...getCurrentSettings(), language: e.target.value }); toast('Dil tercihiniz kaydedildi', 'success'); }}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLanguage(val);
+                saveSetting('language', val);
+                // Update i18n context if the language is supported
+                if (val === 'tr' || val === 'en') {
+                  setLocale(val as Locale);
+                }
+                saveSettingsToProfile({ ...getCurrentSettings(), language: val });
+                toast(t.settings.languageSaved, 'success');
+              }}
               className="text-sm font-medium bg-transparent outline-none cursor-pointer"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -274,11 +293,11 @@ function SettingsContent() {
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
             <div className="flex items-center gap-3">
               <DollarSign size={18} style={{ color: 'var(--color-warning)' }} />
-              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Para Birimi</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{t.settings.currency}</span>
             </div>
             <select
               value={currency}
-              onChange={(e) => { setCurrency(e.target.value); saveSetting('currency', e.target.value); saveSettingsToProfile({ ...getCurrentSettings(), currency: e.target.value }); toast('Para birimi tercihiniz kaydedildi', 'success'); }}
+              onChange={(e) => { setCurrency(e.target.value); saveSetting('currency', e.target.value); saveSettingsToProfile({ ...getCurrentSettings(), currency: e.target.value }); toast(t.settings.currencySaved, 'success'); }}
               className="text-sm font-medium bg-transparent outline-none cursor-pointer"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -291,7 +310,7 @@ function SettingsContent() {
 
           <ToggleRow
             icon={<Moon size={18} style={{ color: '#6366F1' }} />}
-            label="Karanlık Tema"
+            label={t.settings.darkMode}
             value={darkMode}
             fieldId="darkMode"
             savedField={savedField}
@@ -314,11 +333,11 @@ function SettingsContent() {
         </div>
 
         {/* Bildirimler Section */}
-        <SectionTitle title="Bildirim Tercihleri" />
+        <SectionTitle title={t.settings.notifications} />
         <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
           <ToggleRow
             icon={<MessageCircle size={18} style={{ color: '#3B82F6' }} />}
-            label="Mesajlar"
+            label={t.settings.notifMessages}
             value={notifs.messages}
             onChange={() => toggleNotif('messages')}
             fieldId="notif_messages"
@@ -328,7 +347,7 @@ function SettingsContent() {
           />
           <ToggleRow
             icon={<Home size={18} style={{ color: '#8B5CF6' }} />}
-            label="Rezervasyonlar"
+            label={t.settings.notifBookings}
             value={notifs.bookings}
             onChange={() => toggleNotif('bookings')}
             fieldId="notif_bookings"
@@ -338,7 +357,7 @@ function SettingsContent() {
           />
           <ToggleRow
             icon={<Calendar size={18} style={{ color: '#22C55E' }} />}
-            label="Etkinlikler"
+            label={t.settings.notifEvents}
             value={notifs.events}
             onChange={() => toggleNotif('events')}
             fieldId="notif_events"
@@ -348,7 +367,7 @@ function SettingsContent() {
           />
           <ToggleRow
             icon={<Heart size={18} style={{ color: 'var(--color-error)' }} />}
-            label="Promosyonlar"
+            label={t.settings.notifPromotions}
             value={notifs.promotions}
             onChange={() => toggleNotif('promotions')}
             fieldId="notif_promotions"
@@ -358,11 +377,11 @@ function SettingsContent() {
         </div>
 
         {/* Gizlilik Section */}
-        <SectionTitle title="Gizlilik" />
+        <SectionTitle title={t.settings.privacy} />
         <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
           <ToggleRow
             icon={<Eye size={18} style={{ color: '#06B6D4' }} />}
-            label="Profili Herkese Göster"
+            label={t.settings.publicProfile}
             value={privacyPublicProfile}
             onChange={() => { const next = !privacyPublicProfile; setPrivacyPublicProfile(next); saveSetting('privacyPublicProfile', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyPublicProfile: next }, 'privacyPublicProfile'); }}
             fieldId="privacyPublicProfile"
@@ -372,7 +391,7 @@ function SettingsContent() {
           />
           <ToggleRow
             icon={<Shield size={18} style={{ color: '#22C55E' }} />}
-            label="Çevrimiçi Durumu Göster"
+            label={t.settings.onlineStatus}
             value={privacyOnlineStatus}
             onChange={() => { const next = !privacyOnlineStatus; setPrivacyOnlineStatus(next); saveSetting('privacyOnlineStatus', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyOnlineStatus: next }, 'privacyOnlineStatus'); }}
             fieldId="privacyOnlineStatus"
@@ -383,23 +402,23 @@ function SettingsContent() {
 
         {/* Yardim Section */}
         <div id="yardim">
-          <SectionTitle title="Yardım & Destek" />
+          <SectionTitle title={t.settings.help} />
           <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
-            <LinkRow icon={<MessageCircle size={18} style={{ color: '#06B6D4' }} />} label="Sıkça Sorulan Sorular" border onClick={() => router.push('/settings/faq')} />
-            <LinkRow icon={<Mail size={18} style={{ color: '#3B82F6' }} />} label="Destek Ekibiyle İletişim" onClick={() => window.open('mailto:destek@kotwise.com')} />
+            <LinkRow icon={<MessageCircle size={18} style={{ color: '#06B6D4' }} />} label={t.settings.faq} border onClick={() => router.push('/settings/faq')} />
+            <LinkRow icon={<Mail size={18} style={{ color: '#3B82F6' }} />} label={t.settings.contactSupport} onClick={() => window.open('mailto:destek@kotwise.com')} />
           </div>
         </div>
 
         {/* Hakkinda Section */}
-        <SectionTitle title="Hakkında" />
+        <SectionTitle title={t.settings.about} />
         <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
-          <InfoRow icon={<Info size={18} style={{ color: '#6B7280' }} />} label="Sürüm" value="2.0.0" border />
-          <LinkRow icon={<FileText size={18} style={{ color: '#6B7280' }} />} label="Kullanım Koşulları" border onClick={() => router.push('/settings/terms')} />
-          <LinkRow icon={<Shield size={18} style={{ color: '#6B7280' }} />} label="Gizlilik Politikası" onClick={() => router.push('/settings/privacy')} />
+          <InfoRow icon={<Info size={18} style={{ color: '#6B7280' }} />} label={t.settings.version} value="2.0.0" border />
+          <LinkRow icon={<FileText size={18} style={{ color: '#6B7280' }} />} label={t.settings.terms} border onClick={() => router.push('/settings/terms')} />
+          <LinkRow icon={<Shield size={18} style={{ color: '#6B7280' }} />} label={t.settings.privacyPolicy} onClick={() => router.push('/settings/privacy')} />
         </div>
 
         {/* Danger Zone */}
-        <SectionTitle title="Tehlikeli Bölge" />
+        <SectionTitle title={t.settings.dangerZone} />
         <button
           onClick={() => setShowDeleteConfirm(true)}
           className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl active:opacity-70"
@@ -410,7 +429,7 @@ function SettingsContent() {
         >
           <Trash2 size={18} style={{ color: 'var(--color-error)' }} />
           <span className="text-sm font-medium" style={{ color: 'var(--color-error)' }}>
-            Hesabı Sil
+            {t.settings.deleteAccount}
           </span>
         </button>
 
@@ -430,16 +449,16 @@ function SettingsContent() {
                   <AlertTriangle size={28} style={{ color: 'var(--color-error)' }} />
                 </div>
                 <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                  Hesabı Sil
+                  {t.settings.deleteAccount}
                 </h3>
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir.
+                  {t.settings.deleteWarning}
                 </p>
                 <input
                   type="password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
-                  placeholder="Şifrenizi girin"
+                  placeholder={t.settings.enterPassword}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none mt-2"
                   style={{
                     background: 'var(--color-bg)',
@@ -457,7 +476,7 @@ function SettingsContent() {
                       color: 'var(--color-text-primary)',
                     }}
                   >
-                    Vazgeç
+                    {t.settings.cancelAction}
                   </button>
                   <button
                     onClick={handleDeleteAccount}

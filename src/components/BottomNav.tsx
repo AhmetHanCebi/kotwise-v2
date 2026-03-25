@@ -5,14 +5,15 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Home, Compass, Users, MessageCircle, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useI18n } from '@/lib/i18n';
 
-const tabs = [
-  { href: '/', label: 'Ana Sayfa', icon: Home },
-  { href: '/explore', label: 'Keşfet', icon: Compass },
-  { href: '/community', label: 'Topluluk', icon: Users },
-  { href: '/messages', label: 'Mesajlar', icon: MessageCircle },
-  { href: '/profile', label: 'Profil', icon: User },
-] as const;
+const tabDefs = [
+  { href: '/', labelKey: 'home' as const, icon: Home },
+  { href: '/explore', labelKey: 'explore' as const, icon: Compass },
+  { href: '/community', labelKey: 'community' as const, icon: Users },
+  { href: '/messages', labelKey: 'messages' as const, icon: MessageCircle },
+  { href: '/profile', labelKey: 'profile' as const, icon: User },
+];
 
 function Badge({ count }: { count: number }) {
   if (count <= 0) return null;
@@ -37,6 +38,7 @@ function BadgeDot() {
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
@@ -74,7 +76,7 @@ export default function BottomNav() {
       style={{ borderColor: 'var(--color-border)' }}
     >
       <div className="flex items-center justify-around h-16">
-        {tabs.map((tab) => {
+        {tabDefs.map((tab) => {
           const isActive =
             tab.href === '/'
               ? pathname === '/'
@@ -98,7 +100,7 @@ export default function BottomNav() {
                 {tab.href === '/profile' && unreadNotifications > 0 && <BadgeDot />}
               </span>
               <span className="text-[10px] font-medium leading-tight">
-                {tab.label}
+                {t.nav[tab.labelKey]}
               </span>
               {isActive && (
                 <span
