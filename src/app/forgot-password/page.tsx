@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
       <div className="flex items-center gap-3 px-4 py-4">
         <Link
           href="/login"
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-full hover:opacity-70 transition-colors"
           style={{ color: 'var(--color-text-primary)' }}
           aria-label="Geri"
         >

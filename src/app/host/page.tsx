@@ -94,7 +94,7 @@ function HostDashboardContent() {
           <StatCard
             icon={<DollarSign size={18} />}
             label="Bu Ay Kazanç"
-            value={`${stats?.monthlyEarnings ?? 0} ₺`}
+            value={`${stats?.monthlyEarnings ?? 0} ${currencySymbol(stats?.currency)}`}
             color="#22C55E"
           />
           <StatCard

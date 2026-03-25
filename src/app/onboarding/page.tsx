@@ -56,7 +56,7 @@ export default function OnboardingPage() {
       <div className="flex justify-end">
         <button
           onClick={() => router.push('/login')}
-          className="text-sm font-semibold px-4 py-2 rounded-full transition-colors hover:bg-gray-100"
+          className="text-sm font-semibold px-4 py-2 rounded-full transition-colors hover:opacity-70"
           style={{ color: 'var(--color-text-secondary)' }}
         >
           Atla

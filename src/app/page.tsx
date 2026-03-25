@@ -110,7 +110,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
       style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
     >
       {/* Image */}
-      <div className="relative h-36 overflow-hidden" style={{ background: '#F3F4F6' }}>
+      <div className="relative h-36 overflow-hidden" style={{ background: 'var(--color-bg-input)' }}>
         {coverImage ? (
           <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
         ) : (
@@ -297,7 +297,7 @@ function PostCard({ post }: { post: PostWithDetails }) {
 
       {/* Images */}
       {post.images?.length > 0 && (
-        <div className="h-40 rounded-xl overflow-hidden" style={{ background: '#F3F4F6' }}>
+        <div className="h-40 rounded-xl overflow-hidden" style={{ background: 'var(--color-bg-input)' }}>
           <img
             src={post.images[0]}
             alt="Gönderi görseli"

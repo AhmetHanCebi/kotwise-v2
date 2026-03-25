@@ -17,6 +17,8 @@
   --color-error: #EF4444;
   --color-info: #3B82F6;
   --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+  --color-bg-input: #F3F4F6;
   --gradient-primary: linear-gradient(135deg, #F26522 0%, #FF8A50 100%);
   --gradient-dark: linear-gradient(135deg, #1B2A4A 0%, #2A3F6A 100%);
   --shadow-sm: 0 1px 2px rgba(27,42,74,0.05);
@@ -40,6 +42,61 @@
   .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
   .gradient-primary { background: var(--gradient-primary); }
   .glass-effect { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); background: rgba(255,255,255,0.85); }
+}
+
+/* Dark mode overrides for utility classes */
+html.dark .animate-shimmer {
+  background: linear-gradient(90deg, #1E293B 25%, #334155 50%, #1E293B 75%);
+  background-size: 200% 100%;
+}
+
+html.dark .glass-effect {
+  background: rgba(15,23,42,0.85);
+}
+
+/* Dark mode sticky footer/header glass */
+html.dark .dark-glass {
+  background: rgba(15,23,42,0.95) !important;
+}
+
+/* Override Tailwind gray backgrounds for dark mode */
+html.dark .bg-gray-100 {
+  background-color: var(--color-bg-input) !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: var(--color-bg-card) !important;
+}
+
+html.dark .hover\:bg-gray-100:hover {
+  background-color: var(--color-bg-input) !important;
+}
+
+html.dark .hover\:bg-gray-50:hover {
+  background-color: var(--color-bg-card) !important;
+}
+
+html.dark {
+  --color-primary: #FF8A50;
+  --color-primary-light: #FFB07A;
+  --color-primary-dark: #E05A10;
+  --color-secondary: #E2E8F0;
+  --color-secondary-light: #F1F5F9;
+  --color-bg: #0F172A;
+  --color-bg-card: #1E293B;
+  --color-bg-input: #334155;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #0F172A;
+  --color-border: #334155;
+  --color-border-light: #1E293B;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.3);
+  --gradient-primary: linear-gradient(135deg, #FF8A50 0%, #FFB07A 100%);
+  --gradient-dark: linear-gradient(135deg, #1E293B 0%, #334155 100%);
 }
 
 body {

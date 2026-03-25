@@ -385,7 +385,7 @@ function NewListingForm() {
       <div
         className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-20 px-4 py-3"
         style={{
-          background: 'rgba(255,255,255,0.95)',
+          background: 'color-mix(in srgb, var(--color-bg-card) 95%, transparent)',
           backdropFilter: 'blur(16px)',
           borderTop: '1px solid var(--color-border)',
           paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',

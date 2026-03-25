@@ -200,7 +200,7 @@ export default function LoginPage() {
                 toast('Google ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
               }
             }}
-            className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
+            className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors "
             style={{
               background: 'var(--color-bg-card)',
               border: '1px solid var(--color-border)',
@@ -223,7 +223,7 @@ export default function LoginPage() {
                 toast('Apple ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
               }
             }}
-            className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
+            className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors "
             style={{
               background: 'var(--color-bg-card)',
               border: '1px solid var(--color-border)',

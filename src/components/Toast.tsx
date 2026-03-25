@@ -38,10 +38,10 @@ const colorMap = {
 };
 
 const bgMap = {
-  success: '#F0FDF4',
-  error: '#FEF2F2',
-  warning: '#FFFBEB',
-  info: '#EFF6FF',
+  success: 'var(--color-bg-card)',
+  error: 'var(--color-bg-card)',
+  warning: 'var(--color-bg-card)',
+  info: 'var(--color-bg-card)',
 };
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {

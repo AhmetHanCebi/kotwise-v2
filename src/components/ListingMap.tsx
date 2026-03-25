@@ -169,7 +169,7 @@ export default function ListingMap({ listings, center, zoom, selectedId, onSelec
       )}
       <div ref={mapRef} className="w-full h-full" />
       {!loading && mappable.length === 0 && (
-        <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.92)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+        <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-bg-card) 92%, transparent)', boxShadow: 'var(--shadow-card)' }}>
           <MapPin size={16} style={{ color: 'var(--color-text-muted)' }} />
           <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
             Henüz konum bilgisi eklenmiş ilan bulunamadı.

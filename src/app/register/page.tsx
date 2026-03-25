@@ -155,7 +155,7 @@ export default function RegisterPage() {
       <div className="flex items-center gap-3 px-4 py-4">
         <button
           onClick={handleBack}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-full hover:opacity-70 transition-colors"
           style={{ color: 'var(--color-text-primary)' }}
           aria-label="Geri"
         >
@@ -316,7 +316,7 @@ export default function RegisterPage() {
                     toast('Google ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
                   }
                 }}
-                className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
+                className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors "
                 style={{
                   background: 'var(--color-bg-card)',
                   border: '1px solid var(--color-border)',
@@ -339,7 +339,7 @@ export default function RegisterPage() {
                     toast('Apple ile giriş yapılamadı, lütfen tekrar deneyin', 'error');
                   }
                 }}
-                className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors hover:bg-gray-50"
+                className="flex items-center justify-center gap-3 h-13 rounded-xl text-sm font-semibold transition-colors "
                 style={{
                   background: 'var(--color-bg-card)',
                   border: '1px solid var(--color-border)',

@@ -449,7 +449,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
                     <button
                       key={emoji}
                       onClick={() => { setText(prev => prev + emoji); setShowEmojiPicker(false); inputRef.current?.focus(); }}
-                      className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg"
+                      className="w-8 h-8 flex items-center justify-center rounded hover:opacity-70 text-lg"
                     >
                       {emoji}
                     </button>

@@ -331,7 +331,7 @@ export default function CityDetailPage({
                     className="flex gap-3 p-3 rounded-xl"
                     style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-card)' }}
                   >
-                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0" style={{ background: '#F3F4F6' }}>
+                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--color-bg-input)' }}>
                       {coverImg ? (
                         <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK_SMALL; }} />
                       ) : (

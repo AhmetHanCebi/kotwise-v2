@@ -105,7 +105,7 @@ export default function CitySelector({ isOpen, onClose, onSelect, userId }: City
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full transition-colors hover:bg-gray-100"
+            className="p-1.5 rounded-full transition-colors"
             style={{ color: 'var(--color-text-muted)' }}
             aria-label="Kapat"
           >
@@ -148,7 +148,7 @@ export default function CitySelector({ isOpen, onClose, onSelect, userId }: City
                 <button
                   key={pc.name}
                   onClick={() => handlePopularClick(pc.name)}
-                  className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-gray-50"
+                  className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
                   style={{
                     background: 'var(--color-bg)',
                     color: 'var(--color-text-primary)',
@@ -191,7 +191,7 @@ export default function CitySelector({ isOpen, onClose, onSelect, userId }: City
                   onClick={() =>
                     handleSelect(city.id, city.name, city.country_code)
                   }
-                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl transition-colors hover:bg-gray-50 text-left"
+                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl transition-colors text-left"
                 >
                   <span className="text-xl">
                     {countryFlags[city.country_code] ?? '🌍'}
