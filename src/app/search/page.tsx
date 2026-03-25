@@ -324,6 +324,7 @@ function SearchContent() {
           {/* Filter Button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
+            aria-label={t.search.filters}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition-colors"
             style={{
               background: activeFilterCount > 0 ? 'var(--color-primary)' : 'var(--color-bg)',
@@ -346,6 +347,7 @@ function SearchContent() {
           {/* Sort Button */}
           <button
             onClick={() => setShowSort(!showSort)}
+            aria-label={t.search.sort}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium shrink-0"
             style={{
               background: 'var(--color-bg)',

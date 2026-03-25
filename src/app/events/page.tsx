@@ -258,7 +258,7 @@ export default function EventsPage() {
                 {/* Cover */}
                 {ev.image_url && (
                   <div className="h-36 overflow-hidden">
-                    <img src={ev.image_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
+                    <img src={ev.image_url} alt={ev.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
                   </div>
                 )}
                 <div className="p-4">
@@ -311,7 +311,7 @@ export default function EventsPage() {
                         style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
                       >
                         {ev.organizer?.avatar_url ? (
-                          <img src={ev.organizer.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(ev.organizer?.full_name ?? 'Organizatör')}&background=F26522&color=fff&size=200`; }} />
+                          <img src={ev.organizer.avatar_url} alt={ev.organizer?.full_name ?? 'Organizatör'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(ev.organizer?.full_name ?? 'Organizatör')}&background=F26522&color=fff&size=200`; }} />
                         ) : (
                           (ev.organizer?.full_name?.[0] ?? '?')
                         )}
