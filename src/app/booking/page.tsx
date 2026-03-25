@@ -18,12 +18,13 @@ import { UNIVERSITIES } from '@/lib/universities';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
 import { formatPrice, formatCurrency, currencySymbol } from '@/lib/currency-utils';
+import { useI18n } from '@/lib/i18n';
 
-const STEPS = [
-  { num: 1, title: 'Tarih', icon: <Calendar size={16} /> },
-  { num: 2, title: 'Bilgiler', icon: <User size={16} /> },
-  { num: 3, title: 'Ödeme', icon: <CreditCard size={16} /> },
-  { num: 4, title: 'Onay', icon: <CheckCircle size={16} /> },
+const STEP_ICONS = [
+  { num: 1, key: 'step1' as const, icon: <Calendar size={16} /> },
+  { num: 2, key: 'step2' as const, icon: <User size={16} /> },
+  { num: 3, key: 'step3' as const, icon: <CreditCard size={16} /> },
+  { num: 4, key: 'step4' as const, icon: <CheckCircle size={16} /> },
 ];
 
 const SERVICE_FEE_RATE = 0.03;
@@ -57,6 +58,7 @@ function BookingContent() {
 }
 
 function MyBookings() {
+  const { t } = useI18n();
   const router = useRouter();
   const { user } = useAuth();
   const { bookings, loading, fetchUserBookings } = useBooking(user?.id);
@@ -79,7 +81,7 @@ function MyBookings() {
         }}
       >
         <h1 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Rezervasyonlarım
+          {t.profile.myBookings}
         </h1>
       </div>
 
@@ -171,6 +173,7 @@ function MyBookings() {
 }
 
 function BookingForm() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const router = useRouter();
   const listingId = searchParams.get('listingId') || '';
@@ -367,7 +370,7 @@ function BookingForm() {
             <ArrowLeft size={18} style={{ color: 'var(--color-text-primary)' }} />
           </button>
           <h1 className="flex-1 text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            Rezervasyon
+            {t.profile.myBookings}
           </h1>
           <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
             {step}/4
@@ -376,7 +379,7 @@ function BookingForm() {
 
         {/* Progress */}
         <div className="mt-3 flex gap-1.5">
-          {STEPS.map((s) => (
+          {STEP_ICONS.map((s) => (
             <div
               key={s.num}
               className="flex-1 h-1 rounded-full transition-colors"
@@ -387,7 +390,7 @@ function BookingForm() {
           ))}
         </div>
         <div className="flex items-center justify-between mt-2">
-          {STEPS.map((s) => (
+          {STEP_ICONS.map((s) => (
             <div
               key={s.num}
               className="flex items-center gap-1 text-[10px] font-medium"
@@ -396,7 +399,7 @@ function BookingForm() {
               }}
             >
               {s.icon}
-              {s.title}
+              {t.booking[s.key]}
             </div>
           ))}
         </div>
@@ -444,11 +447,11 @@ function BookingForm() {
         {step === 1 && (
           <div className="flex flex-col gap-5 animate-fade-in-up">
             <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              Tarih Seçimi
+              {t.booking.dates}
             </h2>
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                Giriş Tarihi *
+                {t.booking.checkIn} *
               </label>
               <div className="relative">
                 <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-text-muted)' }} />
@@ -469,7 +472,7 @@ function BookingForm() {
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                Çıkış Tarihi *
+                {t.booking.checkOut} *
               </label>
               <div className="relative">
                 <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-text-muted)' }} />
@@ -503,7 +506,7 @@ function BookingForm() {
               >
                 <Clock size={15} style={{ color: 'var(--color-info)' }} />
                 <p className="text-sm font-medium" style={{ color: 'var(--color-info)' }}>
-                  Kalış süresi: {stayDuration.months > 0 ? `${stayDuration.months} ay ` : ''}{stayDuration.days > 0 ? `${stayDuration.days} gün` : stayDuration.months > 0 ? '' : '0 gün'}
+                  {t.booking.stayDuration}: {stayDuration.months > 0 ? `${stayDuration.months} ay ` : ''}{stayDuration.days > 0 ? `${stayDuration.days} gün` : stayDuration.months > 0 ? '' : '0 gün'}
                 </p>
               </div>
             )}
@@ -527,17 +530,17 @@ function BookingForm() {
         {step === 2 && (
           <div className="flex flex-col gap-5 animate-fade-in-up">
             <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              Kişisel Bilgiler
+              {t.booking.personalInfo}
             </h2>
             <BookingInput
-              label="Ad Soyad *"
+              label={`${t.booking.name} *`}
               value={guestName}
               onChange={setGuestName}
               error={errors.guestName}
               placeholder="Adınız ve soyadınız"
             />
             <BookingInput
-              label="E-posta *"
+              label={`${t.booking.email} *`}
               value={guestEmail}
               onChange={setGuestEmail}
               error={errors.guestEmail}
@@ -545,7 +548,7 @@ function BookingForm() {
               type="email"
             />
             <BookingInput
-              label="Telefon *"
+              label={`${t.booking.phone} *`}
               value={guestPhone}
               onChange={setGuestPhone}
               error={errors.guestPhone}
@@ -553,7 +556,7 @@ function BookingForm() {
               type="tel"
             />
             <AutocompleteField
-              label="Üniversite"
+              label={t.booking.university}
               value={guestUniversity}
               onChange={setGuestUniversity}
               options={UNIVERSITIES}
@@ -583,7 +586,7 @@ function BookingForm() {
         {step === 3 && priceCalc && (
           <div className="flex flex-col gap-5 animate-fade-in-up">
             <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              Ödeme Özeti
+              {t.booking.payment}
             </h2>
 
             <div
@@ -620,7 +623,7 @@ function BookingForm() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-secondary)' }}>
-                    Hizmet bedeli (%3)
+                    {t.booking.serviceFee} (%3)
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
                     {formatCurrency(priceCalc.serviceFee, listing.currency)}
@@ -630,7 +633,7 @@ function BookingForm() {
                   className="flex justify-between text-base font-bold pt-2.5"
                   style={{ borderTop: '1px solid var(--color-border)' }}
                 >
-                  <span style={{ color: 'var(--color-text-primary)' }}>Toplam</span>
+                  <span style={{ color: 'var(--color-text-primary)' }}>{t.booking.total}</span>
                   <span style={{ color: 'var(--color-primary)' }}>
                     {formatCurrency(priceCalc.total, listing.currency)}
                   </span>
@@ -653,7 +656,7 @@ function BookingForm() {
         {step === 4 && priceCalc && (
           <div className="flex flex-col gap-5 animate-fade-in-up">
             <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              Rezervasyon Onayı
+              {t.booking.confirm}
             </h2>
 
             <div
@@ -739,7 +742,7 @@ function BookingForm() {
             ) : (
               <>
                 <CheckCircle size={16} />
-                Rezervasyonu Onayla
+                {t.booking.confirm}
               </>
             )}
           </button>

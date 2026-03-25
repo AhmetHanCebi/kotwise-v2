@@ -23,6 +23,7 @@ import { useStorage } from '@/hooks/useStorage';
 import { useToast } from '@/components/Toast';
 import AutocompleteField from '@/components/AutocompleteField';
 import { UNIVERSITIES, MAJORS } from '@/lib/universities';
+import { useI18n } from '@/lib/i18n';
 
 const INTERESTS = [
   'Müzik', 'Spor', 'Seyahat', 'Yemek', 'Film', 'Fotoğraf',
@@ -30,6 +31,7 @@ const INTERESTS = [
 ];
 
 export default function RegisterPage() {
+  const { t } = useI18n();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -168,9 +170,9 @@ export default function RegisterPage() {
             className="text-lg font-bold"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            {step === 1 && 'Hesap Oluştur'}
-            {step === 2 && 'Üniversite Bilgileri'}
-            {step === 3 && 'Kişiselleştir'}
+            {step === 1 && t.register.step1}
+            {step === 2 && t.register.step2}
+            {step === 3 && t.register.step3}
           </h1>
         </div>
       </div>
@@ -270,7 +272,7 @@ export default function RegisterPage() {
                 className="text-sm font-semibold mb-1.5 block"
                 style={{ color: 'var(--color-text-primary)' }}
               >
-                Ad Soyad
+                {t.register.name}
               </label>
               <div
                 className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
@@ -297,7 +299,7 @@ export default function RegisterPage() {
                 className="text-sm font-semibold mb-1.5 block"
                 style={{ color: 'var(--color-text-primary)' }}
               >
-                E-posta
+                {t.register.email}
               </label>
               <div
                 className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
@@ -324,7 +326,7 @@ export default function RegisterPage() {
                 className="text-sm font-semibold mb-1.5 block"
                 style={{ color: 'var(--color-text-primary)' }}
               >
-                Şifre
+                {t.register.password}
               </label>
               <div
                 className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
@@ -583,7 +585,7 @@ export default function RegisterPage() {
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>
-              {step === 3 ? 'Kaydı Tamamla' : 'Devam Et'}
+              {step === 3 ? t.register.title : t.register.continue}
               <ArrowRight size={20} />
             </>
           )}
@@ -591,7 +593,7 @@ export default function RegisterPage() {
 
         {step === 1 && (
           <p className="text-center text-sm mt-4" style={{ color: 'var(--color-text-secondary)' }}>
-            Zaten hesabın var mı?{' '}
+            {t.register.haveAccount}{' '}
             <Link
               href="/login"
               className="font-semibold"

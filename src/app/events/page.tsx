@@ -28,6 +28,7 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
+import { useI18n } from '@/lib/i18n';
 
 const CATEGORIES: { key: EventCategory | 'all'; label: string; icon: React.ElementType }[] = [
   { key: 'all', label: 'Tümü', icon: List },
@@ -72,6 +73,7 @@ function isPast(dateStr: string): boolean {
 }
 
 export default function EventsPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const { user } = useAuth();
   const { events, loading, fetchEvents } = useEvents(user?.id);
@@ -114,7 +116,7 @@ export default function EventsPage() {
       >
         <div className="flex items-center justify-between h-14">
           <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Etkinlikler
+            {t.events.title}
           </h1>
           {/* View toggle */}
           <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ background: 'var(--color-bg)' }}>
@@ -221,10 +223,10 @@ export default function EventsPage() {
               <CalendarDays size={28} style={{ color: 'var(--color-primary)' }} />
             </div>
             <p className="text-sm font-medium text-center" style={{ color: 'var(--color-text-secondary)' }}>
-              Bu kategoride etkinlik bulunamadı
+              {t.events.noEvents}
             </p>
             <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
-              İlk etkinliği sen oluştur!
+              {t.events.createEvent}
             </p>
             <button
               onClick={() => router.push('/events/new')}
@@ -232,7 +234,7 @@ export default function EventsPage() {
               style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
             >
               <Plus size={16} />
-              Etkinlik Oluştur
+              {t.events.createEvent}
             </button>
           </div>
         )}
@@ -286,7 +288,7 @@ export default function EventsPage() {
                             className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
                             style={{ background: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}
                           >
-                            Bug&#252;n
+                            {t.events.today}
                           </span>
                         )}
                       </div>
@@ -322,7 +324,7 @@ export default function EventsPage() {
                       <Users size={14} style={{ color: 'var(--color-text-muted)' }} />
                       <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                         {ev.participant_count}
-                        {ev.max_participants ? `/${ev.max_participants}` : ''} katılımcı
+                        {ev.max_participants ? `/${ev.max_participants}` : ''} {t.events.participants}
                       </span>
                     </div>
                   </div>

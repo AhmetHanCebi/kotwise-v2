@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Home, Users, MapPin, ArrowRight, LogIn } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useI18n } from '@/lib/i18n';
 
 function formatCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K+`;
@@ -11,10 +12,11 @@ function formatCount(n: number): string {
 }
 
 export default function WelcomePage() {
+  const { t } = useI18n();
   const [stats, setStats] = useState([
-    { value: '...', label: 'İlan' },
-    { value: '...', label: 'Şehir' },
-    { value: '...', label: 'Kullanıcı' },
+    { value: '...', labelKey: 'listings' as const },
+    { value: '...', labelKey: 'cities' as const },
+    { value: '...', labelKey: 'rating' as const },
   ]);
 
   useEffect(() => {
@@ -26,9 +28,9 @@ export default function WelcomePage() {
           supabase.from('profiles').select('id', { count: 'exact', head: true }),
         ]);
         setStats([
-          { value: formatCount(listingsRes.count ?? 0), label: 'İlan' },
-          { value: formatCount(citiesRes.count ?? 0), label: 'Şehir' },
-          { value: formatCount(usersRes.count ?? 0), label: 'Kullanıcı' },
+          { value: formatCount(listingsRes.count ?? 0), labelKey: 'listings' as const },
+          { value: formatCount(citiesRes.count ?? 0), labelKey: 'cities' as const },
+          { value: formatCount(usersRes.count ?? 0), labelKey: 'rating' as const },
         ]);
       } catch {
         // Keep default placeholder values on error
@@ -65,10 +67,10 @@ export default function WelcomePage() {
             <Home size={36} style={{ color: '#FFFFFF' }} />
           </div>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">
-            Kotwise
+            {t.welcome.title}
           </h1>
           <p className="text-white/80 text-base font-medium mt-2 text-center max-w-[260px] leading-relaxed">
-            Erasmus yolculuğunda güvenilir evin ve topluluğun
+            {t.welcome.subtitle}
           </p>
         </div>
 
@@ -109,12 +111,12 @@ export default function WelcomePage() {
         >
           <div className="flex items-center justify-around">
             {stats.map((stat, i) => (
-              <div key={stat.label} className="flex flex-col items-center">
+              <div key={stat.labelKey} className="flex flex-col items-center">
                 <span className="text-2xl font-bold text-white">
                   {stat.value}
                 </span>
                 <span className="text-xs text-white/70 font-medium mt-0.5">
-                  {stat.label}
+                  {t.welcome.stats[stat.labelKey]}
                 </span>
                 {i < stats.length - 1 && (
                   <div className="hidden" />
@@ -142,7 +144,7 @@ export default function WelcomePage() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold text-white">
-              1.200+ öğrenci Kotwise ile ev buldu
+              {t.welcome.socialProof}
             </span>
             <div className="flex items-center gap-1">
               <span className="text-xs text-yellow-300">★★★★★</span>
@@ -161,7 +163,7 @@ export default function WelcomePage() {
               color: 'var(--color-primary)',
             }}
           >
-            Başla
+            {t.welcome.start}
             <ArrowRight size={20} />
           </Link>
           <Link
@@ -174,7 +176,7 @@ export default function WelcomePage() {
             }}
           >
             <LogIn size={18} />
-            Giriş Yap
+            {t.welcome.login}
           </Link>
         </div>
       </div>

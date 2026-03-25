@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   X,
 } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 
 const FALLBACK_HASHTAGS = [
@@ -51,6 +52,7 @@ export default function CommunityPageWrapper() {
 }
 
 function CommunityPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const hashtagParam = searchParams.get('hashtag');
@@ -170,7 +172,7 @@ function CommunityPage() {
       >
         <div className="flex items-center justify-between h-14">
           <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Topluluk
+            {t.community.title}
           </h1>
           <TrendingUp size={22} style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
         </div>
@@ -418,10 +420,10 @@ function CommunityPage() {
               <MessageCircle size={28} style={{ color: 'var(--color-primary)' }} />
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              Henüz gönderi yok
+              {t.community.noPostsTitle}
             </p>
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              İlk gönderiyi sen paylaş!
+              {t.community.noPostsDesc}
             </p>
             <button
               onClick={() => router.push('/community/new')}
@@ -429,7 +431,7 @@ function CommunityPage() {
               style={{ background: 'var(--gradient-primary)', color: 'var(--color-text-inverse)' }}
             >
               <Plus size={16} />
-              Gönderi Paylaş
+              {t.community.createPost}
             </button>
           </div>
         )}

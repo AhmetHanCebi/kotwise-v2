@@ -18,15 +18,12 @@ import {
   Home,
   Loader2,
 } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 type FilterTab = 'all' | 'unread' | 'listing' | 'group';
 
-const filterTabs: { key: FilterTab; label: string }[] = [
-  { key: 'all', label: 'Tümü' },
-  { key: 'unread', label: 'Okunmamış' },
-  { key: 'listing', label: 'Ilan' },
-  { key: 'group', label: 'Grup' },
-];
+// Labels set dynamically via i18n in component
+const FILTER_KEYS: FilterTab[] = ['all', 'unread', 'listing', 'group'];
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -51,6 +48,7 @@ export default function MessagesPage() {
 }
 
 function MessagesContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -112,7 +110,7 @@ function MessagesContent() {
         </div>
       )}
       <PageHeader
-        title="Mesajlar"
+        title={t.messages.title}
         rightContent={
           <span
             className="text-xs font-medium px-2 py-0.5 rounded-full"
@@ -138,7 +136,7 @@ function MessagesContent() {
           <Search size={18} style={{ color: 'var(--color-text-muted)' }} />
           <input
             type="text"
-            placeholder="Sohbet ara..."
+            placeholder={t.messages.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 bg-transparent text-sm outline-none"
@@ -148,27 +146,35 @@ function MessagesContent() {
 
         {/* Filter Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {filterTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
-              style={{
-                background:
-                  filter === tab.key ? 'var(--color-primary)' : 'var(--color-bg-card)',
-                color:
-                  filter === tab.key
-                    ? 'var(--color-text-inverse)'
-                    : 'var(--color-text-secondary)',
-                border:
-                  filter === tab.key
-                    ? 'none'
-                    : '1px solid var(--color-border)',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {FILTER_KEYS.map((key) => {
+            const labels: Record<FilterTab, string> = {
+              all: t.messages.all,
+              unread: t.messages.unread,
+              listing: 'Ilan',
+              group: 'Grup',
+            };
+            return (
+              <button
+                key={key}
+                onClick={() => setFilter(key)}
+                className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all"
+                style={{
+                  background:
+                    filter === key ? 'var(--color-primary)' : 'var(--color-bg-card)',
+                  color:
+                    filter === key
+                      ? 'var(--color-text-inverse)'
+                      : 'var(--color-text-secondary)',
+                  border:
+                    filter === key
+                      ? 'none'
+                      : '1px solid var(--color-border)',
+                }}
+              >
+                {labels[key]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -210,7 +216,7 @@ function MessagesContent() {
               className="text-sm font-medium"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              {search ? 'Sonuç bulunamadı' : 'Henüz mesajınız yok'}
+              {search ? t.common.noResults : t.messages.noMessages}
             </p>
             <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
               {search ? 'Farklı bir arama deneyin' : 'Bir ilana mesaj göndererek sohbet başlatın'}
