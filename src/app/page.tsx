@@ -39,6 +39,7 @@ import type { EventWithDetails } from '@/lib/database.types';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
 import { formatCurrency, formatCurrencyRaw, currencySymbol } from '@/lib/currency-utils';
 import { ROOM_TYPE_LABELS } from '@/lib/constants';
+import { useI18n } from '@/lib/i18n';
 
 const countryFlags: Record<string, string> = {
   ES: '🇪🇸', PT: '🇵🇹', DE: '🇩🇪', FR: '🇫🇷', IT: '🇮🇹', CZ: '🇨🇿',
@@ -350,7 +351,7 @@ function EmptyState({ icon: Icon, message }: { icon: typeof MapPin; message: str
 
 // --------------- Section Header ---------------
 
-function SectionHeader({ title, href }: { title: string; href?: string }) {
+function SectionHeader({ title, href, viewAllLabel }: { title: string; href?: string; viewAllLabel?: string }) {
   return (
     <div className="flex items-center justify-between mb-3">
       <h2
@@ -365,7 +366,7 @@ function SectionHeader({ title, href }: { title: string; href?: string }) {
           className="flex items-center gap-0.5 text-xs font-semibold"
           style={{ color: 'var(--color-primary)' }}
         >
-          Tümü
+          {viewAllLabel ?? 'Tümü'}
           <ChevronRight size={14} />
         </Link>
       )}
@@ -376,6 +377,7 @@ function SectionHeader({ title, href }: { title: string; href?: string }) {
 // --------------- HOME PAGE ---------------
 
 export default function HomePage() {
+  const { t } = useI18n();
   const { user, profile, loading: authLoading } = useAuth();
   const { city, cities, getById, selectedCityId, fetchCities } = useCities();
   const { listings, loading: listingsLoading, search: searchListings } = useListings();
@@ -468,9 +470,9 @@ export default function HomePage() {
 
   const greeting = (() => {
     const h = new Date().getHours();
-    if (h < 12) return 'Günaydın';
-    if (h < 18) return 'İyi günler';
-    return 'İyi akşamlar';
+    if (h < 12) return t.home.greeting.morning;
+    if (h < 18) return t.home.greeting.afternoon;
+    return t.home.greeting.evening;
   })();
 
   const firstName = profile?.full_name?.split(' ')[0] ?? 'Kullanıcı';
@@ -540,7 +542,7 @@ export default function HomePage() {
         >
           <Search size={18} style={{ color: 'rgba(255,255,255,0.5)' }} />
           <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            {activeCityName ? `${activeCityName}'da ara...` : 'Bu şehirde ara...'}
+            {activeCityName ? `${activeCityName}${t.home.searchPlaceholder}` : t.home.searchPlaceholderDefault}
           </span>
         </Link>
       </div>
@@ -567,7 +569,7 @@ export default function HomePage() {
                 className="flex items-center gap-1 text-xs font-semibold"
                 style={{ color: 'var(--color-primary)' }}
               >
-                Şehir Rehberi
+                {t.home.popularCities}
                 <ArrowRight size={14} />
               </Link>
             </div>
@@ -672,7 +674,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center gap-1">
             <ShieldCheck size={20} className="text-[var(--color-success)]" />
             <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-              Doğrulanmış İlanlar
+              {t.home.trustVerified}
             </span>
           </div>
 
@@ -681,7 +683,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center gap-1">
             <Clock size={20} className="text-[var(--color-info)]" />
             <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-              24 Saat Yanıt
+              {t.home.trust24h}
             </span>
           </div>
 
@@ -690,7 +692,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center gap-1">
             <CreditCard size={20} className="text-[var(--color-primary)]" />
             <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-              Güvenli Ödeme
+              {t.home.trustSecure}
             </span>
           </div>
 
@@ -699,7 +701,7 @@ export default function HomePage() {
 
       {/* ========== LISTINGS SECTION ========== */}
       <section className="mt-6 px-5">
-        <SectionHeader title="Bu Şehirdeki İlanlar" href="/search" />
+        <SectionHeader title={t.home.featuredListings} href="/search" viewAllLabel={t.home.viewAll} />
         {listingsLoading ? (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
             {Array.from({ length: 3 }).map((_, i) => <ListingCardSkeleton key={i} />)}
@@ -715,7 +717,7 @@ export default function HomePage() {
 
       {/* ========== EVENTS SECTION ========== */}
       <section className="mt-6 px-5">
-        <SectionHeader title="Yaklaşan Etkinlikler" href="/events" />
+        <SectionHeader title={t.home.nearbyRooms} href="/events" viewAllLabel={t.home.viewAll} />
         {eventsLoading ? (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
             {Array.from({ length: 3 }).map((_, i) => <EventCardSkeleton key={i} />)}
@@ -756,7 +758,7 @@ export default function HomePage() {
 
       {/* ========== POSTS SECTION ========== */}
       <section className="mt-6 px-5">
-        <SectionHeader title="Topluluktan" href="/community" />
+        <SectionHeader title={t.home.community} href="/community" viewAllLabel={t.home.viewAll} />
         {/* Filter tabs */}
         <div className="flex gap-2 mb-3">
           {([

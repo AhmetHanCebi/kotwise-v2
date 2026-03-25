@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/Toast';
+import { useI18n } from '@/lib/i18n';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const handleLogin = useCallback(async () => {
     setError(null);
@@ -69,13 +71,13 @@ export default function LoginPage() {
           className="text-2xl font-bold"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          Tekrar Hoş Geldin!
+          {t.auth.welcomeBack}
         </h1>
         <p
           className="text-sm mt-1"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          Hesabına giriş yap
+          {t.auth.loginSubtitle}
         </p>
       </div>
 
@@ -101,7 +103,7 @@ export default function LoginPage() {
               className="text-sm font-semibold mb-1.5 block"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              E-posta
+              {t.auth.email}
             </label>
             <div
               className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
@@ -113,7 +115,7 @@ export default function LoginPage() {
               <Mail size={18} style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type="email"
-                placeholder="ornek@email.com"
+                placeholder={t.auth.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 bg-transparent text-sm outline-none"
@@ -129,14 +131,14 @@ export default function LoginPage() {
                 className="text-sm font-semibold"
                 style={{ color: 'var(--color-text-primary)' }}
               >
-                Şifre
+                {t.auth.password}
               </label>
               <Link
                 href="/forgot-password"
                 className="text-xs font-semibold"
                 style={{ color: 'var(--color-primary)' }}
               >
-                Şifremi Unuttum
+                {t.auth.forgotPassword}
               </Link>
             </div>
             <div
@@ -149,7 +151,7 @@ export default function LoginPage() {
               <Lock size={18} style={{ color: 'var(--color-text-muted)' }} />
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Şifreniz"
+                placeholder={t.auth.passwordPlaceholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="flex-1 bg-transparent text-sm outline-none"
@@ -178,7 +180,7 @@ export default function LoginPage() {
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                Giriş Yap
+                {t.auth.loginButton}
                 <ArrowRight size={20} />
               </>
             )}
@@ -187,7 +189,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-3 my-1">
             <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-            <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>veya</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>{t.auth.or}</span>
             <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
           </div>
 
@@ -213,7 +215,7 @@ export default function LoginPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Google ile giriş yap
+            {t.auth.googleLogin}
           </button>
           <button
             onClick={async () => {
@@ -233,7 +235,7 @@ export default function LoginPage() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
             </svg>
-            Apple ile giriş yap
+            {t.auth.appleLogin}
           </button>
         </div>
       </div>
@@ -244,13 +246,13 @@ export default function LoginPage() {
           className="text-center text-sm"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          Hesabın yok mu?{' '}
+          {t.auth.noAccount}{' '}
           <Link
             href="/register"
             className="font-semibold"
             style={{ color: 'var(--color-primary)' }}
           >
-            Kayıt Ol
+            {t.auth.register}
           </Link>
         </p>
       </div>

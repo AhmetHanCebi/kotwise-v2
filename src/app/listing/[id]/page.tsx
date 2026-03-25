@@ -22,6 +22,7 @@ import type { ListingWithDetails, ReviewInsert } from '@/lib/database.types';
 import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, getCoverImage, getRoomPlaceholder } from '@/lib/image-utils';
 import { formatCurrency } from '@/lib/currency-utils';
 import { ROOM_TYPE_LABELS } from '@/lib/constants';
+import { useI18n } from '@/lib/i18n';
 
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
   wifi: <Wifi size={18} />,
@@ -51,6 +52,7 @@ export default function ListingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { t } = useI18n();
   const router = useRouter();
   const { user } = useAuth();
   const { getById, listings, search, loading, submitReview } = useListings();
@@ -185,7 +187,7 @@ export default function ListingDetailPage({
     return (
       <div className="min-h-dvh flex flex-col items-center justify-center gap-4 max-w-[430px] mx-auto px-4">
         <p className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          İlan bulunamadı
+          {t.listing.notFound}
         </p>
         <button
           onClick={() => router.back()}
@@ -448,7 +450,7 @@ export default function ListingDetailPage({
         {/* Features Grid */}
         <div className="mt-6">
           <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-            Özellikler
+            {t.listing.features}
           </h2>
           <div className="grid grid-cols-3 gap-2">
             <FeatureItem
@@ -477,7 +479,7 @@ export default function ListingDetailPage({
         {description && (
           <div className="mt-6">
             <h2 className="text-base font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-              Açıklama
+              {t.listing.description}
             </h2>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               {displayDesc}
@@ -500,7 +502,7 @@ export default function ListingDetailPage({
         {listing.included_utilities?.length > 0 && (
           <div className="mt-6">
             <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-              Fiyata Dahil
+              {t.listing.included}
             </h2>
             <div className="flex flex-col gap-2">
               {listing.included_utilities.map((util) => (
@@ -523,7 +525,7 @@ export default function ListingDetailPage({
         {/* Location Mini Map */}
         <div className="mt-6">
           <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-            Konum
+            {t.listing.location}
           </h2>
           <div
             className="w-full h-40 rounded-2xl overflow-hidden relative"
@@ -547,7 +549,7 @@ export default function ListingDetailPage({
         {/* Availability Calendar */}
         <div className="mt-6">
           <h2 className="text-base font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-            <Calendar size={18} /> Müsaitlik
+            <Calendar size={18} /> {t.listing.availability}
           </h2>
           <div className="space-y-2">
             {(() => {
@@ -587,7 +589,7 @@ export default function ListingDetailPage({
                       }}
                     />
                     <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                      {booked ? 'Dolu' : 'Müsait'}
+                      {booked ? t.listing.booked : t.listing.available}
                     </span>
                   </div>
                 );
@@ -603,7 +605,7 @@ export default function ListingDetailPage({
         <div className="mt-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              Değerlendirmeler
+              {t.listing.reviews}
               {listing.review_count > 0 && (
                 <span className="ml-1 text-sm font-normal" style={{ color: 'var(--color-text-muted)' }}>
                   ({listing.review_count})
@@ -622,7 +624,7 @@ export default function ListingDetailPage({
                   border: '1px solid var(--color-primary)',
                 }}
               >
-                Yorum Yaz
+                {t.listing.writeReview}
               </button>
             )}
           </div>
@@ -766,7 +768,7 @@ export default function ListingDetailPage({
         {similarListings.length > 0 && (
           <div className="mt-6">
             <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-              Benzer İlanlar
+              {t.listing.similar}
             </h2>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {similarListings.map((sl) => {
@@ -820,7 +822,7 @@ export default function ListingDetailPage({
           return (
             <div className="mt-6">
               <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-                İlgili Etiketler
+                {t.listing.relatedTags}
               </h2>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
@@ -881,7 +883,7 @@ export default function ListingDetailPage({
             color: 'var(--color-text-inverse)',
           }}
         >
-          Rezervasyon Yap
+          {t.listing.bookNow}
         </Link>
       </div>
     </div>

@@ -228,7 +228,10 @@ export function useMessages(userId?: string) {
             supabase
               .from('messages')
               .update({ is_read: true })
-              .eq('id', newMessage.id);
+              .eq('id', newMessage.id)
+              .then(({ error }) => {
+                if (error) console.error('Mark as read failed:', error.message);
+              });
           }
         }
       )

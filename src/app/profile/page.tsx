@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useBooking } from '@/hooks/useBooking';
 import { useListings } from '@/hooks/useListings';
+import { useI18n } from '@/lib/i18n';
 import {
   Edit3,
   CalendarCheck,
@@ -27,15 +28,15 @@ import {
   Loader2,
 } from 'lucide-react';
 
-const menuItems = [
-  { href: '/profile/edit', label: 'Profil Düzenle', icon: Edit3, color: '#3B82F6' },
-  { href: '/favorites', label: 'Favorilerim', icon: Heart, color: 'var(--color-error)' },
-  { href: '/profile/bookings', label: 'Rezervasyonlarım', icon: CalendarCheck, color: '#8B5CF6' },
-  { href: '/listing/new', label: 'İlan Oluştur', icon: PlusCircle, color: 'var(--color-success)' },
-  { href: '/host/apply', label: 'Ev Sahibi Ol', icon: Home, color: 'var(--color-warning)' },
-  { href: '/notifications', label: 'Bildirimler', icon: Bell, color: 'var(--color-error)' },
-  { href: '/settings', label: 'Ayarlar', icon: Settings, color: '#6B7280' },
-  { href: '/settings/faq', label: 'Yardım', icon: HelpCircle, color: '#06B6D4' },
+const menuItemDefs = [
+  { href: '/profile/edit', key: 'editProfile' as const, icon: Edit3, color: '#3B82F6' },
+  { href: '/favorites', key: 'favorites' as const, icon: Heart, color: 'var(--color-error)' },
+  { href: '/profile/bookings', key: 'myBookings' as const, icon: CalendarCheck, color: '#8B5CF6' },
+  { href: '/listing/new', key: 'createListing' as const, icon: PlusCircle, color: 'var(--color-success)' },
+  { href: '/host/apply', key: 'becomeHost' as const, icon: Home, color: 'var(--color-warning)' },
+  { href: '/notifications', key: 'notifications' as const, icon: Bell, color: 'var(--color-error)' },
+  { href: '/settings', key: 'settings' as const, icon: Settings, color: '#6B7280' },
+  { href: '/settings/faq', key: 'help' as const, icon: HelpCircle, color: '#06B6D4' },
 ];
 
 export default function ProfilePage() {
@@ -47,6 +48,7 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const { profile, loading, signOut, user } = useAuth();
   const { favorites } = useFavorites(user?.id);
@@ -160,7 +162,7 @@ function ProfileContent() {
                       color: pct >= 80 ? 'var(--color-success)' : '#F59E0B',
                     }}
                   >
-                    Profil %{pct} Tamamlandı
+                    {t.profile.completion.replace('%{pct}', String(pct))}
                   </span>
                 </div>
                 <div
@@ -181,7 +183,7 @@ function ProfileContent() {
                     className="block text-center text-[11px] font-medium mt-1.5"
                     style={{ color: '#FBBF24' }}
                   >
-                    Profilini tamamla — ev sahiplerinden daha hızlı yanıt al!
+                    {t.profile.completeProfile}
                   </Link>
                 )}
               </div>
@@ -230,10 +232,10 @@ function ProfileContent() {
         }}
       >
         {[
-          { label: 'İlanlar', value: String(listingCount), icon: Home },
-          { label: 'Favoriler', value: String(favorites?.length ?? 0), icon: Heart },
-          { label: 'Rezervasyonlar', value: String(bookings?.length ?? 0), icon: Calendar },
-          { label: 'Puan', value: avgRating ?? '-', icon: Star },
+          { label: t.profile.stats.listings, value: String(listingCount), icon: Home },
+          { label: t.profile.stats.favorites, value: String(favorites?.length ?? 0), icon: Heart },
+          { label: t.profile.stats.bookings, value: String(bookings?.length ?? 0), icon: Calendar },
+          { label: t.profile.stats.rating, value: avgRating ?? '-', icon: Star },
         ].map((stat) => (
           <div key={stat.label} className="flex flex-col items-center gap-0.5">
             <stat.icon size={16} style={{ color: 'var(--color-primary)' }} />
@@ -266,7 +268,7 @@ function ProfileContent() {
             className="text-xs font-semibold uppercase tracking-wider mb-1.5"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            Hakkında
+            {t.profile.about}
           </p>
           <p
             className="text-sm leading-relaxed"
@@ -285,14 +287,14 @@ function ProfileContent() {
           boxShadow: 'var(--shadow-sm)',
         }}
       >
-        {menuItems.map((item, i) => (
+        {menuItemDefs.map((item, i) => (
           <Link
             key={item.href}
             href={item.href}
             className="flex items-center gap-3 px-4 py-3.5 active:opacity-70 transition-opacity"
             style={{
               borderBottom:
-                i < menuItems.length - 1
+                i < menuItemDefs.length - 1
                   ? '1px solid var(--color-border)'
                   : 'none',
             }}
@@ -307,7 +309,7 @@ function ProfileContent() {
               className="flex-1 text-sm font-medium"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              {item.label}
+              {t.profile[item.key]}
             </span>
             <ChevronRight
               size={18}
@@ -337,7 +339,7 @@ function ProfileContent() {
             className="flex-1 text-sm font-medium text-left"
             style={{ color: 'var(--color-error)' }}
           >
-            Çıkış Yap
+            {t.profile.logout}
           </span>
           <ChevronRight size={18} style={{ color: 'var(--color-text-muted)' }} />
         </button>

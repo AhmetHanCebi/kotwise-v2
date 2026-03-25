@@ -20,6 +20,7 @@ import BottomSheet from '@/components/BottomSheet';
 
 import { formatCurrency } from '@/lib/currency-utils';
 import { ROOM_TYPE_LABELS } from '@/lib/constants';
+import { useI18n } from '@/lib/i18n';
 
 const ROOM_TYPES: { value: RoomType; label: string; icon: React.ReactNode }[] = (
   Object.entries(ROOM_TYPE_LABELS) as [RoomType, string][]
@@ -69,6 +70,7 @@ const removeRecent = (q: string) => {
 };
 
 function SearchContent() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -254,7 +256,7 @@ function SearchContent() {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => { setTimeout(() => setSearchFocused(false), 200); }}
-            placeholder="Şehir, üniversite veya mahalle ara..."
+            placeholder={t.search.searchPlaceholder}
             className="flex-1 bg-transparent text-sm outline-none"
             style={{ color: 'var(--color-text-primary)' }}
           />
@@ -281,7 +283,7 @@ function SearchContent() {
           <div className="mt-2 animate-fade-in">
             <p className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 px-1 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
               <Clock size={11} />
-              Son Aramalar
+              {t.search.recentSearches}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {recentSearches.map((term) => (
@@ -330,7 +332,7 @@ function SearchContent() {
             }}
           >
             <SlidersHorizontal size={14} />
-            Filtreler
+            {t.search.filters}
             {activeFilterCount > 0 && (
               <span
                 className="w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold"
@@ -415,11 +417,11 @@ function SearchContent() {
       <BottomSheet
         isOpen={showFilters}
         onClose={() => setShowFilters(false)}
-        title="Filtreler"
+        title={t.search.filters}
       >
         {/* Price Range */}
         <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-          Fiyat Aralığı
+          {t.search.price}
         </p>
         <div className="flex items-center gap-2 mb-4">
           <input
@@ -451,7 +453,7 @@ function SearchContent() {
 
         {/* Room Type Grid */}
         <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-          Oda Tipi
+          {t.search.roomType}
         </p>
         <div className="grid grid-cols-2 gap-2 mb-4">
           {ROOM_TYPES.map((rt) => (
@@ -512,7 +514,7 @@ function SearchContent() {
       {/* Results Count */}
       <div className="px-4 py-3">
         <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-          {loading ? `${totalCount > 0 ? totalCount : ''} ilan aranıyor...` : `${totalCount} ilan bulundu`}
+          {loading ? `${totalCount > 0 ? totalCount : ''} ...` : `${totalCount} ${t.search.results}`}
         </p>
       </div>
 
@@ -552,7 +554,7 @@ function SearchContent() {
               <Search size={28} style={{ color: 'var(--color-text-muted)' }} />
             </div>
             <p className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              Aramanızla eşleşen ilan bulunamadı
+              {t.search.noResults}
             </p>
             <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
               Filtrelerinizi değiştirmeyi veya farklı bir arama yapmayı deneyin.
@@ -582,7 +584,7 @@ function SearchContent() {
                 className="text-center text-xs py-6"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                Tüm ilanlar yüklendi
+                {t.search.allLoaded}
               </p>
             )}
 
@@ -625,6 +627,7 @@ function ListingCard({
   isFavorite: boolean;
   onToggleFavorite: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <Link
       href={`/listing/${listing.id}`}
@@ -652,7 +655,7 @@ function ListingCard({
               color: 'var(--color-text-inverse)',
             }}
           >
-            %{listing.match_score} Eşleşme
+            %{listing.match_score} {t.search.match}
           </div>
         )}
         {/* Heart */}
