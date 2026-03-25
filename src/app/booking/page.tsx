@@ -207,12 +207,34 @@ function BookingForm() {
     }
   }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* Stay duration calculation */
+  const stayDuration = useMemo(() => {
+    if (!checkIn || !checkOut) return null;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const diffMs = end.getTime() - start.getTime();
+    if (diffMs <= 0) return null;
+    const totalDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    const months = Math.floor(totalDays / 30);
+    const days = totalDays % 30;
+    return { months, days, totalDays };
+  }, [checkIn, checkOut]);
+
+  /* Date validation — inline error when check-in >= check-out */
+  const dateError = useMemo(() => {
+    if (checkIn && checkOut && new Date(checkIn) >= new Date(checkOut)) {
+      return 'Giriş tarihi çıkış tarihinden önce olmalı';
+    }
+    return null;
+  }, [checkIn, checkOut]);
+
   /* Price calculation */
   const priceCalc = useMemo(() => {
     if (!listing || !checkIn || !checkOut) return null;
     const start = new Date(checkIn);
     const end = new Date(checkOut);
     const diffMs = end.getTime() - start.getTime();
+    if (diffMs <= 0) return null;
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     const months = Math.max(1, Math.round(diffDays / 30.44));
     const rent = listing.price_per_month * months;
@@ -428,38 +450,63 @@ function BookingForm() {
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                 Giriş Tarihi *
               </label>
-              <input
-                type="date"
-                value={checkIn}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={(e) => { setCheckIn(e.target.value); setErrors((p) => ({ ...p, checkIn: '' })); }}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-                style={{
-                  background: 'var(--color-bg)',
-                  border: `1px solid ${errors.checkIn ? 'var(--color-error)' : 'var(--color-border)'}`,
-                  color: 'var(--color-text-primary)',
-                }}
-              />
+              <div className="relative">
+                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-text-muted)' }} />
+                <input
+                  type="date"
+                  value={checkIn}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => { setCheckIn(e.target.value); setErrors((p) => ({ ...p, checkIn: '', checkOut: '' })); }}
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm outline-none"
+                  style={{
+                    background: 'var(--color-bg)',
+                    border: `1px solid ${errors.checkIn || dateError ? 'var(--color-error)' : 'var(--color-border)'}`,
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+              </div>
               {errors.checkIn && <p className="text-[11px] mt-1" style={{ color: 'var(--color-error)' }}>{errors.checkIn}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                 Çıkış Tarihi *
               </label>
-              <input
-                type="date"
-                value={checkOut}
-                min={checkIn || new Date().toISOString().split('T')[0]}
-                onChange={(e) => { setCheckOut(e.target.value); setErrors((p) => ({ ...p, checkOut: '' })); }}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none"
-                style={{
-                  background: 'var(--color-bg)',
-                  border: `1px solid ${errors.checkOut ? 'var(--color-error)' : 'var(--color-border)'}`,
-                  color: 'var(--color-text-primary)',
-                }}
-              />
+              <div className="relative">
+                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--color-text-muted)' }} />
+                <input
+                  type="date"
+                  value={checkOut}
+                  min={checkIn || new Date().toISOString().split('T')[0]}
+                  onChange={(e) => { setCheckOut(e.target.value); setErrors((p) => ({ ...p, checkOut: '' })); }}
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm outline-none"
+                  style={{
+                    background: 'var(--color-bg)',
+                    border: `1px solid ${errors.checkOut || dateError ? 'var(--color-error)' : 'var(--color-border)'}`,
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+              </div>
               {errors.checkOut && <p className="text-[11px] mt-1" style={{ color: 'var(--color-error)' }}>{errors.checkOut}</p>}
+              {dateError && !errors.checkOut && (
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <AlertCircle size={12} style={{ color: 'var(--color-error)' }} />
+                  <p className="text-[11px] font-medium" style={{ color: 'var(--color-error)' }}>{dateError}</p>
+                </div>
+              )}
             </div>
+
+            {/* Stay duration badge */}
+            {stayDuration && !dateError && (
+              <div
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl"
+                style={{ background: 'color-mix(in srgb, var(--color-info) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--color-info) 20%, transparent)' }}
+              >
+                <Clock size={15} style={{ color: 'var(--color-info)' }} />
+                <p className="text-sm font-medium" style={{ color: 'var(--color-info)' }}>
+                  Kalış süresi: {stayDuration.months > 0 ? `${stayDuration.months} ay ` : ''}{stayDuration.days > 0 ? `${stayDuration.days} gün` : stayDuration.months > 0 ? '' : '0 gün'}
+                </p>
+              </div>
+            )}
 
             {priceCalc && (
               <div

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, User, Phone,
-  MessageCircle, Home, Loader2,
+  MessageCircle, Home, Loader2, Share2, CalendarPlus,
 } from 'lucide-react';
 import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
@@ -259,6 +259,58 @@ function BookingSuccess() {
                 </a>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Share & Calendar Buttons */}
+        {booking && (
+          <div className="w-full flex gap-3 mb-4 animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
+            <button
+              onClick={async () => {
+                const shareData = {
+                  title: 'Kotwise Rezervasyon',
+                  text: `${booking.listing?.title || 'Konaklama'} rezervasyonum onaylandı! ${new Date(booking.check_in).toLocaleDateString('tr-TR')} - ${new Date(booking.check_out).toLocaleDateString('tr-TR')}`,
+                  url: window.location.href,
+                };
+                if (navigator.share) {
+                  try { await navigator.share(shareData); } catch { /* cancelled */ }
+                } else {
+                  await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+                  alert('Link kopyalandı!');
+                }
+              }}
+              className="flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+              style={{
+                background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
+                color: 'var(--color-primary)',
+                border: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
+              }}
+            >
+              <Share2 size={16} />
+              Paylaş
+            </button>
+            <button
+              onClick={() => {
+                const start = new Date(booking.check_in).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const end = new Date(booking.check_out).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                const title = encodeURIComponent(booking.listing?.title || 'Konaklama Rezervasyonu');
+                const details = encodeURIComponent(
+                  `Kotwise Rezervasyon${booking.confirmation_number ? ` - Onay No: ${booking.confirmation_number}` : ''}\n${booking.listing?.address || ''}`
+                );
+                const location = encodeURIComponent(booking.listing?.address || '');
+                const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+                window.open(calendarUrl, '_blank');
+              }}
+              className="flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+              style={{
+                background: 'color-mix(in srgb, var(--color-info) 10%, transparent)',
+                color: 'var(--color-info)',
+                border: '1px solid color-mix(in srgb, var(--color-info) 25%, transparent)',
+              }}
+            >
+              <CalendarPlus size={16} />
+              Takvime Ekle
+            </button>
           </div>
         )}
 

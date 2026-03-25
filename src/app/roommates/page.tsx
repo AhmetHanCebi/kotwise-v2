@@ -235,33 +235,21 @@ function RoommatesPage() {
 
       {/* Profile creation CTA */}
       {!loading && !myProfile && (
-        <div className="px-4 py-3">
-          <div
-            className="flex items-center gap-3 p-4 rounded-2xl"
-            style={{ background: 'rgba(242,101,34,0.06)', border: '1px solid rgba(242,101,34,0.15)' }}
-          >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: 'var(--gradient-primary)' }}
-            >
-              <UserPlus size={18} color="white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                Profilini oluştur
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                Diğer öğrenciler seni keşfedebilsin!
-              </p>
-            </div>
-            <Link
-              href="/roommates/create"
-              className="px-4 py-2 rounded-xl text-xs font-bold shrink-0"
-              style={{ background: 'var(--gradient-primary)', color: 'white' }}
-            >
-              Oluştur
-            </Link>
+        <div className="flex flex-col items-center py-16 px-6 text-center page-enter">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+            style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}>
+            <Users size={36} style={{ color: 'var(--color-primary)' }} />
           </div>
+          <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            Oda Arkadasi Bul
+          </h3>
+          <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
+            Ilgi alanlarini ve aliskanliklarini paylas, sana en uygun oda arkadasini bul!
+          </p>
+          <Link href="/roommates/create" className="px-6 py-3 rounded-xl text-sm font-bold text-white"
+            style={{ background: 'var(--gradient-primary)' }}>
+            Profilimi Olustur
+          </Link>
         </div>
       )}
 

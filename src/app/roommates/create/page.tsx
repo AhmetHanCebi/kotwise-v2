@@ -58,6 +58,7 @@ function CreateRoommateProfileContent() {
   const [smoking, setSmoking] = useState(false);
   const [exchangeCity, setExchangeCity] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
+  const [bio, setBio] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -224,6 +225,26 @@ function CreateRoommateProfileContent() {
               );
             })}
           </div>
+        </Section>
+
+        {/* Bio */}
+        <Section title="Hakkında (opsiyonel)">
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Kendini kısaca tanıt, oda arkadaşın seni tanısın..."
+            rows={4}
+            maxLength={300}
+            className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none resize-none"
+            style={{
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          />
+          <p className="text-[11px] mt-1 text-right" style={{ color: 'var(--color-text-muted)' }}>
+            {bio.length}/300
+          </p>
         </Section>
 
         {error && (
