@@ -16,6 +16,7 @@ import {
   CheckCheck,
   MapPin,
   Loader2,
+  MessageCircle,
 } from 'lucide-react';
 import { useStorage } from '@/hooks/useStorage';
 import type { Message } from '@/lib/database.types';
@@ -257,16 +258,23 @@ function ChatContent({ conversationId }: { conversationId: string }) {
             />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-2">
-            <p
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-text-secondary)' }}
+          <div className="flex flex-col items-center py-12 px-6 text-center">
+            <MessageCircle size={40} style={{ color: 'var(--color-text-muted)' }} />
+            <p className="text-sm mt-3" style={{ color: 'var(--color-text-secondary)' }}>
+              Henüz mesaj yok. İlk mesajınızı gönderin!
+            </p>
+            <button
+              onClick={() => {
+                setText('Merhaba! İlanınız hakkında bilgi almak istiyorum. Müsait tarihleriniz nedir?');
+              }}
+              className="mt-4 px-4 py-2 rounded-xl text-sm font-medium"
+              style={{
+                background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
+                color: 'var(--color-primary)'
+              }}
             >
-              Henüz mesaj yok
-            </p>
-            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Merhaba diyerek sohbeti başlatın!
-            </p>
+              Önerilen mesajı kullan
+            </button>
           </div>
         ) : (
           messageGroups.map((group, gi) => (

@@ -41,12 +41,16 @@ function NewMessageContent() {
   // Handle ?to=userId — auto-start conversation with that user
   useEffect(() => {
     const toUserId = searchParams.get('to');
+    const listingId = searchParams.get('listing');
     if (!toUserId || !user || toHandledRef.current) return;
     toHandledRef.current = true;
 
     const startConversation = async () => {
       setCreating(toUserId);
-      const result = await createConversation([toUserId]);
+      const result = await createConversation(
+        [toUserId],
+        listingId ? { listing_id: listingId } : undefined
+      );
       if ('data' in result && result.data) {
         router.replace(`/messages/${result.data.id}`);
       } else {

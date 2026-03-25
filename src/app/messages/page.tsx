@@ -240,6 +240,22 @@ function MessagesContent() {
                     )}
                   </div>
 
+                  {/* Listing thumbnail */}
+                  {conv.listing && (conv.listing as unknown as { cover_image_url?: string }).cover_image_url && (
+                    <div
+                      className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0"
+                      style={{ border: '1px solid var(--color-border)' }}
+                    >
+                      <img
+                        src={(conv.listing as unknown as { cover_image_url: string }).cover_image_url}
+                        alt={conv.listing.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
@@ -256,13 +272,21 @@ function MessagesContent() {
                         {timeAgo(conv.last_message_at)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {conv.listing_id && (
+                    {conv.listing && (
+                      <div className="flex items-center gap-1 mb-0.5">
                         <Home
-                          size={12}
+                          size={11}
                           style={{ color: 'var(--color-primary)', flexShrink: 0 }}
                         />
-                      )}
+                        <span
+                          className="text-[11px] truncate"
+                          style={{ color: 'var(--color-primary)' }}
+                        >
+                          {conv.listing.title}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
                       <p
                         className="text-xs truncate"
                         style={{

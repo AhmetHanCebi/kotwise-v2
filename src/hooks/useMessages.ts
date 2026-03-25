@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Conversation, ConversationWithDetails, Message, MessageInsert, Profile } from '@/lib/database.types';
+import type { Conversation, ConversationWithDetails, ListingImage, Message, MessageInsert, Profile } from '@/lib/database.types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface ConversationWithUnread extends ConversationWithDetails {
@@ -46,6 +46,26 @@ export function useMessages(userId?: string) {
 
       const profileMap = new Map((profiles ?? []).map(p => [p.id, p]));
 
+      // Fetch listing data for conversations linked to listings
+      const listingIds = [...new Set(convs.map(c => c.listing_id).filter(Boolean))] as string[];
+      type ListingBasic = { id: string; title: string; cover_image_url: string | null };
+      let listingMap = new Map<string, ListingBasic>();
+      if (listingIds.length > 0) {
+        const { data: listings } = await supabase
+          .from('listings')
+          .select('id, title')
+          .in('id', listingIds);
+        const { data: images } = await supabase
+          .from('listing_images')
+          .select('*')
+          .in('listing_id', listingIds)
+          .eq('is_cover', true);
+        const imageMap = new Map((images ?? []).map((img: ListingImage) => [img.listing_id, img.url]));
+        if (listings) {
+          listingMap = new Map(listings.map(l => [l.id, { id: l.id, title: l.title, cover_image_url: imageMap.get(l.id) ?? null }]));
+        }
+      }
+
       // Check unread status for each conversation
       const convIds = convs.map(c => c.id);
       let unreadConvIds = new Set<string>();
@@ -62,12 +82,15 @@ export function useMessages(userId?: string) {
         }
       }
 
-      const enriched: ConversationWithUnread[] = convs.map(c => ({
-        ...c,
-        participants: c.participant_ids.map(id => profileMap.get(id)).filter(Boolean) as ConversationWithDetails['participants'],
-        listing: null,
-        has_unread: unreadConvIds.has(c.id),
-      }));
+      const enriched: ConversationWithUnread[] = convs.map(c => {
+        const listingBasic = c.listing_id ? listingMap.get(c.listing_id) ?? null : null;
+        return {
+          ...c,
+          participants: c.participant_ids.map(id => profileMap.get(id)).filter(Boolean) as ConversationWithDetails['participants'],
+          listing: listingBasic as ConversationWithDetails['listing'],
+          has_unread: unreadConvIds.has(c.id),
+        };
+      });
 
       setConversations(enriched);
     } catch (err) {
