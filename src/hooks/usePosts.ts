@@ -278,7 +278,36 @@ export function usePosts(userId?: string) {
         return [];
       }
 
-      const items = (data ?? []).map(p => ({ ...p, comments: [], is_liked: false })) as unknown as PostWithDetails[];
+      // Compute actual like/comment counts from joined tables (DB columns may be stale)
+      let commentCounts: Record<string, number> = {};
+      let likeCounts: Record<string, number> = {};
+
+      if (data?.length) {
+        const postIds = data.map(p => p.id);
+        const [commentsRes, allLikesRes] = await Promise.all([
+          supabase.from('post_comments').select('post_id').in('post_id', postIds),
+          supabase.from('post_likes').select('post_id').in('post_id', postIds),
+        ]);
+
+        if (commentsRes.data) {
+          for (const c of commentsRes.data) {
+            commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1;
+          }
+        }
+        if (allLikesRes.data) {
+          for (const l of allLikesRes.data) {
+            likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1;
+          }
+        }
+      }
+
+      const items = (data ?? []).map(p => ({
+        ...p,
+        comments: [],
+        like_count: likeCounts[p.id] || p.like_count || 0,
+        comment_count: commentCounts[p.id] || p.comment_count || 0,
+        is_liked: false,
+      })) as unknown as PostWithDetails[];
       return items;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
