@@ -196,10 +196,10 @@ function EarningsContent() {
                 Detaylar
               </p>
               <div className="flex flex-col gap-2.5">
-                <DetailRow label="Brüt Kazanç" value={`${totalGross.toLocaleString('tr-TR')} {currencySymbol}`} icon={<DollarSign size={14} />} />
-                <DetailRow label="Komisyon" value={`-${totalCommission.toLocaleString('tr-TR')} {currencySymbol}`} icon={<Minus size={14} />} negative />
+                <DetailRow label="Brüt Kazanç" value={`${totalGross.toLocaleString('tr-TR')} ${currencySymbol}`} icon={<DollarSign size={14} />} />
+                <DetailRow label="Komisyon" value={`-${totalCommission.toLocaleString('tr-TR')} ${currencySymbol}`} icon={<Minus size={14} />} negative />
                 <div className="h-px" style={{ background: 'var(--color-border)' }} />
-                <DetailRow label="Net Kazanç" value={`${totalNet.toLocaleString('tr-TR')} {currencySymbol}`} icon={<TrendingUp size={14} />} bold />
+                <DetailRow label="Net Kazanç" value={`${totalNet.toLocaleString('tr-TR')} ${currencySymbol}`} icon={<TrendingUp size={14} />} bold />
               </div>
             </div>
 

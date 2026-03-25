@@ -26,6 +26,7 @@ import {
   Star,
 } from 'lucide-react';
 import { IMAGE_FALLBACK, IMAGE_FALLBACK_LARGE, IMAGE_FALLBACK_SMALL } from '@/lib/image-utils';
+import { formatPrice } from '@/lib/currency-utils';
 
 const CURRENCY_LABELS: Record<string, string> = {
   TRY: '₺',
@@ -164,7 +165,7 @@ export default function CityDetailPage({
       <div className="grid grid-cols-4 gap-2 px-4 -mt-4 relative z-10">
         {[
           { icon: Users, label: 'Nüfus', value: city.population ? `${(city.population / 1000000).toFixed(1)}M` : '-' },
-          { icon: Home, label: 'Ort. Kira', value: city.avg_rent ? `${Number(city.avg_rent).toLocaleString('tr-TR')} ${displayCurrency(city.currency)}` : '-' },
+          { icon: Home, label: 'Ort. Kira', value: city.avg_rent ? `${formatPrice(Number(city.avg_rent))} ${displayCurrency(city.currency)}` : '-' },
           { icon: Compass, label: 'Öğrenci', value: city.student_count ? `${Math.round(city.student_count / 1000)}K` : '-' },
           { icon: Shield, label: 'Güvenlik', value: city.safety_score ? `${city.safety_score}/10` : '-' },
         ].map((stat) => {
@@ -309,7 +310,7 @@ export default function CityDetailPage({
                     <div className="flex items-center gap-1 mt-2">
                       <DollarSign size={12} style={{ color: 'var(--color-success)' }} />
                       <span className="text-xs font-medium" style={{ color: 'var(--color-success)' }}>
-                        Ort. {Number(n.avg_rent).toLocaleString('tr-TR')} {displayCurrency(city.currency)}/ay
+                        Ort. {formatPrice(Number(n.avg_rent))} {displayCurrency(city.currency)}/ay
                       </span>
                     </div>
                   )}
@@ -362,7 +363,7 @@ export default function CityDetailPage({
                       )}
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                          {Number(listing.price_per_month).toLocaleString('tr-TR')} {displayCurrency(listing.currency)}/ay
+                          {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}/ay
                         </span>
                         {listing.rating > 0 && (
                           <span className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--color-text-secondary)' }}>

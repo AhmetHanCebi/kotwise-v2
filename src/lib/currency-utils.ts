@@ -1,6 +1,7 @@
 /**
  * Shared currency formatting utilities.
- * Prices in the database are stored in major units (e.g. 14000 TL, 800 EUR).
+ * Prices in the database are stored in minor units (kuruş / cents).
+ * e.g. 30000 = 300 TL, 80000 = 800 EUR.
  */
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -29,12 +30,12 @@ export function currencyLabel(code: string | null | undefined): string {
   return CURRENCY_CODES[code] ?? code;
 }
 
-/** Format price for display (prices are stored in major units) */
+/** Format price for display (prices are stored in minor units, divide by 100) */
 export function formatPrice(price: number, locale = 'tr-TR'): string {
-  return price.toLocaleString(locale, { maximumFractionDigits: 0 });
+  return Math.round(price / 100).toLocaleString(locale, { maximumFractionDigits: 0 });
 }
 
-/** Full price display: "14.000 ₺/ay" */
+/** Full price display: "300 ₺/ay" */
 export function displayPrice(
   price: number,
   currencyCode?: string | null,

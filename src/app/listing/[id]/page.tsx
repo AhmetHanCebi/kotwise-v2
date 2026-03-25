@@ -486,6 +486,7 @@ export default function ListingDetailPage({
                 price_per_month: listing.price_per_month,
                 lat: listing.latitude,
                 lng: listing.longitude,
+                currency: listing.currency,
               }]}
               singlePin
               height="160px"

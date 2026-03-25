@@ -166,6 +166,7 @@ function CityChatContent({ cityId }: { cityId: string }) {
   const handleSend = useCallback(async () => {
     if (!inputText.trim() || !conversationId || sending) return;
     setSending(true);
+    broadcastTyping(false);
 
     await send({
       conversation_id: conversationId,
@@ -176,7 +177,16 @@ function CityChatContent({ cityId }: { cityId: string }) {
 
     setInputText('');
     setSending(false);
-  }, [inputText, conversationId, sending, send]);
+  }, [inputText, conversationId, sending, send, broadcastTyping]);
+
+  const handleInputChange = (value: string) => {
+    setInputText(value);
+    broadcastTyping(value.trim().length > 0);
+
+    // Clear typing after 3 seconds of inactivity
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 3000);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -221,6 +231,12 @@ function CityChatContent({ cityId }: { cityId: string }) {
           <p className="text-xs flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
             <MapPin size={10} />
             Şehir grup sohbeti
+            {onlineCount > 0 && (
+              <span className="ml-1 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'var(--color-success)' }} />
+                {onlineCount} çevrimiçi
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -306,7 +322,7 @@ function CityChatContent({ cityId }: { cityId: string }) {
         )}
       </div>
 
-      {/* Input */}
+      {/* Typing indicator + Input */}
       <div
         className="px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]"
         style={{
@@ -314,6 +330,13 @@ function CityChatContent({ cityId }: { cityId: string }) {
           borderTop: '1px solid var(--color-border)',
         }}
       >
+        {typingUsers.length > 0 && (
+          <p className="text-[11px] mb-1.5 px-1 animate-pulse" style={{ color: 'var(--color-text-muted)' }}>
+            {typingUsers.length === 1
+              ? `${typingUsers[0]} yazıyor...`
+              : `${typingUsers.slice(0, 2).join(', ')} yazıyor...`}
+          </p>
+        )}
         <div className="flex items-end gap-2">
           <div
             className="flex-1 px-3 py-2.5 rounded-2xl"
@@ -326,7 +349,7 @@ function CityChatContent({ cityId }: { cityId: string }) {
               type="text"
               placeholder="Mesaj yazın..."
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
               className="w-full bg-transparent text-sm outline-none"
               style={{ color: 'var(--color-text-primary)' }}

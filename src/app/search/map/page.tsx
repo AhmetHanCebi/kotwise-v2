@@ -61,6 +61,7 @@ function MapSearchContent() {
     address: l.address,
     university_name: l.university_name,
     rating: l.rating,
+    currency: l.currency,
   }));
 
   return (

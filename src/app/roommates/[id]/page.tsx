@@ -20,6 +20,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { RoommateProfileWithUser } from '@/lib/database.types';
+import { getAvatarPlaceholder } from '@/lib/image-utils';
 
 const INTEREST_EMOJIS: Record<string, string> = {
   music: '🎵', sports: '⚽', travel: '✈️', cooking: '🍳',
@@ -108,7 +109,9 @@ export default function RoommateProfilePage({
   }
 
   const p = profileData;
-  const match = matchPercentage(myProfile?.interests ?? [], p.interests ?? []);
+  const myInterests = myProfile?.interests ?? [];
+  const match = matchPercentage(myInterests, p.interests ?? []);
+  const hasMyInterests = myInterests.length > 0;
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
@@ -126,15 +129,13 @@ export default function RoommateProfilePage({
       {/* Avatar hero */}
       <div className="relative">
         <div className="h-72 overflow-hidden" style={{ background: 'var(--gradient-dark)' }}>
-          {p.user?.avatar_url ? (
-            <img src={p.user.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.user?.full_name ?? '?')}&background=F26522&color=fff&size=200`; }} />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-7xl font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                {p.user?.full_name?.[0] ?? '?'}
-              </span>
-            </div>
-          )}
+          <img
+            src={p.user?.avatar_url || getAvatarPlaceholder(p.user_id)}
+            alt={p.user?.full_name ?? ''}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.user?.full_name ?? '?')}&background=F26522&color=fff&size=200`; }}
+          />
           {/* Gradient ring effect */}
           <div
             className="absolute inset-0"
@@ -157,7 +158,7 @@ export default function RoommateProfilePage({
           className="absolute bottom-6 right-4 px-4 py-2 rounded-2xl"
           style={{ background: match > 0 ? 'var(--color-success)' : 'var(--color-text-muted)', boxShadow: 'var(--shadow-md)' }}
         >
-          <span className="text-sm font-bold text-white">{match > 0 ? `%${match} Uyum` : 'Uyum bilgisi yok'}</span>
+          <span className="text-sm font-bold text-white">{match > 0 ? `%${match} Uyum` : hasMyInterests ? 'Ortak ilgi alanı yok' : 'Profilini tamamla'}</span>
         </div>
       </div>
 
