@@ -2,11 +2,11 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Search, Users, MessageCircle, User } from 'lucide-react';
+import { Home, Compass, Users, MessageCircle, User } from 'lucide-react';
 
 const tabs = [
   { href: '/', label: 'Ana Sayfa', icon: Home },
-  { href: '/search', label: 'Keşfet', icon: Search },
+  { href: '/explore', label: 'Keşfet', icon: Compass },
   { href: '/community', label: 'Topluluk', icon: Users },
   { href: '/messages', label: 'Mesajlar', icon: MessageCircle },
   { href: '/profile', label: 'Profil', icon: User },

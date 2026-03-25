@@ -29,6 +29,7 @@ import {
 
 const menuItems = [
   { href: '/profile/edit', label: 'Profil Düzenle', icon: Edit3, color: '#3B82F6' },
+  { href: '/favorites', label: 'Favorilerim', icon: Heart, color: '#EF4444' },
   { href: '/profile/bookings', label: 'Rezervasyonlarım', icon: CalendarCheck, color: '#8B5CF6' },
   { href: '/listing/new', label: 'İlan Oluştur', icon: PlusCircle, color: '#22C55E' },
   { href: '/host/apply', label: 'Ev Sahibi Ol', icon: Home, color: '#F59E0B' },
