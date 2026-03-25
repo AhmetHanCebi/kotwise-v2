@@ -8,8 +8,8 @@ async function login(page) {
   await page.waitForLoadState('networkidle');
   await page.fill('input[type="email"]', 'deniz@kotwise.com');
   await page.fill('input[type="password"]', 'KotwiseTest2026!');
-  await page.click('button[type="submit"]');
-  await page.waitForURL('**/');
+  await page.click('button:has-text("Giriş Yap")');
+  await page.waitForTimeout(2000);
   await page.waitForLoadState('networkidle');
 }
 

@@ -9,10 +9,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Kotwise — Erasmus Konaklama & Topluluk',
+  title: {
+    default: 'Kotwise - Öğrenci Konaklama Platformu',
+    template: '%s | Kotwise',
+  },
   description:
     'Erasmus ve değişim öğrencileri için güvenilir konaklama, topluluk ve şehir rehberi platformu.',
-  keywords: ['erasmus', 'konaklama', 'değişim', 'öğrenci', 'topluluk', 'şehir rehberi'],
+  keywords: ['erasmus', 'öğrenci konaklama', 'değişim programı', 'ev kiralama', 'oda arkadaşı'],
+  openGraph: {
+    title: 'Kotwise - Öğrenci Konaklama Platformu',
+    description: 'Erasmus ve değişim öğrencileri için güvenilir konaklama platformu.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
