@@ -44,10 +44,56 @@ const GUESTS_POLICY_TR: Record<string, string> = {
   no_guests: 'Misafir istemez', sometimes: 'Bazen', always_welcome: 'Her zaman', rarely: 'Nadiren',
 };
 
-function matchPercentage(a: string[], b: string[]): number {
-  if (!a?.length || !b?.length) return 0;
-  const common = a.filter((i) => b.includes(i));
-  return Math.min(99, Math.floor((common.length / Math.max(a.length, b.length)) * 100));
+interface MatchInput {
+  interests?: string[];
+  sleep_schedule?: string | null;
+  cleanliness?: string | null;
+  smoking?: boolean | null;
+  exchange_city?: string | null;
+}
+
+/** Comprehensive match percentage — same algorithm as the roommates listing page */
+function matchPercentage(my: MatchInput, their: MatchInput): number {
+  let score = 0;
+  let maxScore = 0;
+
+  // Interest similarity (weight: 50)
+  const myInterests = my.interests ?? [];
+  const theirInterests = their.interests ?? [];
+  if (myInterests.length > 0 && theirInterests.length > 0) {
+    const common = myInterests.filter((i) => theirInterests.includes(i));
+    score += (common.length / Math.max(myInterests.length, theirInterests.length)) * 50;
+    maxScore += 50;
+  }
+
+  // Sleep schedule match (weight: 20)
+  if (my.sleep_schedule && their.sleep_schedule) {
+    score += my.sleep_schedule === their.sleep_schedule ? 20 : 5;
+    maxScore += 20;
+  }
+
+  // Cleanliness match (weight: 15)
+  if (my.cleanliness && their.cleanliness) {
+    score += my.cleanliness === their.cleanliness ? 15 : 5;
+    maxScore += 15;
+  }
+
+  // Smoking preference (weight: 15)
+  if (my.smoking !== null && my.smoking !== undefined && their.smoking !== null && their.smoking !== undefined) {
+    score += my.smoking === their.smoking ? 15 : 0;
+    maxScore += 15;
+  }
+
+  // Same exchange city bonus
+  if (my.exchange_city && their.exchange_city && my.exchange_city === their.exchange_city) {
+    score += 10;
+    maxScore += 10;
+  }
+
+  // If we have no data to compare, give a base score of 50
+  if (maxScore === 0) return 50;
+
+  return Math.min(99, Math.max(10, Math.round((score / maxScore) * 100)));
 }
 
 export default function RoommateProfilePage({
@@ -114,9 +160,25 @@ export default function RoommateProfilePage({
   const p = profileData;
   const myInterests = myRoommateProfile?.interests?.length ? myRoommateProfile.interests : (authProfile?.interests ?? []);
   const theirInterests = p.interests ?? [];
-  const match = matchPercentage(myInterests, theirInterests);
-  const hasMyInterests = myInterests.length > 0;
-  const hasTheirInterests = theirInterests.length > 0;
+
+  // Build comprehensive match inputs (same as listing page)
+  const myMatchInput: MatchInput = {
+    interests: myInterests,
+    sleep_schedule: myRoommateProfile?.sleep_schedule,
+    cleanliness: myRoommateProfile?.cleanliness,
+    smoking: myRoommateProfile?.smoking,
+    exchange_city: myRoommateProfile?.exchange_city,
+  };
+  const theirMatchInput: MatchInput = {
+    interests: theirInterests,
+    sleep_schedule: p.sleep_schedule,
+    cleanliness: p.cleanliness,
+    smoking: p.smoking,
+    exchange_city: p.exchange_city,
+  };
+  const match = matchPercentage(myMatchInput, theirMatchInput);
+  const hasMyData = myInterests.length > 0 || !!myRoommateProfile;
+  const hasTheirData = theirInterests.length > 0 || !!p.sleep_schedule || !!p.cleanliness;
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
@@ -161,9 +223,14 @@ export default function RoommateProfilePage({
         {/* Match badge */}
         <div
           className="absolute bottom-6 right-4 px-4 py-2 rounded-2xl"
-          style={{ background: match > 0 ? 'var(--color-success)' : 'var(--color-text-muted)', boxShadow: 'var(--shadow-md)' }}
+          style={{
+            background: match >= 60 ? 'var(--color-success)' : match >= 30 ? 'var(--color-warning)' : 'var(--color-text-muted)',
+            boxShadow: 'var(--shadow-md)',
+          }}
         >
-          <span className="text-sm font-bold text-white">{match > 0 ? `%${match} Uyum` : !hasMyInterests ? 'Profilini tamamla' : !hasTheirInterests ? 'Henüz ilgi alanı belirtmemiş' : 'Farklı ilgi alanları'}</span>
+          <span className="text-sm font-bold text-white">
+            {hasMyData && hasTheirData ? `%${match} Uyum` : !hasMyData ? 'Profilini tamamla' : 'Henüz bilgi belirtmemiş'}
+          </span>
         </div>
       </div>
 

@@ -60,6 +60,8 @@ export default function ListingDetailPage({
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +83,21 @@ export default function ListingDetailPage({
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const nextImage = useCallback(() => {
+    setCurrentImage((p) => (p < (listing?.images?.length ?? 1) - 1 ? p + 1 : 0));
+  }, [listing?.images?.length]);
+
+  const prevImage = useCallback(() => {
+    setCurrentImage((p) => (p > 0 ? p - 1 : (listing?.images?.length ?? 1) - 1));
+  }, [listing?.images?.length]);
+
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX);
+  const handleTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) nextImage(); // swipe left
+    if (touchEnd - touchStart > 75) prevImage(); // swipe right
+  };
 
   const handleShare = async () => {
     try {
@@ -221,7 +238,12 @@ export default function ListingDetailPage({
       </div>
 
       {/* Hero Image Carousel */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div
+        className="relative aspect-[4/3] overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
           src={images[currentImage]?.url}
           alt={listing.title}

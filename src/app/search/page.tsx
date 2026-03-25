@@ -62,16 +62,36 @@ function SearchContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
-  const [filters, setFilters] = useState<ListingFilters>({
+  const [filters, setFilters] = useState<ListingFilters>(() => ({
     search: searchParams.get('q') || undefined,
     city_id: searchParams.get('city') || undefined,
-    sort_by: 'newest',
-    min_price: undefined,
-    max_price: undefined,
-    room_type: undefined,
-    amenities: [],
+    sort_by: (searchParams.get('sort') as ListingFilters['sort_by']) || 'newest',
+    min_price: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+    max_price: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+    room_type: (searchParams.get('roomType') as RoomType) || undefined,
+    amenities: searchParams.get('amenities') ? searchParams.get('amenities')!.split(',') : [],
+  }));
+  const [priceRange, setPriceRange] = useState({
+    min: searchParams.get('minPrice') || '',
+    max: searchParams.get('maxPrice') || '',
   });
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+
+  // Sync filters to URL search params
+  const syncFiltersToUrl = useCallback(
+    (f: ListingFilters) => {
+      const params = new URLSearchParams();
+      if (f.search) params.set('q', f.search);
+      if (f.city_id) params.set('city', f.city_id);
+      if (f.room_type) params.set('roomType', f.room_type);
+      if (f.min_price != null) params.set('minPrice', String(f.min_price));
+      if (f.max_price != null) params.set('maxPrice', String(f.max_price));
+      if (f.sort_by && f.sort_by !== 'newest') params.set('sort', f.sort_by);
+      if (f.amenities && f.amenities.length > 0) params.set('amenities', f.amenities.join(','));
+      const qs = params.toString();
+      router.replace(`/search${qs ? `?${qs}` : ''}`, { scroll: false });
+    },
+    [router]
+  );
 
   const doSearch = useCallback(
     (f: ListingFilters, append = false) => {
@@ -122,6 +142,7 @@ function SearchContent() {
     setPage(1);
     setHasMore(true);
     doSearch({ ...updated, page: 1 });
+    syncFiltersToUrl(updated);
   };
 
   const handleFilterApply = () => {
@@ -134,6 +155,7 @@ function SearchContent() {
     setPage(1);
     setHasMore(true);
     doSearch({ ...updated, page: 1 });
+    syncFiltersToUrl(updated);
     setShowFilters(false);
   };
 
@@ -143,6 +165,7 @@ function SearchContent() {
     setPage(1);
     setHasMore(true);
     doSearch({ ...updated, page: 1 });
+    syncFiltersToUrl(updated);
     setShowSort(false);
   };
 
@@ -210,6 +233,7 @@ function SearchContent() {
                 setPage(1);
                 setHasMore(true);
                 doSearch({ ...updated, page: 1 });
+                syncFiltersToUrl(updated);
               }}
               aria-label="Aramayı temizle"
             >
@@ -270,6 +294,7 @@ function SearchContent() {
                 setPage(1);
                 setHasMore(true);
                 doSearch({ ...updated, page: 1 });
+                syncFiltersToUrl(updated);
               }}
               className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition-colors"
               style={{

@@ -19,10 +19,10 @@ export function useFavorites(userId?: string) {
     setError(null);
 
     try {
-      // Fetch favorites with listing data and images in a single join
+      // Step 1: Fetch favorites with listing data (skip listing_images in nested join — 3-level depth is unreliable)
       const { data, error: err } = await supabase
         .from('favorites')
-        .select('*, listing:listings!favorites_listing_id_fkey(*, listing_images(url, is_cover, order), city:cities!listings_city_id_fkey(id, name))')
+        .select('*, listing:listings!favorites_listing_id_fkey(*, city:cities!listings_city_id_fkey(id, name))')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -34,33 +34,38 @@ export function useFavorites(userId?: string) {
 
       const items = (data ?? []) as unknown as (Favorite & { listing: ListingWithImages })[];
 
-      // Fallback: if 3-level join didn't return listing_images, fetch separately
-      const missingImgIds = items
-        .filter(f => f.listing && (!f.listing.listing_images || f.listing.listing_images.length === 0))
-        .map(f => f.listing.id);
-
-      if (missingImgIds.length > 0) {
+      // Step 2: Always fetch listing_images separately with immutable object creation.
+      // Supabase may return frozen/sealed objects — direct property assignment silently fails.
+      const listingIds = items.map(f => f.listing?.id).filter(Boolean) as string[];
+      let enriched = items;
+      if (listingIds.length > 0) {
         const { data: imgData } = await supabase
           .from('listing_images')
           .select('listing_id, url, is_cover, order')
-          .in('listing_id', missingImgIds);
+          .in('listing_id', listingIds);
 
+        const imgMap = new Map<string, typeof imgData extends (infer T)[] | null ? T[] : never>();
         if (imgData && imgData.length > 0) {
-          const imgMap = new Map<string, typeof imgData>();
           for (const img of imgData) {
             const arr = imgMap.get(img.listing_id) ?? [];
             arr.push(img);
             imgMap.set(img.listing_id, arr);
           }
-          for (const item of items) {
-            if (item.listing && missingImgIds.includes(item.listing.id)) {
-              item.listing.listing_images = imgMap.get(item.listing.id) ?? [];
-            }
-          }
         }
+        // Create new objects with listing_images attached (immutable update)
+        enriched = items.map(item => {
+          if (!item.listing) return item;
+          return {
+            ...item,
+            listing: {
+              ...item.listing,
+              listing_images: imgMap.get(item.listing.id) ?? item.listing.listing_images ?? [],
+            },
+          };
+        });
       }
 
-      setFavorites(items);
+      setFavorites(enriched);
       setFavoriteIds(new Set(items.map(f => f.listing_id)));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Favoriler yüklenemedi');

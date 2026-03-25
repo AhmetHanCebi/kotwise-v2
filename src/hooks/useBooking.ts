@@ -4,29 +4,41 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Booking, BookingInsert, BookingStatus, BookingWithDetails } from '@/lib/database.types';
 
-/** Fetch listing_images directly from the listing_images table and attach to booking items */
-async function attachListingImages(items: BookingWithDetails[]) {
+/**
+ * Fetch listing_images and return new array with images attached (immutable).
+ * Supabase may return frozen/sealed objects — direct property assignment silently fails.
+ */
+async function enrichWithListingImages(items: BookingWithDetails[]): Promise<BookingWithDetails[]> {
   const listingIds = items.map(b => b.listing?.id).filter(Boolean) as string[];
-  if (listingIds.length === 0) return;
+  if (listingIds.length === 0) return items;
 
   const { data: imgData } = await supabase
     .from('listing_images')
     .select('listing_id, url, is_cover, order')
     .in('listing_id', listingIds);
 
+  const imgMap = new Map<string, typeof imgData extends (infer T)[] | null ? T[] : never>();
   if (imgData && imgData.length > 0) {
-    const imgMap = new Map<string, typeof imgData>();
     for (const img of imgData) {
       const arr = imgMap.get(img.listing_id) ?? [];
       arr.push(img);
       imgMap.set(img.listing_id, arr);
     }
-    for (const item of items) {
-      if (item.listing) {
-        (item.listing as unknown as Record<string, unknown>).listing_images = imgMap.get(item.listing.id) ?? [];
-      }
-    }
   }
+
+  // Create new objects with listing_images attached
+  return items.map(item => {
+    if (!item.listing) return item;
+    const existing = (item.listing as unknown as Record<string, unknown>).listing_images as unknown[] | undefined;
+    if (existing && existing.length > 0) return item; // already has images from join
+    return {
+      ...item,
+      listing: {
+        ...item.listing,
+        listing_images: imgMap.get(item.listing.id) ?? [],
+      },
+    } as BookingWithDetails;
+  });
 }
 
 export function useBooking(userId?: string) {
@@ -45,7 +57,7 @@ export function useBooking(userId?: string) {
         .from('bookings')
         .select(`
           *,
-          listing:listings!bookings_listing_id_fkey(*, listing_images(url, is_cover, order)),
+          listing:listings!bookings_listing_id_fkey(*),
           host:profiles!bookings_host_id_fkey(*),
           user:profiles!bookings_user_id_fkey(*)
         `)
@@ -58,9 +70,8 @@ export function useBooking(userId?: string) {
       }
 
       const items = (data ?? []) as unknown as BookingWithDetails[];
-      // Fallback: if nested join didn't return listing_images, fetch separately
-      await attachListingImages(items.filter(b => b.listing && (!('listing_images' in b.listing) || !(b.listing as unknown as Record<string, unknown>).listing_images)));
-      setBookings(items);
+      const enriched = await enrichWithListingImages(items);
+      setBookings(enriched);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
       setError(message);
@@ -78,7 +89,7 @@ export function useBooking(userId?: string) {
         .from('bookings')
         .select(`
           *,
-          listing:listings!bookings_listing_id_fkey(*, listing_images(url, is_cover, order)),
+          listing:listings!bookings_listing_id_fkey(*),
           host:profiles!bookings_host_id_fkey(*),
           user:profiles!bookings_user_id_fkey(*)
         `)
@@ -91,9 +102,9 @@ export function useBooking(userId?: string) {
       }
 
       const items = (data ?? []) as unknown as BookingWithDetails[];
-      await attachListingImages(items.filter(b => b.listing && (!('listing_images' in b.listing) || !(b.listing as unknown as Record<string, unknown>).listing_images)));
-      setBookings(items);
-      return items;
+      const enriched = await enrichWithListingImages(items);
+      setBookings(enriched);
+      return enriched;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
       setError(message);
@@ -124,9 +135,9 @@ export function useBooking(userId?: string) {
         return null;
       }
 
-      const result = data as unknown as BookingWithDetails;
+      let result = data as unknown as BookingWithDetails;
 
-      // Fetch images for this single listing
+      // Fetch images for this single listing (immutable update)
       if (result.listing?.id) {
         const { data: imgData } = await supabase
           .from('listing_images')
@@ -134,7 +145,13 @@ export function useBooking(userId?: string) {
           .eq('listing_id', result.listing.id);
 
         if (imgData) {
-          (result.listing as unknown as Record<string, unknown>).listing_images = imgData;
+          result = {
+            ...result,
+            listing: {
+              ...result.listing,
+              listing_images: imgData,
+            },
+          } as BookingWithDetails;
         }
       }
 

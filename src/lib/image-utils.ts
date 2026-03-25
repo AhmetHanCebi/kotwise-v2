@@ -61,18 +61,23 @@ export function getCoverImage(listing: ListingLike): string {
   return url && url.length > 0 ? url : getRoomPlaceholder(listing.id);
 }
 
-/** Standard onError handler for listing images */
+/** Standard onError handler for listing images — uses data attribute to track fallback stage */
 export function handleListingImageError(e: React.SyntheticEvent<HTMLImageElement>, listingId?: string) {
   const target = e.target as HTMLImageElement;
   // Prevent infinite loop: if already on SVG data URI fallback, stop
   if (target.src.startsWith('data:')) return;
-  // If already tried an Unsplash placeholder, go to SVG fallback
-  if (target.src.includes('images.unsplash.com')) {
-    target.src = IMAGE_FALLBACK;
+
+  const stage = target.dataset.fallbackStage ?? '0';
+
+  if (stage === '0') {
+    // First failure: try a deterministic stock room photo from Unsplash
+    target.dataset.fallbackStage = '1';
+    target.src = getRoomPlaceholder(listingId);
     return;
   }
-  // First try a stock room photo from Unsplash
-  target.src = getRoomPlaceholder(listingId);
+
+  // Second failure (stock photo also failed): go to SVG
+  target.src = IMAGE_FALLBACK;
 }
 
 /** Standard onError handler for avatar images */
