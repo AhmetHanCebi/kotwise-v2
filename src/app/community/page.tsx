@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useCities } from '@/hooks/useCities';
+import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 import Link from 'next/link';
 import {
@@ -17,9 +18,9 @@ import {
   Loader2,
   Image as ImageIcon,
 } from 'lucide-react';
-import { IMAGE_FALLBACK } from '@/lib/image-utils';
 
-const TRENDING_HASHTAGS = [
+
+const FALLBACK_HASHTAGS = [
   '#ErasmusHayatı', '#BarcelonaGünleri', '#ÖğrenciYaşam',
   '#YurtDışıEğitim', '#ŞehirKeşfi', '#Bürsİpuçları',
   '#YemekTarifleri', '#Erasmus2026', '#KültürŞoku',
@@ -54,7 +55,26 @@ function CommunityPage() {
   const { cities, selectedCityId, fetchCities } = useCities();
   const [activeCityId, setActiveCityId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [trendingHashtags, setTrendingHashtags] = useState<string[]>(FALLBACK_HASHTAGS);
   const observerRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch trending hashtags from RPC
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_trending_hashtags', {
+          days_back: 7,
+          limit_count: 10,
+        });
+        if (!error && data && Array.isArray(data) && data.length > 0) {
+          setTrendingHashtags(data.map((item: { hashtag: string; count?: number }) => `#${item.hashtag}`));
+        }
+      } catch {
+        // Keep fallback hashtags
+      }
+    };
+    fetchTrending();
+  }, []);
 
   useEffect(() => {
     fetchCities();
@@ -147,7 +167,7 @@ function CommunityPage() {
 
       {/* Trending hashtags */}
       <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide">
-        {TRENDING_HASHTAGS.map((tag) => (
+        {trendingHashtags.map((tag) => (
           <button
             key={tag}
             onClick={() => router.push(`/community?hashtag=${encodeURIComponent(tag.replace('#', ''))}`)}
@@ -225,7 +245,7 @@ function CommunityPage() {
             </div>
 
             {/* Images */}
-            {post.images?.length > 0 && (
+            {post.images?.filter((img) => img && img.trim()).length > 0 && (
               <div
                 className="w-full"
               >
@@ -249,7 +269,7 @@ function CommunityPage() {
                         alt="Gönderi görseli"
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
+                        onError={(e) => { const t = e.target as HTMLImageElement; const container = t.closest('.relative'); if (container) (container as HTMLElement).style.display = 'none'; }}
                       />
                       {idx === 3 && post.images.length > 4 && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

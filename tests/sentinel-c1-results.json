@@ -1,0 +1,194 @@
+[
+  {
+    "page": "home",
+    "path": "/",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "welcome",
+    "path": "/welcome",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "onboarding",
+    "path": "/onboarding",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "search",
+    "path": "/search",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "search-map",
+    "path": "/search/map",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "city",
+    "path": "/city",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "compare",
+    "path": "/compare",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "listing-new",
+    "path": "/listing/new",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "booking",
+    "path": "/booking",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "budget",
+    "path": "/budget",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "profile",
+    "path": "/profile",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "profile-edit",
+    "path": "/profile/edit",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "profile-bookings",
+    "path": "/profile/bookings",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "favorites",
+    "path": "/favorites",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "settings",
+    "path": "/settings",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "settings-privacy",
+    "path": "/settings/privacy",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "settings-terms",
+    "path": "/settings/terms",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "settings-faq",
+    "path": "/settings/faq",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "notifications",
+    "path": "/notifications",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "messages",
+    "path": "/messages",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "messages-new",
+    "path": "/messages/new",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "community",
+    "path": "/community",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "community-new",
+    "path": "/community/new",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "events",
+    "path": "/events",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "events-new",
+    "path": "/events/new",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "roommates",
+    "path": "/roommates",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "mentors",
+    "path": "/mentors",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "host",
+    "path": "/host",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "host-apply",
+    "path": "/host/apply",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "host-bookings",
+    "path": "/host/bookings",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "host-calendar",
+    "path": "/host/calendar",
+    "status": "OK",
+    "issues": []
+  },
+  {
+    "page": "host-earnings",
+    "path": "/host/earnings",
+    "status": "OK",
+    "issues": []
+  }
+]

@@ -183,7 +183,7 @@ export default function EventsPage() {
                 {/* Cover */}
                 {ev.image_url && (
                   <div className="h-36 overflow-hidden">
-                    <img src={ev.image_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+                    <img src={ev.image_url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
                   </div>
                 )}
                 <div className="p-4">

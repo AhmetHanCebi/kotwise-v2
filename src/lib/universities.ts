@@ -76,3 +76,17 @@ export const UNIVERSITIES = [
 ] as const;
 
 export type UniversityName = typeof UNIVERSITIES[number];
+
+/** Static list of common majors */
+export const MAJORS = [
+  'Bilgisayar Mühendisliği', 'Yazılım Mühendisliği', 'Elektrik-Elektronik Mühendisliği',
+  'Makine Mühendisliği', 'Endüstri Mühendisliği', 'İnşaat Mühendisliği',
+  'Mimarlık', 'Tıp', 'Hukuk', 'İşletme', 'Ekonomi', 'Psikoloji',
+  'Sosyoloji', 'Uluslararası İlişkiler', 'Siyaset Bilimi',
+  'İletişim', 'Gazetecilik', 'Grafik Tasarım', 'Endüstriyel Tasarım',
+  'Güzel Sanatlar', 'Müzik', 'Matematik', 'Fizik', 'Kimya', 'Biyoloji',
+  'Çevre Mühendisliği', 'Gıda Mühendisliği', 'Tarih', 'Felsefe',
+  'Türk Dili ve Edebiyatı', 'İngiliz Dili ve Edebiyatı', 'Eğitim Bilimleri',
+  'Yönetim Bilimleri', 'Finans', 'Pazarlama', 'Hemşirelik', 'Eczacılık',
+  'Diş Hekimliği', 'Veterinerlik', 'Moleküler Biyoloji',
+] as const;

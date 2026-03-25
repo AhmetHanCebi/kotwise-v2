@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/AuthGuard';
 import type { Listing, ListingWithImages, Favorite } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
+import { formatPrice } from '@/lib/currency-utils';
 
 type FavoriteWithListing = Favorite & {
   listing: ListingWithImages;
@@ -39,7 +40,7 @@ const COMPARE_ROWS: CompareRow[] = [
     label: 'Fiyat',
     key: 'price',
     getValue: (l) => l.price_per_month,
-    format: (v, l) => `${Number(v).toLocaleString('tr-TR')} ${displayCurrency(l.currency ?? 'TRY')}/ay`,
+    format: (v, l) => `${formatPrice(Number(v))} ${displayCurrency(l.currency ?? 'EUR')}/ay`,
     lowerIsBetter: true,
   },
   {
@@ -229,7 +230,7 @@ function CompareContent() {
                   border: '1px solid var(--color-border)',
                 }}
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <div className="aspect-[4/3] overflow-hidden bg-gray-100">
                   <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => handleListingImageError(e, listing.id)} />
                 </div>
                 <div className="p-2">
@@ -237,7 +238,7 @@ function CompareContent() {
                     {listing.title}
                   </p>
                   <p className="text-[11px] font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                    {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency ?? 'TRY')}
+                    {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency ?? 'EUR')}
                   </p>
                 </div>
               </Link>
@@ -335,7 +336,7 @@ function CompareContent() {
                   {listing.title}
                 </p>
                 <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-                  {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency ?? 'TRY')}/ay
+                  {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency ?? 'EUR')}/ay
                 </p>
               </div>
               <div

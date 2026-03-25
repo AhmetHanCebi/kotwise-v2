@@ -114,13 +114,32 @@ export default function MentorsPage() {
         )}
 
         {!loading && mentors.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Users size={48} style={{ color: 'var(--color-text-muted)' }} />
-            <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
-              Bu şehirde henüz mentor yok.
-              <br />
-              Sen mentor olmak ister misin?
-            </p>
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(242,101,34,0.08)' }}
+            >
+              <GraduationCap size={36} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <div className="text-center">
+              <p className="text-base font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                Bu şehirde henüz mentor yok
+              </p>
+              <p className="text-sm max-w-[280px]" style={{ color: 'var(--color-text-secondary)' }}>
+                Bu şehirde deneyimin var mı? Yeni gelen öğrencilere rehberlik ederek topluluğa katkı sağla!
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (!user) { router.push('/login'); return; }
+                setShowApplyModal(true);
+              }}
+              className="px-6 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2"
+              style={{ background: 'var(--gradient-primary)', color: 'white' }}
+            >
+              <Plus size={16} />
+              Mentor Ol
+            </button>
           </div>
         )}
 

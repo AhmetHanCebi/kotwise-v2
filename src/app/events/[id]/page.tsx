@@ -96,7 +96,7 @@ export default function EventDetailPage({
       <div className="relative">
         {event.image_url ? (
           <div className="h-56 overflow-hidden">
-            <img src={event.image_url} alt={event.title ?? 'Etkinlik görseli'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+            <img src={event.image_url} alt={event.title ?? 'Etkinlik görseli'} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
         ) : (

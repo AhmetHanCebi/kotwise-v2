@@ -15,6 +15,8 @@ import type { RoomType, Listing } from '@/lib/database.types';
 import { getCoverImage as getCoverImg, handleListingImageError } from '@/lib/image-utils';
 import BottomNav from '@/components/BottomNav';
 
+import { formatPrice, currencyLabel } from '@/lib/currency-utils';
+
 const CURRENCY_LABELS: Record<string, string> = {
   TRY: 'TL',
   EUR: 'EUR',
@@ -559,7 +561,7 @@ function ListingCard({
             className="text-base font-bold"
             style={{ color: 'var(--color-primary)' }}
           >
-            {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+            {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
           </span>
           <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
             /ay

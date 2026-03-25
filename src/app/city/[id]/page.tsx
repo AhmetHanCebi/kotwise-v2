@@ -139,7 +139,7 @@ export default function CityDetailPage({
       <div className="relative">
         <div className="h-52 overflow-hidden" style={{ background: 'var(--gradient-dark)' }}>
           {city.image_url && (
-            <img src={city.image_url} alt={`${city.name} şehir manzarası`} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK_LARGE; }} />
+            <img src={city.image_url} alt={`${city.name} şehir manzarası`} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK_LARGE; }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         </div>
@@ -285,7 +285,7 @@ export default function CityDetailPage({
               >
                 {n.image_url && (
                   <div className="h-32 overflow-hidden">
-                    <img src={n.image_url} alt={`${n.name} mahallesi`} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+                    <img src={n.image_url} alt={`${n.name} mahallesi`} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
                   </div>
                 )}
                 <div className="p-4">
@@ -343,7 +343,7 @@ export default function CityDetailPage({
                   >
                     <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0" style={{ background: '#F3F4F6' }}>
                       {coverImg ? (
-                        <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK_SMALL; }} />
+                        <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK_SMALL; }} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Home size={20} style={{ color: 'var(--color-text-muted)' }} />

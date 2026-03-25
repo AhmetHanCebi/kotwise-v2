@@ -31,6 +31,7 @@ import CitySelector from '@/components/CitySelector';
 import type { City, ListingWithImages, PostWithDetails } from '@/lib/database.types';
 import type { EventWithDetails } from '@/lib/database.types';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
+import { formatPrice, currencySymbol } from '@/lib/currency-utils';
 
 const countryFlags: Record<string, string> = {
   ES: '🇪🇸', PT: '🇵🇹', DE: '🇩🇪', FR: '🇫🇷', IT: '🇮🇹', CZ: '🇨🇿',
@@ -107,7 +108,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
       {/* Image */}
       <div className="relative h-36 overflow-hidden" style={{ background: '#F3F4F6' }}>
         {coverImage ? (
-          <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+          <img src={coverImage} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <HomeIcon size={32} style={{ color: 'var(--color-text-muted)' }} />
@@ -118,7 +119,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
           className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg text-xs font-bold text-white"
           style={{ background: 'var(--color-primary)' }}
         >
-          €{listing.price_per_month}/ay
+          {formatPrice(listing.price_per_month)} {currencySymbol(listing.currency)}/ay
         </div>
         {/* Rating */}
         {listing.rating > 0 && (
@@ -301,7 +302,7 @@ function PostCard({ post }: { post: PostWithDetails }) {
             alt="Gönderi görseli"
             className="w-full h-full object-cover"
             loading="lazy"
-            onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
+            onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }}
           />
         </div>
       )}
@@ -544,7 +545,7 @@ export default function HomePage() {
               {city.avg_rent != null && (
                 <div className="flex flex-col items-center py-2 rounded-xl" style={{ background: 'var(--color-bg)' }}>
                   <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Ort. Kira</span>
-                  <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>€{city.avg_rent}</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>€{city.avg_rent && city.avg_rent > 1000 ? Math.round(city.avg_rent / 100) : city.avg_rent}</span>
                 </div>
               )}
               {city.student_count != null && (

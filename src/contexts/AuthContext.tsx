@@ -49,6 +49,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data as Profile;
   }, []);
 
+  // Heartbeat: update last_seen_at every 60 seconds when logged in
+  useEffect(() => {
+    if (!user) return;
+
+    const updateLastSeen = async () => {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', user.id);
+      } catch {
+        // Silently ignore heartbeat failures
+      }
+    };
+
+    // Update immediately on mount
+    updateLastSeen();
+
+    const interval = setInterval(updateLastSeen, 60_000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   // Single initialization + single auth state listener
   useEffect(() => {
     let mounted = true;

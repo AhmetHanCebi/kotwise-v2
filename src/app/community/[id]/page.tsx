@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import { supabase } from '@/lib/supabase';
-import { IMAGE_FALLBACK } from '@/lib/image-utils';
+
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -182,7 +182,7 @@ export default function PostDetailPage({
             <div className="flex flex-col gap-2 mb-3">
               {post.images.map((img, idx) => (
                 <div key={idx} className="rounded-xl overflow-hidden">
-                  <img src={img} alt="Gönderi görseli" className="w-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+                  <img src={img} alt="Gönderi görseli" className="w-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; const container = t.closest('.rounded-xl'); if (container) (container as HTMLElement).style.display = 'none'; }} />
                 </div>
               ))}
             </div>

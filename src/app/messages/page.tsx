@@ -71,8 +71,7 @@ function MessagesContent() {
     let list = conversations;
 
     if (filter === 'unread') {
-      // TODO: Implement real read/unread tracking via messages.read_at
-      list = list; // Show all — no reliable unread detection yet
+      list = list.filter((c) => c.has_unread);
     } else if (filter === 'listing') {
       list = list.filter((c) => c.listing_id != null);
     } else if (filter === 'group') {
@@ -268,10 +267,21 @@ function MessagesContent() {
                       )}
                       <p
                         className="text-xs truncate"
-                        style={{ color: 'var(--color-text-secondary)' }}
+                        style={{
+                          color: conv.has_unread
+                            ? 'var(--color-text-primary)'
+                            : 'var(--color-text-secondary)',
+                          fontWeight: conv.has_unread ? 600 : 400,
+                        }}
                       >
                         {conv.last_message_text ?? 'Sohbet başladı'}
                       </p>
+                      {conv.has_unread && (
+                        <span
+                          className="w-2.5 h-2.5 rounded-full flex-shrink-0 ml-auto"
+                          style={{ background: 'var(--color-primary)' }}
+                        />
+                      )}
                     </div>
                   </div>
                 </Link>

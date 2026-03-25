@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
+import { supabase } from '@/lib/supabase';
 import {
   ArrowLeft,
   Send,
@@ -19,6 +20,19 @@ import {
 import { useStorage } from '@/hooks/useStorage';
 import type { Message } from '@/lib/database.types';
 import { useToast } from '@/components/Toast';
+
+function lastSeenText(updatedAt: string | null | undefined): string {
+  if (!updatedAt) return 'Son görülme bilinmiyor';
+  const diff = Date.now() - new Date(updatedAt).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 2) return 'Çevrimiçi';
+  if (mins < 60) return `${mins} dk önce aktif`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} saat önce aktif`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} gün önce aktif`;
+  return 'Uzun süredir çevrimdışı';
+}
 
 const EMOJI_LIST = ['😀','😂','❤️','👍','🎉','🔥','😊','🤔','👋','💪','🙏','✨','😍','🥳','👏','💯'];
 
@@ -83,6 +97,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [otherLastSeen, setOtherLastSeen] = useState<string | null>(null);
   const { toast } = useToast();
   const { upload } = useStorage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -107,6 +122,22 @@ function ChatContent({ conversationId }: { conversationId: string }) {
     if (!conversation || !user) return null;
     return conversation.participants.find((p) => p.id !== user.id) ?? null;
   }, [conversation, user]);
+
+  // Fetch other participant's last_seen / updated_at
+  useEffect(() => {
+    if (!otherParticipant?.id) return;
+    const fetchLastSeen = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('updated_at')
+        .eq('id', otherParticipant.id)
+        .single();
+      if (data) setOtherLastSeen(data.updated_at);
+    };
+    fetchLastSeen();
+    const interval = setInterval(fetchLastSeen, 30_000);
+    return () => clearInterval(interval);
+  }, [otherParticipant?.id]);
 
   const handleSend = async () => {
     if (!text.trim() || sending) return;
@@ -205,7 +236,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
             {displayName}
           </p>
           <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-            Son görülme bilinmiyor
+            {lastSeenText(otherLastSeen)}
           </p>
         </div>
 

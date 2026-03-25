@@ -11,6 +11,7 @@ import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithImages, Favorite } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
+import { formatPrice } from '@/lib/currency-utils';
 
 const CURRENCY_LABELS: Record<string, string> = {
   TRY: 'TL',
@@ -44,9 +45,10 @@ function FavoritesContent() {
     const citySet = new Map<string, string>();
     typedFavorites.forEach((f) => {
       if (f.listing?.city_id) {
-        // Use city_id as key; we don't have city name on the listing directly,
-        // so we'll use university_name or address as a proxy display
-        const cityLabel = f.listing.university_name?.split(' ').pop() || f.listing.address?.split(',').pop()?.trim() || f.listing.city_id;
+        const listingAny = f.listing as unknown as Record<string, unknown>;
+        const cityLabel = listingAny.city
+          ? (listingAny.city as { name: string })?.name
+          : f.listing.address?.split(',').pop()?.trim() || f.listing.city_id;
         citySet.set(f.listing.city_id, cityLabel);
       }
     });
@@ -168,7 +170,7 @@ function FavoritesContent() {
                   }}
                 >
                   <Link href={`/listing/${listing.id}`}>
-                    <div className="relative aspect-[16/9] overflow-hidden">
+                    <div className="relative aspect-[16/9] overflow-hidden bg-gray-100">
                       <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => handleListingImageError(e, listing.id)} />
                       {listing.match_score > 0 && (
                         <div
@@ -216,7 +218,7 @@ function FavoritesContent() {
 
                     <div className="flex items-center justify-between mt-3">
                       <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                        {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                        {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
                         <span className="text-[11px] font-normal ml-0.5" style={{ color: 'var(--color-text-muted)' }}>
                           /ay
                         </span>

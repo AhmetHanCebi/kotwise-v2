@@ -5,8 +5,12 @@ import { supabase } from '@/lib/supabase';
 import type { Conversation, ConversationWithDetails, Message, MessageInsert, Profile } from '@/lib/database.types';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
+export interface ConversationWithUnread extends ConversationWithDetails {
+  has_unread: boolean;
+}
+
 export function useMessages(userId?: string) {
-  const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
+  const [conversations, setConversations] = useState<ConversationWithUnread[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,10 +46,27 @@ export function useMessages(userId?: string) {
 
       const profileMap = new Map((profiles ?? []).map(p => [p.id, p]));
 
-      const enriched: ConversationWithDetails[] = convs.map(c => ({
+      // Check unread status for each conversation
+      const convIds = convs.map(c => c.id);
+      let unreadConvIds = new Set<string>();
+      if (convIds.length > 0) {
+        const { data: unreadMessages } = await supabase
+          .from('messages')
+          .select('conversation_id')
+          .in('conversation_id', convIds)
+          .neq('sender_id', userId)
+          .eq('is_read', false);
+
+        if (unreadMessages) {
+          unreadConvIds = new Set(unreadMessages.map(m => m.conversation_id));
+        }
+      }
+
+      const enriched: ConversationWithUnread[] = convs.map(c => ({
         ...c,
         participants: c.participant_ids.map(id => profileMap.get(id)).filter(Boolean) as ConversationWithDetails['participants'],
         listing: null,
+        has_unread: unreadConvIds.has(c.id),
       }));
 
       setConversations(enriched);
@@ -222,6 +243,24 @@ export function useMessages(userId?: string) {
     };
   }, [userId, fetchConversations]);
 
+  // Mark all unread messages in a conversation as read
+  const markConversationRead = useCallback(async (conversationId: string) => {
+    if (!userId) return;
+    await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .neq('sender_id', userId)
+      .eq('is_read', false);
+
+    // Update local state
+    setConversations(prev =>
+      prev.map(c =>
+        c.id === conversationId ? { ...c, has_unread: false } : c
+      )
+    );
+  }, [userId]);
+
   const searchProfiles = useCallback(async (query: string) => {
     if (!userId || !query.trim()) return [];
 
@@ -279,6 +318,7 @@ export function useMessages(userId?: string) {
     fetchMessages,
     send,
     createConversation,
+    markConversationRead,
     searchProfiles,
     fetchRecentContacts,
   };

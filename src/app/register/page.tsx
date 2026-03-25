@@ -19,6 +19,8 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useStorage } from '@/hooks/useStorage';
 import { useToast } from '@/components/Toast';
+import AutocompleteField from '@/components/AutocompleteField';
+import { UNIVERSITIES, MAJORS } from '@/lib/universities';
 
 const INTERESTS = [
   'Müzik', 'Spor', 'Seyahat', 'Yemek', 'Film', 'Fotoğraf',
@@ -339,65 +341,35 @@ export default function RegisterPage() {
 
         {step === 2 && (
           <div className="flex flex-col gap-4 animate-fade-in-up">
-            <div>
-              <label className="text-sm font-semibold mb-1.5 block" style={{ color: 'var(--color-text-primary)' }}>
-                Üniversite
-              </label>
-              <div
-                className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
-                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-              >
-                <GraduationCap size={18} style={{ color: 'var(--color-text-muted)' }} />
-                <input
-                  type="text"
-                  placeholder="Üniversiteniz"
-                  value={university}
-                  onChange={(e) => setUniversity(e.target.value)}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: 'var(--color-text-primary)' }}
-                />
-              </div>
-            </div>
+            <AutocompleteField
+              label="Üniversite"
+              placeholder="Üniversiteniz"
+              value={university}
+              onChange={setUniversity}
+              options={UNIVERSITIES}
+              icon={<GraduationCap size={18} />}
+              allowCustom
+            />
 
-            <div>
-              <label className="text-sm font-semibold mb-1.5 block" style={{ color: 'var(--color-text-primary)' }}>
-                Bölüm
-              </label>
-              <div
-                className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
-                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-              >
-                <GraduationCap size={18} style={{ color: 'var(--color-text-muted)' }} />
-                <input
-                  type="text"
-                  placeholder="Bölümünüz (isteğe bağlı)"
-                  value={major}
-                  onChange={(e) => setMajor(e.target.value)}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: 'var(--color-text-primary)' }}
-                />
-              </div>
-            </div>
+            <AutocompleteField
+              label="Bölüm"
+              placeholder="Bölümünüz (isteğe bağlı)"
+              value={major}
+              onChange={setMajor}
+              options={MAJORS}
+              icon={<GraduationCap size={18} />}
+              allowCustom
+            />
 
-            <div>
-              <label className="text-sm font-semibold mb-1.5 block" style={{ color: 'var(--color-text-primary)' }}>
-                Değişim Üniversitesi
-              </label>
-              <div
-                className="flex items-center gap-2.5 px-4 py-3.5 rounded-xl"
-                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-              >
-                <MapPin size={18} style={{ color: 'var(--color-text-muted)' }} />
-                <input
-                  type="text"
-                  placeholder="Gideceğiniz üniversite (isteğe bağlı)"
-                  value={exchangeUni}
-                  onChange={(e) => setExchangeUni(e.target.value)}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: 'var(--color-text-primary)' }}
-                />
-              </div>
-            </div>
+            <AutocompleteField
+              label="Değişim Üniversitesi"
+              placeholder="Gideceğiniz üniversite (isteğe bağlı)"
+              value={exchangeUni}
+              onChange={setExchangeUni}
+              options={UNIVERSITIES}
+              icon={<MapPin size={18} />}
+              allowCustom
+            />
 
             <div className="grid grid-cols-2 gap-3">
               <div>

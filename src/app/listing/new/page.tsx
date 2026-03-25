@@ -708,7 +708,7 @@ function Step3({
             className="relative aspect-square rounded-xl overflow-hidden group cursor-grab active:cursor-grabbing"
             style={{ border: '1px solid var(--color-border)' }}
           >
-            <img src={img.preview || img.url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+            <img src={img.preview || img.url} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
             {idx === 0 && (
               <span
                 className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase"
@@ -810,7 +810,7 @@ function Step4({ form, images }: { form: FormData; images: UploadedImage[] }) {
               alt="preview"
               className="w-full h-full object-cover"
               loading="lazy"
-              onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
+              onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }}
             />
           </div>
         ) : (

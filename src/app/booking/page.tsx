@@ -13,13 +13,16 @@ import { useBooking } from '@/hooks/useBooking';
 import { useAuth } from '@/hooks/useAuth';
 import { getRoomPlaceholder } from '@/lib/image-utils';
 import AuthGuard from '@/components/AuthGuard';
+import AutocompleteField from '@/components/AutocompleteField';
+import { UNIVERSITIES } from '@/lib/universities';
 import BottomNav from '@/components/BottomNav';
 import type { ListingWithDetails, BookingInsert, BookingStatus } from '@/lib/database.types';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
+import { formatPrice } from '@/lib/currency-utils';
 
 const CURRENCY_LABELS: Record<string, string> = {
   TRY: '₺',
-  EUR: '₺',
+  EUR: '€',
   USD: '$',
   GBP: '£',
 };
@@ -147,7 +150,7 @@ function MyBookings() {
                       alt=""
                       className="w-full h-full object-cover"
                       loading="lazy"
-                      onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }}
+                      onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -164,7 +167,7 @@ function MyBookings() {
                       </span>
                     </div>
                     <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                      {b.total_price?.toLocaleString('tr-TR')} {displayCurrency(b.listing?.currency)}
+                      {b.total_price ? formatPrice(b.total_price) : '0'} {displayCurrency(b.listing?.currency)}
                     </p>
                   </div>
                 </Link>
@@ -243,8 +246,16 @@ function BookingForm() {
     }
     if (s === 2) {
       if (!guestName.trim()) errs.guestName = 'Ad soyad gerekli';
-      if (!guestEmail.trim()) errs.guestEmail = 'E-posta gerekli';
-      if (!guestPhone.trim()) errs.guestPhone = 'Telefon gerekli';
+      if (!guestEmail.trim()) {
+        errs.guestEmail = 'E-posta gerekli';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+        errs.guestEmail = 'Geçerli bir e-posta adresi girin';
+      }
+      if (!guestPhone.trim()) {
+        errs.guestPhone = 'Telefon gerekli';
+      } else if (!/^\+?[\d\s\-()]{7,20}$/.test(guestPhone.trim())) {
+        errs.guestPhone = 'Geçerli bir telefon numarası girin (ör: +90 5XX XXX XX XX)';
+      }
     }
 
     setErrors(errs);
@@ -395,7 +406,7 @@ function BookingForm() {
             }}
           >
             <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-              <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+              <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
@@ -409,7 +420,7 @@ function BookingForm() {
               </div>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}/ay
+                  {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}/ay
                 </span>
                 {listing.rating > 0 && (
                   <div className="flex items-center gap-0.5">
@@ -470,10 +481,10 @@ function BookingForm() {
                 style={{ background: 'rgba(242,101,34,0.06)', border: '1px solid rgba(242,101,34,0.15)' }}
               >
                 <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  Tahmini: {priceCalc.months} ay x {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                  Tahmini: {priceCalc.months} ay x {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)}
                 </p>
                 <p className="text-lg font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                  Toplam: {priceCalc.total.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                  Toplam: {formatPrice(priceCalc.total)} {displayCurrency(listing.currency)}
                 </p>
               </div>
             )}
@@ -508,11 +519,13 @@ function BookingForm() {
               placeholder="+90 5XX XXX XX XX"
               type="tel"
             />
-            <BookingInput
+            <AutocompleteField
               label="Üniversite"
               value={guestUniversity}
               onChange={setGuestUniversity}
+              options={UNIVERSITIES}
               placeholder="Üniversite adı (opsiyonel)"
+              allowCustom
             />
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
@@ -550,7 +563,7 @@ function BookingForm() {
               {/* Listing mini */}
               <div className="flex items-center gap-3 pb-3 mb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0">
-                  <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+                  <img src={coverImg} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
@@ -566,10 +579,10 @@ function BookingForm() {
               <div className="flex flex-col gap-2.5">
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-secondary)' }}>
-                    Kira ({priceCalc.months} ay x {listing.price_per_month.toLocaleString('tr-TR')} {displayCurrency(listing.currency)})
+                    Kira ({priceCalc.months} ay x {formatPrice(listing.price_per_month)} {displayCurrency(listing.currency)})
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {priceCalc.rent.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                    {formatPrice(priceCalc.rent)} {displayCurrency(listing.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -577,7 +590,7 @@ function BookingForm() {
                     Hizmet bedeli (%3)
                   </span>
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                    {priceCalc.serviceFee.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                    {formatPrice(priceCalc.serviceFee)} {displayCurrency(listing.currency)}
                   </span>
                 </div>
                 <div
@@ -586,7 +599,7 @@ function BookingForm() {
                 >
                   <span style={{ color: 'var(--color-text-primary)' }}>Toplam</span>
                   <span style={{ color: 'var(--color-primary)' }}>
-                    {priceCalc.total.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                    {formatPrice(priceCalc.total)} {displayCurrency(listing.currency)}
                   </span>
                 </div>
               </div>
@@ -635,7 +648,7 @@ function BookingForm() {
                   Toplam Tutar
                 </span>
                 <span className="text-base font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {priceCalc.total.toLocaleString('tr-TR')} {displayCurrency(listing.currency)}
+                  {formatPrice(priceCalc.total)} {displayCurrency(listing.currency)}
                 </span>
               </div>
             </div>

@@ -183,7 +183,7 @@ function CityChatContent({ cityId }: { cityId: string }) {
                   >
                     {!isOwn && (
                       <p className="text-[10px] font-semibold mb-0.5" style={{ color: 'var(--color-primary)' }}>
-                        Kullanıcı
+                        {(msg as unknown as Record<string, any>).sender?.full_name || msg.sender_id?.slice(0, 8) || 'Kullanıcı'}
                       </p>
                     )}
                     <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>

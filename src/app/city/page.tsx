@@ -64,10 +64,10 @@ export default function CityListPage() {
             </div>
             <div className="text-center">
               <p className="text-base font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
-                Henüz şehir eklenmemiş
+                Henüz şehir bulunamadı
               </p>
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Yakında Erasmus şehirleri burada listelenecek
+                Şehir verileri yükleniyor veya henüz eklenmemiş
               </p>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function CityListPage() {
                   </div>
                   {city.avg_rent && city.avg_rent > 0 && (
                     <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
-                      ~{city.avg_rent.toLocaleString('tr-TR')} TL/ay
+                      ~€{city.avg_rent && city.avg_rent > 1000 ? Math.round(city.avg_rent / 100) : city.avg_rent}/ay
                     </p>
                   )}
                 </div>

@@ -16,7 +16,8 @@ import {
   Loader2,
   CalendarCheck,
 } from 'lucide-react';
-import { IMAGE_FALLBACK_SMALL } from '@/lib/image-utils';
+import { IMAGE_FALLBACK_SMALL, getCoverImage, handleListingImageError } from '@/lib/image-utils';
+import { formatPrice, currencyLabel } from '@/lib/currency-utils';
 
 type FilterTab = 'active' | 'past' | 'cancelled';
 
@@ -140,8 +141,9 @@ function BookingsContent() {
         ) : (
           <div className="flex flex-col gap-3">
             {filtered.map((booking) => {
-              const coverImage = booking.listing?.images?.find((i) => i.is_cover)?.url
-                ?? booking.listing?.images?.[0]?.url;
+              const coverImage = booking.listing
+                ? getCoverImage(booking.listing)
+                : undefined;
               const status = statusColors[booking.status];
 
               return (
@@ -155,22 +157,13 @@ function BookingsContent() {
                 >
                   {/* Listing Image + Title */}
                   <div className="flex gap-3 p-3">
-                    {coverImage ? (
-                      <img
-                        src={coverImage}
-                        alt={booking.listing?.title ?? ''}
-                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                        loading="lazy"
-                        onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK_SMALL; }}
-                      />
-                    ) : (
-                      <div
-                        className="w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: 'var(--color-border)' }}
-                      >
-                        <MapPin size={20} style={{ color: 'var(--color-text-muted)' }} />
-                      </div>
-                    )}
+                    <img
+                      src={coverImage || IMAGE_FALLBACK_SMALL}
+                      alt={booking.listing?.title ?? ''}
+                      className="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-gray-100"
+                      loading="lazy"
+                      onError={(e) => handleListingImageError(e, booking.listing_id)}
+                    />
 
                     <div className="flex-1 min-w-0">
                       <p
@@ -212,7 +205,7 @@ function BookingsContent() {
                       </span>
                     </div>
                     <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                      {Number(booking.total_price).toLocaleString('tr-TR')} {booking.listing?.currency === 'TRY' ? 'TL' : (booking.listing?.currency ?? 'EUR')}
+                      {formatPrice(Number(booking.total_price))} {currencyLabel(booking.listing?.currency)}
                     </span>
                   </div>
 

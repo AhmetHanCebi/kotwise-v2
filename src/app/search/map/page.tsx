@@ -1,28 +1,63 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, List, X, Star, MapPin,
 } from 'lucide-react';
 import { useListings } from '@/hooks/useListings';
+import { useCities } from '@/hooks/useCities';
 import ListingMap from '@/components/ListingMap';
 import type { Listing } from '@/lib/database.types';
 import { getCoverImage, handleListingImageError } from '@/lib/image-utils';
+import { formatPrice } from '@/lib/currency-utils';
+
+// Well-known city center coordinates
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  'Barcelona': { lat: 41.3874, lng: 2.1686 },
+  'Istanbul': { lat: 41.0082, lng: 28.9784 },
+  'Berlin': { lat: 52.5200, lng: 13.4050 },
+  'Paris': { lat: 48.8566, lng: 2.3522 },
+  'Madrid': { lat: 40.4168, lng: -3.7038 },
+  'Rome': { lat: 41.9028, lng: 12.4964 },
+  'Lisbon': { lat: 38.7223, lng: -9.1393 },
+  'Amsterdam': { lat: 52.3676, lng: 4.9041 },
+  'Prague': { lat: 50.0755, lng: 14.4378 },
+  'Vienna': { lat: 48.2082, lng: 16.3738 },
+};
 
 type ListingWithImages = Listing & {
   listing_images?: { url: string; is_cover: boolean; order: number }[];
 };
 
 export default function MapSearchPage() {
+  return (
+    <Suspense>
+      <MapSearchContent />
+    </Suspense>
+  );
+}
+
+function MapSearchContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { listings, loading, search } = useListings();
+  const { cities, fetchCities } = useCities();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const cityIdParam = searchParams.get('city') || undefined;
+
   useEffect(() => {
-    search({ limit: 12 });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchCities();
+    search({ limit: 50, city_id: cityIdParam });
+  }, [cityIdParam]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Determine center from selected city
+  const selectedCity = cities.find((c) => c.id === cityIdParam);
+  const cityCenter = selectedCity
+    ? CITY_COORDINATES[selectedCity.name] ?? undefined
+    : undefined;
 
   const selectedListing = (listings as ListingWithImages[]).find(
     (l) => l.id === selectedId
@@ -48,7 +83,7 @@ export default function MapSearchPage() {
       <div
         className="relative z-20 flex items-center gap-3 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3"
         style={{
-          background: 'rgba(255,255,255,0.92)',
+          background: 'color-mix(in srgb, var(--color-bg-card) 92%, transparent)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderBottom: '1px solid var(--color-border)',
@@ -69,7 +104,7 @@ export default function MapSearchPage() {
           Harita Görünümü
         </h1>
         <Link
-          href="/search"
+          href={cityIdParam ? `/search?city=${cityIdParam}` : '/search'}
           className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: 'var(--color-bg)' }}
           aria-label="Liste görünümü"
@@ -82,6 +117,8 @@ export default function MapSearchPage() {
       <div className="flex-1 relative overflow-hidden">
         <ListingMap
           listings={mapListings}
+          center={cityCenter}
+          zoom={cityCenter ? 13 : undefined}
           selectedId={selectedId}
           onSelect={(id) => setSelectedId(id === selectedId ? null : id)}
         />
@@ -129,7 +166,7 @@ export default function MapSearchPage() {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                    {selectedListing.price_per_month.toLocaleString('tr-TR')} {selectedListing.currency ?? 'TL'}
+                    {formatPrice(selectedListing.price_per_month)} {selectedListing.currency ?? 'EUR'}
                     <span className="text-[10px] font-normal" style={{ color: 'var(--color-text-muted)' }}>
                       {' '}/ay
                     </span>

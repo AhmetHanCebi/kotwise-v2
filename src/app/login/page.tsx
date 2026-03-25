@@ -23,6 +23,10 @@ export default function LoginPage() {
       setError('E-posta ve şifre gerekli');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Geçerli bir e-posta adresi girin');
+      return;
+    }
     setLoading(true);
     try {
       const result = await signIn(email, password);

@@ -11,10 +11,12 @@ const ROOM_PLACEHOLDERS = [
   'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&h=300&fit=crop',
 ];
 
-/** Neutral fallback when an image fails to load */
-export const IMAGE_FALLBACK = 'https://placehold.co/400x300/f3f4f6/9ca3af?text=Foto%C4%9Fraf+Yok';
-export const IMAGE_FALLBACK_LARGE = 'https://placehold.co/800x600/f3f4f6/9ca3af?text=Foto%C4%9Fraf+Yok';
-export const IMAGE_FALLBACK_SMALL = 'https://placehold.co/200x200/f3f4f6/9ca3af?text=Foto%C4%9Fraf+Yok';
+/** Neutral fallback when an image fails to load — subtle camera icon, no text */
+const makePlaceholderSvg = (w: number, h: number) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="%23f3f4f6"/><g transform="translate(${w / 2 - 16},${h / 2 - 16})"><path d="M6 6h4l2-3h8l2 3h4a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2z" fill="none" stroke="%239ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="none" stroke="%239ca3af" stroke-width="1.5"/></g></svg>`)}`;
+export const IMAGE_FALLBACK = makePlaceholderSvg(400, 300);
+export const IMAGE_FALLBACK_LARGE = makePlaceholderSvg(800, 600);
+export const IMAGE_FALLBACK_SMALL = makePlaceholderSvg(200, 200);
 
 /** Stock avatar photos for roommate profiles */
 const AVATAR_PLACEHOLDERS = [
@@ -42,11 +44,12 @@ export function getAvatarPlaceholder(id?: string): string {
 interface ListingLike {
   id?: string;
   listing_images?: { url: string; is_cover: boolean; order?: number }[];
+  images?: { url: string; is_cover: boolean; order?: number }[];
 }
 
 /** Extract the cover image for a listing, with stock photo fallback */
 export function getCoverImage(listing: ListingLike): string {
-  const imgs = listing.listing_images;
+  const imgs = listing.listing_images ?? listing.images;
   if (!imgs || imgs.length === 0) {
     return getRoomPlaceholder(listing.id);
   }
@@ -57,9 +60,9 @@ export function getCoverImage(listing: ListingLike): string {
 /** Standard onError handler for listing images */
 export function handleListingImageError(e: React.SyntheticEvent<HTMLImageElement>, listingId?: string) {
   const target = e.target as HTMLImageElement;
-  // Prevent infinite loop: if already on final fallback, stop
-  if (target.src.includes('placehold.co')) return;
-  // Broken unsplash URL → go straight to placeholder
+  // Prevent infinite loop: if already on SVG data URI fallback, stop
+  if (target.src.startsWith('data:')) return;
+  // Broken unsplash URL → go straight to SVG placeholder
   if (target.src.includes('unsplash.com')) {
     target.src = IMAGE_FALLBACK;
     return;

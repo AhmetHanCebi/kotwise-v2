@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import {
   ArrowLeft,
   Globe,
@@ -34,11 +35,30 @@ export default function SettingsPage() {
   );
 }
 
+interface SettingsData {
+  language: string;
+  currency: string;
+  darkMode: boolean;
+  notifs: { messages: boolean; bookings: boolean; events: boolean; promotions: boolean };
+  privacyPublicProfile: boolean;
+  privacyOnlineStatus: boolean;
+}
+
+const DEFAULT_SETTINGS: SettingsData = {
+  language: 'tr',
+  currency: 'TRY',
+  darkMode: false,
+  notifs: { messages: true, bookings: true, events: true, promotions: false },
+  privacyPublicProfile: true,
+  privacyOnlineStatus: true,
+};
+
 function SettingsContent() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut, updateProfile } = useAuth();
   const { toast } = useToast();
-  // Load settings from localStorage on mount
+
+  // Load settings from localStorage as immediate fallback
   const loadSetting = <T,>(key: string, fallback: T): T => {
     if (typeof window === 'undefined') return fallback;
     try {
@@ -50,25 +70,77 @@ function SettingsContent() {
     try { localStorage.setItem(`kotwise_${key}`, JSON.stringify(value)); } catch { /* ignore */ }
   };
 
-  const [language, setLanguage] = useState(() => loadSetting('language', 'tr'));
-  const [currency, setCurrency] = useState(() => loadSetting('currency', 'TRY'));
-  const [darkMode, setDarkMode] = useState(() => loadSetting('darkMode', false));
-  const [notifs, setNotifs] = useState(() => loadSetting('notifs', {
-    messages: true,
-    bookings: true,
-    events: true,
-    promotions: false,
-  }));
-  const [privacyPublicProfile, setPrivacyPublicProfile] = useState(() => loadSetting('privacyPublicProfile', true));
-  const [privacyOnlineStatus, setPrivacyOnlineStatus] = useState(() => loadSetting('privacyOnlineStatus', true));
+  // Save all settings to profile.settings JSONB column
+  const saveSettingsToProfile = async (settings: SettingsData) => {
+    if (!user) return;
+    try {
+      await supabase
+        .from('profiles')
+        .update({ settings } as Record<string, unknown>)
+        .eq('id', user.id);
+    } catch {
+      // Silently fail — localStorage is the fallback
+    }
+  };
+
+  const [language, setLanguage] = useState(() => loadSetting('language', DEFAULT_SETTINGS.language));
+  const [currency, setCurrency] = useState(() => loadSetting('currency', DEFAULT_SETTINGS.currency));
+  const [darkMode, setDarkMode] = useState(() => loadSetting('darkMode', DEFAULT_SETTINGS.darkMode));
+  const [notifs, setNotifs] = useState(() => loadSetting('notifs', DEFAULT_SETTINGS.notifs));
+  const [privacyPublicProfile, setPrivacyPublicProfile] = useState(() => loadSetting('privacyPublicProfile', DEFAULT_SETTINGS.privacyPublicProfile));
+  const [privacyOnlineStatus, setPrivacyOnlineStatus] = useState(() => loadSetting('privacyOnlineStatus', DEFAULT_SETTINGS.privacyOnlineStatus));
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+
+  // Load settings from profile on mount
+  useEffect(() => {
+    if (!user || settingsLoaded) return;
+
+    const loadFromProfile = async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('settings')
+          .eq('id', user.id)
+          .single();
+
+        const s = data?.settings as SettingsData | null;
+        if (s && typeof s === 'object') {
+          if (s.language) { setLanguage(s.language); saveSetting('language', s.language); }
+          if (s.currency) { setCurrency(s.currency); saveSetting('currency', s.currency); }
+          if (typeof s.darkMode === 'boolean') { setDarkMode(s.darkMode); saveSetting('darkMode', s.darkMode); }
+          if (s.notifs) { setNotifs(s.notifs); saveSetting('notifs', s.notifs); }
+          if (typeof s.privacyPublicProfile === 'boolean') { setPrivacyPublicProfile(s.privacyPublicProfile); saveSetting('privacyPublicProfile', s.privacyPublicProfile); }
+          if (typeof s.privacyOnlineStatus === 'boolean') { setPrivacyOnlineStatus(s.privacyOnlineStatus); saveSetting('privacyOnlineStatus', s.privacyOnlineStatus); }
+
+          // Apply dark mode from profile settings
+          if (s.darkMode) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        }
+      } catch {
+        // Use localStorage fallback
+      }
+      setSettingsLoaded(true);
+    };
+
+    loadFromProfile();
+  }, [user, settingsLoaded]);
+
+  // Helper to get current settings object
+  const getCurrentSettings = (): SettingsData => ({
+    language, currency, darkMode, notifs, privacyPublicProfile, privacyOnlineStatus,
+  });
 
   const toggleNotif = (key: keyof typeof notifs) => {
     setNotifs((prev) => {
       const next = { ...prev, [key]: !prev[key] };
       saveSetting('notifs', next);
+      const settings = { ...getCurrentSettings(), notifs: next };
+      saveSettingsToProfile(settings);
       return next;
     });
   };
@@ -166,7 +238,7 @@ function SettingsContent() {
             </div>
             <select
               value={language}
-              onChange={(e) => { setLanguage(e.target.value); saveSetting('language', e.target.value); toast('Dil tercihiniz kaydedildi', 'success'); }}
+              onChange={(e) => { setLanguage(e.target.value); saveSetting('language', e.target.value); saveSettingsToProfile({ ...getCurrentSettings(), language: e.target.value }); toast('Dil tercihiniz kaydedildi', 'success'); }}
               className="text-sm font-medium bg-transparent outline-none cursor-pointer"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -184,7 +256,7 @@ function SettingsContent() {
             </div>
             <select
               value={currency}
-              onChange={(e) => { setCurrency(e.target.value); saveSetting('currency', e.target.value); toast('Para birimi tercihiniz kaydedildi', 'success'); }}
+              onChange={(e) => { setCurrency(e.target.value); saveSetting('currency', e.target.value); saveSettingsToProfile({ ...getCurrentSettings(), currency: e.target.value }); toast('Para birimi tercihiniz kaydedildi', 'success'); }}
               className="text-sm font-medium bg-transparent outline-none cursor-pointer"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -199,7 +271,21 @@ function SettingsContent() {
             icon={<Moon size={18} style={{ color: '#6366F1' }} />}
             label="Karanlık Tema"
             value={darkMode}
-            onChange={() => { const next = !darkMode; setDarkMode(next); saveSetting('darkMode', next); toast('Tema tercihiniz kaydedildi', 'success'); }}
+            onChange={() => {
+              const next = !darkMode;
+              setDarkMode(next);
+              saveSetting('darkMode', next);
+              saveSettingsToProfile({ ...getCurrentSettings(), darkMode: next });
+              // Apply dark mode to document
+              if (next) {
+                document.documentElement.classList.add('dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.setAttribute('data-theme', 'light');
+              }
+              toast('Tema tercihiniz kaydedildi', 'success');
+            }}
           />
         </div>
 
@@ -242,14 +328,14 @@ function SettingsContent() {
             icon={<Eye size={18} style={{ color: '#06B6D4' }} />}
             label="Profili Herkese Göster"
             value={privacyPublicProfile}
-            onChange={() => { const next = !privacyPublicProfile; setPrivacyPublicProfile(next); saveSetting('privacyPublicProfile', next); toast('Ayarlarınız kaydedildi', 'success'); }}
+            onChange={() => { const next = !privacyPublicProfile; setPrivacyPublicProfile(next); saveSetting('privacyPublicProfile', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyPublicProfile: next }); toast('Ayarlarınız kaydedildi', 'success'); }}
             border
           />
           <ToggleRow
             icon={<Shield size={18} style={{ color: '#22C55E' }} />}
             label="Çevrimiçi Durumu Göster"
             value={privacyOnlineStatus}
-            onChange={() => { const next = !privacyOnlineStatus; setPrivacyOnlineStatus(next); saveSetting('privacyOnlineStatus', next); toast('Ayarlarınız kaydedildi', 'success'); }}
+            onChange={() => { const next = !privacyOnlineStatus; setPrivacyOnlineStatus(next); saveSetting('privacyOnlineStatus', next); saveSettingsToProfile({ ...getCurrentSettings(), privacyOnlineStatus: next }); toast('Ayarlarınız kaydedildi', 'success'); }}
           />
         </div>
 

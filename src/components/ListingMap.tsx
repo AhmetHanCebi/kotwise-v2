@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
+import { formatPrice } from '@/lib/currency-utils';
 
 interface ListingPin {
   id: string;
@@ -17,6 +18,7 @@ interface ListingPin {
 interface ListingMapProps {
   listings: ListingPin[];
   center?: { lat: number; lng: number };
+  zoom?: number;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
   height?: string;
@@ -44,7 +46,7 @@ function loadLeaflet(): Promise<any> {
   });
 }
 
-export default function ListingMap({ listings, center, selectedId, onSelect, height, singlePin }: ListingMapProps) {
+export default function ListingMap({ listings, center, zoom, selectedId, onSelect, height, singlePin }: ListingMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,8 @@ export default function ListingMap({ listings, center, selectedId, onSelect, hei
           mapCenter = [avgLat, avgLng];
         }
 
-        const map = L.map(mapRef.current).setView(mapCenter, singlePin ? 15 : 13);
+        const defaultZoom = zoom ?? (singlePin ? 15 : 13);
+        const map = L.map(mapRef.current).setView(mapCenter, defaultZoom);
         mapInstanceRef.current = map;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -93,7 +96,7 @@ export default function ListingMap({ listings, center, selectedId, onSelect, hei
               color: ${isSelected ? '#FFFFFF' : '#1B2A4A'};
               box-shadow: 0 2px 8px rgba(0,0,0,0.2);
               border: 1.5px solid ${isSelected ? '#1B2A4A' : '#E5E7EB'};
-            ">${listing.price_per_month.toLocaleString('tr-TR')} TL</div>`,
+            ">${formatPrice(listing.price_per_month)} TL</div>`,
             iconSize: [80, 28],
             iconAnchor: [40, 14],
             popupAnchor: [0, -20],
@@ -105,7 +108,7 @@ export default function ListingMap({ listings, center, selectedId, onSelect, hei
             <div style="min-width: 140px; font-family: system-ui, sans-serif;">
               <p style="font-weight: 600; font-size: 13px; margin: 0 0 4px;">${listing.title}</p>
               <p style="font-size: 12px; color: #F26522; font-weight: 700; margin: 0 0 6px;">
-                ${listing.price_per_month.toLocaleString('tr-TR')} TL/ay
+                ${formatPrice(listing.price_per_month)} TL/ay
               </p>
               <a href="/listing/${listing.id}" style="font-size: 12px; color: #F26522; text-decoration: none; font-weight: 500;">Detaylar &rarr;</a>
             </div>
@@ -139,7 +142,7 @@ export default function ListingMap({ listings, center, selectedId, onSelect, hei
         mapInstanceRef.current = null;
       }
     };
-  }, [listings, center, selectedId, mappable.length, singlePin, onSelect]);
+  }, [listings, center, zoom, selectedId, mappable.length, singlePin, onSelect]);
 
   if (error) {
     return (

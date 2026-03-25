@@ -22,6 +22,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { IMAGE_FALLBACK } from '@/lib/image-utils';
+import { useToast } from '@/components/Toast';
 
 const CATEGORIES: { key: EventCategory; label: string }[] = [
   { key: 'coffee', label: 'Kahve Buluşması' },
@@ -40,6 +41,7 @@ function CreateEventContent() {
   const { create } = useEvents(user?.id);
   const { cities, selectedCityId, fetchCities } = useCities();
   const { upload, uploading } = useStorage();
+  const { toast } = useToast();
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<EventCategory>('coffee');
@@ -76,12 +78,21 @@ function CreateEventContent() {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !date || !time || !cityId || !user) return;
+    if (!title.trim() || !date || !time || !cityId || !user) {
+      toast('Lütfen tüm zorunlu alanları doldurun (başlık, tarih, saat, şehir)', 'error');
+      return;
+    }
 
     const today = new Date().toISOString().split('T')[0];
-    if (date < today) return;
+    if (date < today) {
+      toast('Etkinlik tarihi geçmiş bir tarih olamaz', 'error');
+      return;
+    }
 
-    if (maxParticipants && parseInt(maxParticipants) < 2) return;
+    if (maxParticipants && parseInt(maxParticipants) < 2) {
+      toast('Katılımcı sayısı en az 2 olmalıdır', 'error');
+      return;
+    }
 
     setSubmitting(true);
 
@@ -127,7 +138,7 @@ function CreateEventContent() {
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverPick} />
         {coverPreview ? (
           <div className="relative h-40 rounded-2xl overflow-hidden">
-            <img src={coverPreview} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+            <img src={coverPreview} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
             <button
               onClick={() => { setCoverPreview(null); setCoverUrl(null); }}
               className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"

@@ -185,7 +185,7 @@ function NewPostContent() {
           <div className="flex gap-2 overflow-x-auto">
             {images.map((img, idx) => (
               <div key={idx} className="relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden">
-                <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('placehold.co')) t.src = IMAGE_FALLBACK; }} />
+                <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK; }} />
                 <button
                   onClick={() => removeImage(idx)}
                   className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"

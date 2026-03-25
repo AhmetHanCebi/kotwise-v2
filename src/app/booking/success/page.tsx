@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, User, Phone,
@@ -73,6 +73,7 @@ export default function BookingSuccessPage() {
 
 function BookingSuccess() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const bookingId = searchParams.get('bookingId') || '';
   const { user } = useAuth();
   const { getById, loading } = useBooking(user?.id);
@@ -82,14 +83,16 @@ function BookingSuccess() {
   useConfetti(confettiRef);
 
   useEffect(() => {
-    if (bookingId) {
-      getById(bookingId).then((data) => {
-        if (data) setBooking(data);
-      });
+    if (!bookingId) {
+      router.replace('/booking');
+      return;
     }
+    getById(bookingId).then((data) => {
+      if (data) setBooking(data);
+    });
   }, [bookingId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading && !booking) {
+  if (!bookingId || (loading && !booking)) {
     return (
       <div className="min-h-dvh flex items-center justify-center max-w-[430px] mx-auto">
         <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-primary)' }} />

@@ -266,11 +266,10 @@ function RoommatesPage() {
                 <div className="absolute bottom-4 left-4 right-4">
                   <h2 className="text-2xl font-bold text-white">
                     {currentProfile.user?.full_name ?? 'Anonim'}
-                    {currentProfile.user?.bio && (
-                      <span className="text-lg font-normal opacity-80 ml-2">
-                        {/* Age placeholder - from profile metadata if available */}
-                      </span>
-                    )}
+                    {(() => {
+                      const age = calculateAge((currentProfile.user as unknown as Record<string, unknown>)?.birth_date as string | null | undefined);
+                      return age ? <span className="text-lg font-normal opacity-80 ml-2">{age}</span> : null;
+                    })()}
                   </h2>
                   <p className="text-sm text-white/80 mt-0.5">
                     {currentProfile.user?.university ?? ''}
