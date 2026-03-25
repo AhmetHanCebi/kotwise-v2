@@ -181,8 +181,8 @@ function EventCard({ event }: { event: EventWithDetails }) {
     party: 'Parti', study: 'Çalışma', food: 'Yemek', other: 'Diğer',
   };
   const categoryColors: Record<string, string> = {
-    coffee: '#92400E', sports: '#166534', language: '#1E40AF', city_tour: '#7C3AED',
-    party: '#BE185D', study: '#0E7490', food: '#C2410C', other: '#6B7280',
+    coffee: 'var(--color-warning)', sports: 'var(--color-success)', language: 'var(--color-info)', city_tour: '#7C3AED',
+    party: '#BE185D', study: 'var(--color-info)', food: 'var(--color-primary)', other: 'var(--color-text-muted)',
   };
   const categoryBgs: Record<string, string> = {
     coffee: 'color-mix(in srgb, var(--color-warning) 15%, transparent)', sports: 'color-mix(in srgb, var(--color-success) 15%, transparent)', language: 'color-mix(in srgb, var(--color-info) 15%, transparent)', city_tour: 'color-mix(in srgb, #8B5CF6 15%, transparent)',

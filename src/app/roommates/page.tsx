@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRoommates } from '@/hooks/useRoommates';
 import AuthGuard from '@/components/AuthGuard';
 import BottomNav from '@/components/BottomNav';
+import PageHeader from '@/components/PageHeader';
 import {
   X as XIcon,
   Heart,
@@ -208,15 +209,12 @@ function RoommatesPage() {
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
-      <header
-        className="glass-effect sticky top-0 z-40 flex items-center justify-between px-4 h-14"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
-      >
-        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-          Arkadaş Bul
-        </h1>
-        <Heart size={22} style={{ color: 'var(--color-primary)' }} />
-      </header>
+      <PageHeader
+        title="Arkadaş Bul"
+        glass
+        sticky
+        rightContent={<Heart size={22} style={{ color: 'var(--color-primary)' }} />}
+      />
 
       {/* Match notification */}
       {matchNotif && (

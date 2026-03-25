@@ -25,7 +25,7 @@ import {
 
 const notifIconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: string }> = {
   message: { icon: MessageCircle, color: '#3B82F6', bg: 'color-mix(in srgb, var(--color-info) 10%, transparent)' },
-  match: { icon: Heart, color: '#EF4444', bg: 'color-mix(in srgb, var(--color-error) 10%, transparent)' },
+  match: { icon: Heart, color: 'var(--color-error)', bg: 'color-mix(in srgb, var(--color-error) 10%, transparent)' },
   booking: { icon: Home, color: '#8B5CF6', bg: 'color-mix(in srgb, #8B5CF6 10%, transparent)' },
   price: { icon: DollarSign, color: '#F59E0B', bg: 'color-mix(in srgb, var(--color-warning) 10%, transparent)' },
   review: { icon: Star, color: '#F59E0B', bg: 'color-mix(in srgb, var(--color-warning) 10%, transparent)' },

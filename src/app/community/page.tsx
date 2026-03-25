@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 import BackToTop from '@/components/BackToTop';
 import Link from 'next/link';
+import ErrorRetry from '@/components/ErrorRetry';
 import {
   Heart,
   MessageCircle,
@@ -54,7 +55,7 @@ function CommunityPage() {
   const searchParams = useSearchParams();
   const hashtagParam = searchParams.get('hashtag');
   const { user } = useAuth();
-  const { posts, loading, fetchFeed, toggleLike } = usePosts(user?.id);
+  const { posts, loading, error, fetchFeed, toggleLike } = usePosts(user?.id);
   const { cities, selectedCityId, fetchCities } = useCities();
   const [activeCityId, setActiveCityId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -325,20 +326,20 @@ function CommunityPage() {
               >
                 <Heart
                   size={20}
-                  fill={post.is_liked ? '#EF4444' : 'none'}
+                  fill={post.is_liked ? 'var(--color-error)' : 'none'}
                   className={animatingLike === post.id ? 'animate-heart-beat' : ''}
-                  style={{ color: post.is_liked ? '#EF4444' : 'var(--color-text-muted)' }}
+                  style={{ color: post.is_liked ? 'var(--color-error)' : 'var(--color-text-muted)' }}
                 />
                 <span
                   className="text-xs font-medium"
-                  style={{ color: post.is_liked ? '#EF4444' : 'var(--color-text-muted)' }}
+                  style={{ color: post.is_liked ? 'var(--color-error)' : 'var(--color-text-muted)' }}
                 >
                   {post.like_count || ''}
                 </span>
                 {animatingLike === post.id && post.is_liked && (
                   <span
                     className="absolute -top-3 left-1 text-xs font-bold animate-float-up pointer-events-none"
-                    style={{ color: '#EF4444' }}
+                    style={{ color: 'var(--color-error)' }}
                   >
                     +1
                   </span>
@@ -401,7 +402,14 @@ function CommunityPage() {
           </div>
         )}
 
-        {!loading && posts.length === 0 && (
+        {!loading && error && (
+          <ErrorRetry
+            message={error}
+            onRetry={() => activeCityId && fetchFeed(activeCityId, 1, 20, undefined, hashtagParam ?? undefined)}
+          />
+        )}
+
+        {!loading && !error && posts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center"

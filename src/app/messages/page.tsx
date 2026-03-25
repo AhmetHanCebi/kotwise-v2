@@ -9,6 +9,7 @@ import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
 import PageHeader from '@/components/PageHeader';
+import ErrorRetry from '@/components/ErrorRetry';
 import {
   Search,
   Plus,
@@ -53,7 +54,7 @@ function MessagesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const { conversations, loading, fetchConversations } = useMessages(user?.id);
+  const { conversations, loading, error, fetchConversations } = useMessages(user?.id);
   const [filter, setFilter] = useState<FilterTab>('all');
   const [search, setSearch] = useState('');
 
@@ -173,7 +174,12 @@ function MessagesContent() {
 
       {/* Conversation List */}
       <div className="flex-1 px-4">
-        {loading ? (
+        {!loading && error ? (
+          <ErrorRetry
+            message={error}
+            onRetry={() => fetchConversations()}
+          />
+        ) : loading ? (
           <div className="flex flex-col gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <div

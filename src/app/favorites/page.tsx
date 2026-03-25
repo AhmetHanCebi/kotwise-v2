@@ -188,7 +188,7 @@ function FavoritesContent() {
                         style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)' }}
                         aria-label="Favorilerden çıkar"
                       >
-                        <Heart size={16} fill="#EF4444" color="#EF4444" />
+                        <Heart size={16} fill="var(--color-error)" color="var(--color-error)" />
                       </button>
                     </div>
                   </Link>

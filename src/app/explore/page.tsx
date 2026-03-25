@@ -36,7 +36,7 @@ const sections = [
         icon: Heart,
         label: 'Favorilerim',
         description: 'Beğendiğin ilanları incele',
-        color: '#EF4444',
+        color: 'var(--color-error)',
         bg: 'rgba(239,68,68,0.08)',
         countKey: null,
         countSuffix: '',

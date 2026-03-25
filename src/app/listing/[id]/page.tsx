@@ -12,6 +12,7 @@ import {
 import { useListings } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import dynamic from 'next/dynamic';
 const ListingMap = dynamic(() => import('@/components/ListingMap'), {
   ssr: false,
@@ -66,6 +67,7 @@ export default function ListingDetailPage({
   const [shareToast, setShareToast] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [listingBookings, setListingBookings] = useState<{ check_in: string; check_out: string }[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +79,15 @@ export default function ListingDetailPage({
           search({ city_id: data.city_id, limit: 7 }); // similar listings in same city
         }
       });
+      // Fetch bookings for availability calendar
+      supabase
+        .from('bookings')
+        .select('check_in, check_out')
+        .eq('listing_id', id)
+        .in('status', ['confirmed', 'pending'])
+        .then(({ data }) => {
+          if (data) setListingBookings(data);
+        });
     }
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -541,21 +552,46 @@ export default function ListingDetailPage({
           <div className="space-y-2">
             {(() => {
               const now = new Date();
-              const months = [];
+              const months: { key: string; name: string; year: number; month: number }[] = [];
               for (let i = 0; i < 3; i++) {
                 const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
                 months.push({
                   key: `${d.getFullYear()}-${d.getMonth()}`,
                   name: d.toLocaleDateString('tr-TR', { month: 'long' }),
+                  year: d.getFullYear(),
+                  month: d.getMonth(),
                 });
               }
-              return months.map((month) => (
-                <div key={month.key} className="flex items-center gap-3">
-                  <span className="text-sm w-16 capitalize" style={{ color: 'var(--color-text-secondary)' }}>{month.name}</span>
-                  <div className="flex-1 h-3 rounded-full" style={{ background: 'var(--color-success)', opacity: 0.7 }} />
-                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Müsait</span>
-                </div>
-              ));
+
+              // Check if a month overlaps with any booking
+              const isMonthBooked = (year: number, month: number) => {
+                const monthStart = new Date(year, month, 1);
+                const monthEnd = new Date(year, month + 1, 0); // last day of month
+                return listingBookings.some((b) => {
+                  const checkIn = new Date(b.check_in);
+                  const checkOut = new Date(b.check_out);
+                  return checkIn <= monthEnd && checkOut >= monthStart;
+                });
+              };
+
+              return months.map((m) => {
+                const booked = isMonthBooked(m.year, m.month);
+                return (
+                  <div key={m.key} className="flex items-center gap-3">
+                    <span className="text-sm w-16 capitalize" style={{ color: 'var(--color-text-secondary)' }}>{m.name}</span>
+                    <div
+                      className="flex-1 h-3 rounded-full"
+                      style={{
+                        background: booked ? 'var(--color-error)' : 'var(--color-success)',
+                        opacity: 0.7,
+                      }}
+                    />
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      {booked ? 'Dolu' : 'Müsait'}
+                    </span>
+                  </div>
+                );
+              });
             })()}
           </div>
           <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>

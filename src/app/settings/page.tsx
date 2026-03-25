@@ -347,7 +347,7 @@ function SettingsContent() {
             border
           />
           <ToggleRow
-            icon={<Heart size={18} style={{ color: '#EF4444' }} />}
+            icon={<Heart size={18} style={{ color: 'var(--color-error)' }} />}
             label="Promosyonlar"
             value={notifs.promotions}
             onChange={() => toggleNotif('promotions')}

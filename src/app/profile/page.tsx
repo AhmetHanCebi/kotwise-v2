@@ -29,11 +29,11 @@ import {
 
 const menuItems = [
   { href: '/profile/edit', label: 'Profil Düzenle', icon: Edit3, color: '#3B82F6' },
-  { href: '/favorites', label: 'Favorilerim', icon: Heart, color: '#EF4444' },
+  { href: '/favorites', label: 'Favorilerim', icon: Heart, color: 'var(--color-error)' },
   { href: '/profile/bookings', label: 'Rezervasyonlarım', icon: CalendarCheck, color: '#8B5CF6' },
-  { href: '/listing/new', label: 'İlan Oluştur', icon: PlusCircle, color: '#22C55E' },
-  { href: '/host/apply', label: 'Ev Sahibi Ol', icon: Home, color: '#F59E0B' },
-  { href: '/notifications', label: 'Bildirimler', icon: Bell, color: '#EF4444' },
+  { href: '/listing/new', label: 'İlan Oluştur', icon: PlusCircle, color: 'var(--color-success)' },
+  { href: '/host/apply', label: 'Ev Sahibi Ol', icon: Home, color: 'var(--color-warning)' },
+  { href: '/notifications', label: 'Bildirimler', icon: Bell, color: 'var(--color-error)' },
   { href: '/settings', label: 'Ayarlar', icon: Settings, color: '#6B7280' },
   { href: '/settings/faq', label: 'Yardım', icon: HelpCircle, color: '#06B6D4' },
 ];

@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useBooking } from '@/hooks/useBooking';
 import type { BookingStatus } from '@/lib/database.types';
+import PageHeader from '@/components/PageHeader';
 import {
-  ArrowLeft,
   MapPin,
   Calendar,
   MessageCircle,
@@ -31,7 +30,7 @@ const filterTabs: { key: FilterTab; label: string }[] = [
 const statusColors: Record<BookingStatus, { bg: string; text: string; label: string }> = {
   pending: { bg: 'rgba(245,158,11,0.1)', text: '#F59E0B', label: 'Beklemede' },
   confirmed: { bg: 'rgba(34,197,94,0.1)', text: '#22C55E', label: 'Onaylandı' },
-  cancelled: { bg: 'rgba(239,68,68,0.1)', text: '#EF4444', label: 'İptal Edildi' },
+  cancelled: { bg: 'rgba(239,68,68,0.1)', text: 'var(--color-error)', label: 'İptal Edildi' },
   completed: { bg: 'rgba(99,102,241,0.1)', text: '#6366F1', label: 'Tamamlandı' },
 };
 
@@ -44,7 +43,6 @@ export default function BookingsPage() {
 }
 
 function BookingsContent() {
-  const router = useRouter();
   const { user } = useAuth();
   const { bookings, loading, fetchUserBookings, cancel } = useBooking(user?.id);
   const { toast } = useToast();
@@ -87,28 +85,16 @@ function BookingsContent() {
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
+      <PageHeader title="Rezervasyonlarım" showBack />
+
+      {/* Filter Tabs */}
       <div
-        className="px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3"
+        className="px-4 pb-3"
         style={{
           background: 'var(--color-bg-card)',
           borderBottom: '1px solid var(--color-border)',
         }}
       >
-        <div className="flex items-center gap-3 mb-3">
-          <button
-            onClick={() => router.back()}
-            className="p-1.5 rounded-full active:opacity-70"
-            style={{ color: 'var(--color-text-primary)' }}
-            aria-label="Geri"
-          >
-            <ArrowLeft size={22} />
-          </button>
-          <h1 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            Rezervasyonlarım
-          </h1>
-        </div>
-
-        {/* Filter Tabs */}
         <div className="flex gap-2">
           {filterTabs.map((tab) => (
             <button

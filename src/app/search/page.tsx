@@ -9,6 +9,7 @@ import {
   UtensilsCrossed, Waves, Loader2, Home, Map, Clock,
 } from 'lucide-react';
 import { useListings, type ListingFilters } from '@/hooks/useListings';
+import ErrorRetry from '@/components/ErrorRetry';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import type { RoomType, Listing } from '@/lib/database.types';
@@ -71,7 +72,7 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { listings, loading, totalCount, search } = useListings();
+  const { listings, loading, error, totalCount, search } = useListings();
   const { isFavorite, toggle: toggleFavorite } = useFavorites(user?.id);
 
   const [query, setQuery] = useState(searchParams.get('q') || '');
@@ -517,7 +518,12 @@ function SearchContent() {
 
       {/* Listing Cards */}
       <div className="flex-1 px-4 pb-32 flex flex-col gap-4">
-        {loading && listings.length === 0 ? (
+        {!loading && error && listings.length === 0 ? (
+          <ErrorRetry
+            message={error}
+            onRetry={() => { setPage(1); setHasMore(true); doSearch({ ...filters, page: 1 }); }}
+          />
+        ) : loading && listings.length === 0 ? (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div

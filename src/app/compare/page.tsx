@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import PageHeader from '@/components/PageHeader';
 import {
-  ArrowLeft, Star, MapPin,
+  Star, MapPin,
   Trophy, ChevronRight, Heart,
 } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -88,7 +88,6 @@ export default function ComparePage() {
 }
 
 function CompareContent() {
-  const router = useRouter();
   const { user } = useAuth();
   const { favorites } = useFavorites(user?.id);
 
@@ -147,25 +146,7 @@ function CompareContent() {
         className="min-h-dvh flex flex-col max-w-[430px] mx-auto"
         style={{ background: 'var(--color-bg)' }}
       >
-        <div
-          className="px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3 flex items-center gap-3"
-          style={{
-            background: 'var(--color-bg-card)',
-            borderBottom: '1px solid var(--color-border)',
-          }}
-        >
-          <button
-            onClick={() => router.back()}
-            className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--color-bg)' }}
-            aria-label="Geri"
-          >
-            <ArrowLeft size={18} style={{ color: 'var(--color-text-primary)' }} />
-          </button>
-          <h1 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            Karşılaştır
-          </h1>
-        </div>
+        <PageHeader title="Karşılaştır" showBack />
         <div className="flex-1 flex flex-col items-center justify-center px-6 gap-4">
           <Heart size={40} style={{ color: 'var(--color-text-muted)' }} />
           <p className="text-base font-semibold text-center" style={{ color: 'var(--color-text-primary)' }}>
@@ -192,30 +173,16 @@ function CompareContent() {
       style={{ background: 'var(--color-bg)' }}
     >
       {/* Header */}
-      <div
-        className="sticky top-0 z-20 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3"
-        style={{
-          background: 'var(--color-bg-card)',
-          borderBottom: '1px solid var(--color-border)',
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--color-bg)' }}
-            aria-label="Geri"
-          >
-            <ArrowLeft size={18} style={{ color: 'var(--color-text-primary)' }} />
-          </button>
-          <h1 className="flex-1 text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            İlan Karşılaştırma
-          </h1>
+      <PageHeader
+        title="İlan Karşılaştırma"
+        showBack
+        sticky
+        rightContent={
           <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
             {compareListings.length} ilan
           </span>
-        </div>
-      </div>
+        }
+      />
 
       {/* Selection UI - show when there are more than 2 favorites */}
       {allListings.length > 2 && (
