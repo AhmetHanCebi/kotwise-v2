@@ -139,8 +139,29 @@ export default function ListingDetailPage({
 
   if (loading && !listing) {
     return (
-      <div className="min-h-dvh flex items-center justify-center max-w-[430px] mx-auto">
-        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-primary)' }} />
+      <div className="min-h-dvh flex flex-col max-w-[430px] mx-auto animate-fade-in-up" style={{ background: 'var(--color-bg)' }}>
+        {/* Image area skeleton */}
+        <div className="aspect-[4/3] animate-shimmer" />
+        <div className="px-4 pt-4 space-y-4">
+          {/* Title */}
+          <div className="h-6 w-3/4 animate-shimmer rounded" />
+          {/* Location */}
+          <div className="h-4 w-1/2 animate-shimmer rounded" />
+          {/* Price */}
+          <div className="h-10 w-1/3 animate-shimmer rounded-xl" />
+          {/* Host card */}
+          <div className="h-20 w-full animate-shimmer rounded-2xl" />
+          {/* Features grid */}
+          <div className="grid grid-cols-3 gap-2">
+            {[1,2,3,4,5,6].map(i => <div key={i} className="h-16 animate-shimmer rounded-xl" />)}
+          </div>
+          {/* Description */}
+          <div className="space-y-2">
+            <div className="h-4 w-full animate-shimmer rounded" />
+            <div className="h-4 w-5/6 animate-shimmer rounded" />
+            <div className="h-4 w-2/3 animate-shimmer rounded" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -247,9 +268,11 @@ export default function ListingDetailPage({
         <img
           src={images[currentImage]?.url}
           alt={listing.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-opacity duration-300 ease-in-out"
           loading="lazy"
-          onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK_LARGE; }}
+          onLoad={(e) => { (e.target as HTMLImageElement).style.opacity = '1'; }}
+          style={{ opacity: 0 }}
+          onError={(e) => { const t = e.target as HTMLImageElement; t.style.opacity = '1'; if (!t.src.startsWith('data:')) t.src = IMAGE_FALLBACK_LARGE; }}
         />
         {/* Navigation arrows */}
         {images.length > 1 && (

@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Home, Compass, Users, MessageCircle, User } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const tabs = [
   { href: '/', label: 'Ana Sayfa', icon: Home },
@@ -12,8 +14,59 @@ const tabs = [
   { href: '/profile', label: 'Profil', icon: User },
 ] as const;
 
+function Badge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <div className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center"
+      style={{ background: 'var(--color-error)' }}
+    >
+      <span className="text-[9px] font-bold text-white leading-none">
+        {count > 99 ? '99+' : count}
+      </span>
+    </div>
+  );
+}
+
+function BadgeDot() {
+  return (
+    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full"
+      style={{ background: 'var(--color-error)', border: '2px solid var(--color-bg)' }}
+    />
+  );
+}
+
 export default function BottomNav() {
   const pathname = usePathname();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Unread messages count
+      const { count: msgCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false)
+        .neq('sender_id', user.id);
+
+      // Unread notifications count
+      const { count: notifCount } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+
+      setUnreadMessages(msgCount || 0);
+      setUnreadNotifications(notifCount || 0);
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <nav
@@ -39,7 +92,11 @@ export default function BottomNav() {
                   : 'var(--color-text-muted)',
               }}
             >
-              <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+              <span className="relative">
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                {tab.href === '/messages' && <Badge count={unreadMessages} />}
+                {tab.href === '/profile' && unreadNotifications > 0 && <BadgeDot />}
+              </span>
               <span className="text-[10px] font-medium leading-tight">
                 {tab.label}
               </span>

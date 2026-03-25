@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/components/PageHeader';
 import {
@@ -30,6 +30,19 @@ function FavoritesContent() {
   const { user } = useAuth();
   const { favorites, loading, toggle } = useFavorites(user?.id);
   const [activeCity, setActiveCity] = useState<string | null>(null);
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+
+  const handleRemove = useCallback((listingId: string, favId: string) => {
+    setRemovingIds(prev => new Set(prev).add(favId));
+    setTimeout(() => {
+      toggle(listingId);
+      setRemovingIds(prev => {
+        const next = new Set(prev);
+        next.delete(favId);
+        return next;
+      });
+    }, 350);
+  }, [toggle]);
 
   const typedFavorites = favorites as FavoriteWithListing[];
 
@@ -148,7 +161,7 @@ function FavoritesContent() {
               return (
                 <div
                   key={fav.id}
-                  className="rounded-2xl overflow-hidden animate-fade-in-up"
+                  className={`rounded-2xl overflow-hidden ${removingIds.has(fav.id) ? 'animate-slide-out-right' : 'animate-fade-in-up'}`}
                   style={{
                     background: 'var(--color-bg-card)',
                     boxShadow: 'var(--shadow-card)',
@@ -169,7 +182,7 @@ function FavoritesContent() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          toggle(listing.id);
+                          handleRemove(listing.id, fav.id);
                         }}
                         className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
                         style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)' }}
