@@ -51,10 +51,9 @@ function FavoritesContent() {
     const citySet = new Map<string, string>();
     typedFavorites.forEach((f) => {
       if (f.listing?.city_id) {
-        const listingAny = f.listing as unknown as Record<string, unknown>;
-        const cityLabel = listingAny.city
-          ? (listingAny.city as { name: string })?.name
-          : f.listing.address?.split(',').pop()?.trim() || f.listing.city_id;
+        // city is joined via useFavorites hook (cities!listings_city_id_fkey)
+        const city = (f.listing as unknown as Record<string, unknown>).city as { id: string; name: string } | null;
+        const cityLabel = city?.name || f.listing.address?.split(',').pop()?.trim() || f.listing.city_id;
         citySet.set(f.listing.city_id, cityLabel);
       }
     });

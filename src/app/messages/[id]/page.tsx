@@ -107,8 +107,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
 
   useEffect(() => {
     fetchMessages(conversationId);
-    fetchConversations();
-  }, [conversationId, fetchMessages, fetchConversations]);
+  }, [conversationId, fetchMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

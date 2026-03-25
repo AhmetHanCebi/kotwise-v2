@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Update immediately on mount
-    updateLastSeen();
+    // Update immediately on mount (fire-and-forget is intentional for heartbeat)
+    void updateLastSeen();
 
     const interval = setInterval(updateLastSeen, 60_000);
     return () => clearInterval(interval);
