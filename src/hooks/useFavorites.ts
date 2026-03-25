@@ -19,10 +19,11 @@ export function useFavorites(userId?: string) {
     setError(null);
 
     try {
-      // Step 1: Fetch favorites with listing data (skip listing_images in nested join — 3-level depth is unreliable)
+      // Step 1: Fetch favorites with listing data including listing_images via JOIN
+      // (JOIN approach works for RLS — separate queries may be blocked)
       const { data, error: err } = await supabase
         .from('favorites')
-        .select('*, listing:listings!favorites_listing_id_fkey(*, city:cities!listings_city_id_fkey(id, name))')
+        .select('*, listing:listings!favorites_listing_id_fkey(*, city:cities!listings_city_id_fkey(id, name), listing_images:listing_images!listing_images_listing_id_fkey(url, is_cover, order))')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 

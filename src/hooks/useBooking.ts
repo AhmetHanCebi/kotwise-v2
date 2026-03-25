@@ -57,7 +57,7 @@ export function useBooking(userId?: string) {
         .from('bookings')
         .select(`
           *,
-          listing:listings!bookings_listing_id_fkey(*),
+          listing:listings!bookings_listing_id_fkey(*, listing_images:listing_images!listing_images_listing_id_fkey(url, is_cover, order)),
           host:profiles!bookings_host_id_fkey(*),
           user:profiles!bookings_user_id_fkey(*)
         `)
@@ -89,7 +89,7 @@ export function useBooking(userId?: string) {
         .from('bookings')
         .select(`
           *,
-          listing:listings!bookings_listing_id_fkey(*),
+          listing:listings!bookings_listing_id_fkey(*, listing_images:listing_images!listing_images_listing_id_fkey(url, is_cover, order)),
           host:profiles!bookings_host_id_fkey(*),
           user:profiles!bookings_user_id_fkey(*)
         `)
@@ -123,7 +123,7 @@ export function useBooking(userId?: string) {
         .from('bookings')
         .select(`
           *,
-          listing:listings!bookings_listing_id_fkey(*),
+          listing:listings!bookings_listing_id_fkey(*, listing_images:listing_images!listing_images_listing_id_fkey(url, is_cover, order)),
           host:profiles!bookings_host_id_fkey(*),
           user:profiles!bookings_user_id_fkey(*)
         `)

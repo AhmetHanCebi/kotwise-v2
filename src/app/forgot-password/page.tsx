@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
           <div className="flex flex-col items-center gap-4 text-center animate-fade-in-up">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ background: '#F0FDF4' }}
+              style={{ background: 'color-mix(in srgb, var(--color-success) 10%, transparent)' }}
             >
               <CheckCircle size={40} style={{ color: 'var(--color-success)' }} />
             </div>
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
             <div className="flex flex-col items-center gap-2 text-center mb-4">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center mb-2"
-                style={{ background: '#FFF7ED' }}
+                style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
               >
                 <Mail size={28} style={{ color: 'var(--color-primary)' }} />
               </div>
@@ -107,9 +107,9 @@ export default function ForgotPasswordPage() {
               <div
                 className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium"
                 style={{
-                  background: '#FEF2F2',
+                  background: 'color-mix(in srgb, var(--color-error) 10%, transparent)',
                   color: 'var(--color-error)',
-                  border: '1px solid #FECACA',
+                  border: '1px solid color-mix(in srgb, var(--color-error) 25%, transparent)',
                 }}
               >
                 {error}

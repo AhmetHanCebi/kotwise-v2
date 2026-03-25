@@ -24,14 +24,14 @@ import {
 } from 'lucide-react';
 
 const notifIconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: string }> = {
-  message: { icon: MessageCircle, color: '#3B82F6', bg: '#EFF6FF' },
-  match: { icon: Heart, color: '#EF4444', bg: '#FEF2F2' },
-  booking: { icon: Home, color: '#8B5CF6', bg: '#F5F3FF' },
-  price: { icon: DollarSign, color: '#F59E0B', bg: '#FFFBEB' },
-  review: { icon: Star, color: '#F59E0B', bg: '#FFFBEB' },
-  event: { icon: PartyPopper, color: '#22C55E', bg: '#F0FDF4' },
-  community: { icon: Megaphone, color: '#6366F1', bg: '#EEF2FF' },
-  system: { icon: Bell, color: '#6B7280', bg: '#F9FAFB' },
+  message: { icon: MessageCircle, color: '#3B82F6', bg: 'color-mix(in srgb, var(--color-info) 10%, transparent)' },
+  match: { icon: Heart, color: '#EF4444', bg: 'color-mix(in srgb, var(--color-error) 10%, transparent)' },
+  booking: { icon: Home, color: '#8B5CF6', bg: 'color-mix(in srgb, #8B5CF6 10%, transparent)' },
+  price: { icon: DollarSign, color: '#F59E0B', bg: 'color-mix(in srgb, var(--color-warning) 10%, transparent)' },
+  review: { icon: Star, color: '#F59E0B', bg: 'color-mix(in srgb, var(--color-warning) 10%, transparent)' },
+  event: { icon: PartyPopper, color: '#22C55E', bg: 'color-mix(in srgb, var(--color-success) 10%, transparent)' },
+  community: { icon: Megaphone, color: '#6366F1', bg: 'color-mix(in srgb, var(--color-info) 10%, transparent)' },
+  system: { icon: Bell, color: '#6B7280', bg: 'var(--color-bg)' },
 };
 
 function timeAgo(dateStr: string): string {

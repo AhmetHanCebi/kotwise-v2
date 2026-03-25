@@ -201,9 +201,9 @@ export default function RegisterPage() {
           <div
             className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4 text-sm font-medium"
             style={{
-              background: '#FEF2F2',
+              background: 'color-mix(in srgb, var(--color-error) 10%, transparent)',
               color: 'var(--color-error)',
-              border: '1px solid #FECACA',
+              border: '1px solid color-mix(in srgb, var(--color-error) 25%, transparent)',
             }}
           >
             {error}

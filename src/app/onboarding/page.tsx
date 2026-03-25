@@ -11,7 +11,7 @@ const steps = [
     description:
       'Doğrulanmış ev sahipleri ve detaylı ilanlarla güvenle konakla. Fiyat, konum ve olanakları karşılaştır.',
     color: '#F26522',
-    bg: '#FFF7ED',
+    bg: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
   },
   {
     icon: Users,
@@ -19,7 +19,7 @@ const steps = [
     description:
       'Aynı şehirdeki Erasmus öğrencileriyle tanış, etkinliklere katıl ve deneyimlerini paylaş.',
     color: '#3B82F6',
-    bg: '#EFF6FF',
+    bg: 'color-mix(in srgb, var(--color-info) 10%, transparent)',
   },
   {
     icon: MapPin,
@@ -27,7 +27,7 @@ const steps = [
     description:
       'Mahalleler, ulaşım, yaşam maliyeti ve acil bilgiler dahil kapsamlı şehir rehberine eriş.',
     color: '#22C55E',
-    bg: '#F0FDF4',
+    bg: 'color-mix(in srgb, var(--color-success) 10%, transparent)',
   },
 ];
 

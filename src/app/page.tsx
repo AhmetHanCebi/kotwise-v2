@@ -161,7 +161,7 @@ function ListingCard({ listing }: { listing: ListingWithImages }) {
           {listing.is_furnished && (
             <span
               className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ background: '#F0FDF4', color: 'var(--color-success)' }}
+              style={{ background: 'color-mix(in srgb, var(--color-success) 10%, transparent)', color: 'var(--color-success)' }}
             >
               Mobilyalı
             </span>
@@ -182,8 +182,8 @@ function EventCard({ event }: { event: EventWithDetails }) {
     party: '#BE185D', study: '#0E7490', food: '#C2410C', other: '#6B7280',
   };
   const categoryBgs: Record<string, string> = {
-    coffee: '#FEF3C7', sports: '#DCFCE7', language: '#DBEAFE', city_tour: '#EDE9FE',
-    party: '#FCE7F3', study: '#CFFAFE', food: '#FFEDD5', other: '#F3F4F6',
+    coffee: 'color-mix(in srgb, var(--color-warning) 15%, transparent)', sports: 'color-mix(in srgb, var(--color-success) 15%, transparent)', language: 'color-mix(in srgb, var(--color-info) 15%, transparent)', city_tour: 'color-mix(in srgb, #8B5CF6 15%, transparent)',
+    party: 'color-mix(in srgb, #EC4899 10%, transparent)', study: 'color-mix(in srgb, var(--color-info) 15%, transparent)', food: 'color-mix(in srgb, var(--color-primary) 10%, transparent)', other: 'var(--color-bg)',
   };
 
   const eventDate = new Date(event.date);
@@ -200,7 +200,7 @@ function EventCard({ event }: { event: EventWithDetails }) {
         <span
           className="text-xs font-semibold px-2.5 py-1 rounded-full"
           style={{
-            background: categoryBgs[event.category] ?? '#F3F4F6',
+            background: categoryBgs[event.category] ?? 'var(--color-bg)',
             color: categoryColors[event.category] ?? '#6B7280',
           }}
         >
@@ -747,7 +747,7 @@ export default function HomePage() {
             {/* Visa info */}
             {city.visa_info && Object.keys(city.visa_info).length > 0 && (
               <div className="flex items-start gap-3 py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#EFF6FF' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--color-info) 10%, transparent)' }}>
                   <Shield size={16} style={{ color: 'var(--color-info)' }} />
                 </div>
                 <div className="flex-1">
@@ -762,7 +762,7 @@ export default function HomePage() {
             {/* Currency */}
             {city.currency && (
               <div className="flex items-start gap-3 py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#F0FDF4' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--color-success) 10%, transparent)' }}>
                   <CreditCard size={16} style={{ color: 'var(--color-success)' }} />
                 </div>
                 <div className="flex-1">
@@ -775,7 +775,7 @@ export default function HomePage() {
             {/* Emergency */}
             {city.emergency_info && Object.keys(city.emergency_info).length > 0 && (
               <div className="flex items-start gap-3 py-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#FEF2F2' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--color-error) 10%, transparent)' }}>
                   <Phone size={16} style={{ color: 'var(--color-error)' }} />
                 </div>
                 <div className="flex-1">
@@ -791,7 +791,7 @@ export default function HomePage() {
             {/* Timezone */}
             {city.timezone && (
               <div className="flex items-start gap-3 py-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#FFF7ED' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'color-mix(in srgb, var(--color-warning) 10%, transparent)' }}>
                   <Globe size={16} style={{ color: 'var(--color-warning)' }} />
                 </div>
                 <div className="flex-1">
@@ -809,7 +809,7 @@ export default function HomePage() {
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 gap-4">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center"
-            style={{ background: '#FFF7ED' }}
+            style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
           >
             <MapPin size={36} style={{ color: 'var(--color-primary)' }} />
           </div>
