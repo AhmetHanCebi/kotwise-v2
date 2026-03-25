@@ -14,6 +14,8 @@ import {
   Star,
   Users,
   Shield,
+  ShieldCheck,
+  Clock,
   CreditCard,
   Phone,
   Globe,
@@ -634,6 +636,39 @@ export default function HomePage() {
           <ChevronRight size={18} style={{ color: 'var(--color-text-muted)' }} />
         </Link>
       </section>
+
+      {/* ========== TRUST STRIP ========== */}
+      <div className="px-5 py-4">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl"
+          style={{ background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-sm)' }}>
+
+          <div className="flex flex-col items-center gap-1">
+            <ShieldCheck size={20} className="text-[var(--color-success)]" />
+            <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              Doğrulanmış İlanlar
+            </span>
+          </div>
+
+          <div className="w-px h-8" style={{ background: 'var(--color-border)' }} />
+
+          <div className="flex flex-col items-center gap-1">
+            <Clock size={20} className="text-[var(--color-info)]" />
+            <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              24 Saat Yanıt
+            </span>
+          </div>
+
+          <div className="w-px h-8" style={{ background: 'var(--color-border)' }} />
+
+          <div className="flex flex-col items-center gap-1">
+            <CreditCard size={20} className="text-[var(--color-primary)]" />
+            <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              Güvenli Ödeme
+            </span>
+          </div>
+
+        </div>
+      </div>
 
       {/* ========== LISTINGS SECTION ========== */}
       <section className="mt-6 px-5">

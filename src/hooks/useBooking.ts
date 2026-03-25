@@ -27,15 +27,19 @@ async function enrichWithListingImages(items: BookingWithDetails[]): Promise<Boo
   }
 
   // Create new objects with listing_images attached
+  // Prefer separate-fetch data, fall back to JOIN data from query
   return items.map(item => {
     if (!item.listing) return item;
-    const existing = (item.listing as unknown as Record<string, unknown>).listing_images as unknown[] | undefined;
-    if (existing && existing.length > 0) return item; // already has images from join
+    const fromSeparate = imgMap.get(item.listing.id);
+    const fromJoin = (item.listing as unknown as Record<string, unknown>).listing_images as unknown[] | undefined;
+    const best = (fromSeparate && fromSeparate.length > 0) ? fromSeparate
+      : (fromJoin && fromJoin.length > 0) ? fromJoin
+      : [];
     return {
       ...item,
       listing: {
         ...item.listing,
-        listing_images: imgMap.get(item.listing.id) ?? [],
+        listing_images: best,
       },
     } as BookingWithDetails;
   });

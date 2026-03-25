@@ -136,6 +136,58 @@ function ProfileContent() {
             </p>
           )}
 
+          {/* Profile Completion */}
+          {(() => {
+            const fields = [
+              profile?.full_name,
+              profile?.avatar_url,
+              profile?.university,
+              profile?.bio,
+              profile?.exchange_city_id,
+              profile?.phone,
+              profile?.interests?.length ? true : null,
+            ];
+            const filled = fields.filter(Boolean).length;
+            const total = fields.length;
+            const pct = Math.round((filled / total) * 100);
+            return (
+              <div className="w-full mt-2 mb-1">
+                <div className="flex items-center justify-center gap-2 mb-1.5">
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{
+                      background: pct >= 80 ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
+                      color: pct >= 80 ? 'var(--color-success)' : '#F59E0B',
+                    }}
+                  >
+                    Profil %{pct} Tamamlandı
+                  </span>
+                </div>
+                <div
+                  className="w-full h-1.5 rounded-full overflow-hidden"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${pct}%`,
+                      background: pct >= 80 ? '#4ADE80' : '#FBBF24',
+                    }}
+                  />
+                </div>
+                {pct < 80 && (
+                  <Link
+                    href="/profile/edit"
+                    className="block text-center text-[11px] font-medium mt-1.5"
+                    style={{ color: '#FBBF24' }}
+                  >
+                    Profilini tamamla — ev sahiplerinden daha hızlı yanıt al!
+                  </Link>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Badges */}
           <div className="flex items-center gap-2 mt-2">
             {profile?.is_verified && (

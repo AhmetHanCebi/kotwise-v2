@@ -7,7 +7,7 @@ import {
   ArrowLeft, Share2, Heart, Star, MapPin, ChevronLeft, ChevronRight,
   Wifi, Wind, Tv, Car, UtensilsCrossed, Waves, Sofa, Shield, Check,
   Clock, MessageCircle, ChevronDown, ChevronUp, GraduationCap, Users,
-  Loader2, Home,
+  Loader2, Home, Calendar,
 } from 'lucide-react';
 import { useListings } from '@/hooks/useListings';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -504,6 +504,36 @@ export default function ListingDetailPage({
               height="160px"
             />
           </div>
+        </div>
+
+        {/* Availability Calendar */}
+        <div className="mt-6">
+          <h2 className="text-base font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+            <Calendar size={18} /> Müsaitlik
+          </h2>
+          <div className="space-y-2">
+            {(() => {
+              const now = new Date();
+              const months = [];
+              for (let i = 0; i < 3; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+                months.push({
+                  key: `${d.getFullYear()}-${d.getMonth()}`,
+                  name: d.toLocaleDateString('tr-TR', { month: 'long' }),
+                });
+              }
+              return months.map((month) => (
+                <div key={month.key} className="flex items-center gap-3">
+                  <span className="text-sm w-16 capitalize" style={{ color: 'var(--color-text-secondary)' }}>{month.name}</span>
+                  <div className="flex-1 h-3 rounded-full" style={{ background: 'var(--color-success)', opacity: 0.7 }} />
+                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Müsait</span>
+                </div>
+              ));
+            })()}
+          </div>
+          <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
+            Kesin müsaitlik için ev sahibiyle iletişime geçin
+          </p>
         </div>
 
         {/* Reviews */}
